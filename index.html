@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Badge Scan — Attendance</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root{
+    --navy-950:#0b1220;
+    --navy-900:#0f1830;
+    --navy-800:#16213f;
+    --navy-700:#22315a;
+    --amber-500:#e8a13a;
+    --amber-400:#f2b854;
+    --paper:#f3efe6;
+    --mint-500:#4fb286;
+    --red-500:#d9614f;
+    --line:#2a3a63;
+    --font-display: 'Rockwell', 'Georgia', serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--navy-950);color:var(--paper);font-family:var(--font-body);}
+  body{min-height:100vh;padding-bottom:40px;}
+
+  .badge-strip{
+    background:repeating-linear-gradient(135deg,var(--navy-900),var(--navy-900) 10px,var(--navy-800) 10px,var(--navy-800) 20px);
+    height:6px;width:100%;
+  }
+
+  header{
+    padding:22px 20px 14px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--line);
+  }
+  header .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--amber-400);
+    margin:0 0 4px;
+  }
+  header h1{
+    font-family:var(--font-display);
+    font-size:26px;
+    margin:0;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  header .clock{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:#9fb0d6;
+    text-align:right;
+  }
+
+  main{max-width:520px;margin:0 auto;padding:18px 16px 0;}
+
+  .scan-card{
+    background:var(--navy-900);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:18px;
+  }
+
+  #reader{
+    width:100%;
+    border-radius:10px;
+    overflow:hidden;
+    background:#000;
+    position:relative;
+    min-height:220px;
+  }
+  #reader video{ border-radius:10px; }
+
+  .scan-toggle{
+    width:100%;
+    margin-top:14px;
+    padding:14px;
+    border-radius:10px;
+    border:none;
+    font-family:var(--font-display);
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:.02em;
+    background:var(--amber-500);
+    color:var(--navy-950);
+    cursor:pointer;
+  }
+  .scan-toggle.active{ background:var(--red-500); color:var(--paper); }
+  .scan-toggle:active{ transform:scale(.99); }
+
+  .manual-entry{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .manual-entry input{
+    flex:1;
+    background:var(--navy-800);
+    border:1px solid var(--line);
+    color:var(--paper);
+    border-radius:8px;
+    padding:11px 12px;
+    font-family:var(--font-mono);
+    font-size:14px;
+  }
+  .manual-entry button{
+    background:var(--navy-700);
+    border:1px solid var(--line);
+    color:var(--paper);
+    border-radius:8px;
+    padding:0 16px;
+    font-family:var(--font-body);
+    font-size:13px;
+    cursor:pointer;
+  }
+
+  .result-banner{
+    display:none;
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:18px;
+    font-family:var(--font-body);
+    animation:pop .25s ease;
+  }
+  @keyframes pop{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
+  .result-banner.in{ background:rgba(79,178,134,.15); border:1px solid var(--mint-500); }
+  .result-banner.out{ background:rgba(232,161,58,.15); border:1px solid var(--amber-500); }
+  .result-banner.warn{ background:rgba(217,97,79,.15); border:1px solid var(--red-500); }
+  .result-banner .rb-name{ font-family:var(--font-display); font-size:19px; margin:0 0 2px; }
+  .result-banner .rb-detail{ font-family:var(--font-mono); font-size:13px; color:#c9d3ea; margin:0; }
+
+  section.panel{
+    background:var(--navy-900);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:18px;
+  }
+  .panel h2{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--amber-400);
+    margin:0 0 12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .panel h2 .count{ color:#7488b6; }
+
+  table{ width:100%; border-collapse:collapse; }
+  th,td{
+    text-align:left;
+    padding:9px 6px;
+    border-bottom:1px solid var(--line);
+    font-size:13px;
+  }
+  th{ font-family:var(--font-mono); font-size:11px; color:#7488b6; text-transform:uppercase; letter-spacing:.06em; }
+  td.mono{ font-family:var(--font-mono); }
+  .empty-row td{ text-align:center; color:#5c6d99; padding:22px 6px; font-style:italic; }
+
+  .roster-form{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .roster-form input{
+    background:var(--navy-800); border:1px solid var(--line); color:var(--paper);
+    border-radius:8px; padding:10px 12px; font-size:13px; font-family:var(--font-body);
+  }
+  .roster-form input[name="id"]{ flex:1; min-width:100px; font-family:var(--font-mono); }
+  .roster-form input[name="name"]{ flex:2; min-width:140px; }
+  .roster-form button{
+    background:var(--navy-700); border:1px solid var(--line); color:var(--paper);
+    border-radius:8px; padding:0 14px; cursor:pointer; font-size:13px;
+  }
+
+  .toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+  .toolbar button{
+    flex:1;
+    background:var(--navy-800);
+    border:1px solid var(--line);
+    color:var(--paper);
+    border-radius:8px;
+    padding:11px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .toolbar button.danger{ border-color:var(--red-500); color:var(--red-500); }
+
+  .del-btn{
+    background:none; border:none; color:#7488b6; cursor:pointer; font-size:15px; padding:0 4px;
+  }
+
+  footer{ text-align:center; padding:20px; font-family:var(--font-mono); font-size:11px; color:#4a5a85; }
+</style>
+</head>
+<body>
+
+<div class="badge-strip"></div>
+
+<header>
+  <div>
+    <p class="eyebrow">Company ID · Barcode Log</p>
+    <h1>Badge Scan</h1>
+  </div>
+  <div class="clock" id="liveClock">—</div>
+</header>
+
+<main>
+
+  <div class="scan-card">
+    <div id="reader"></div>
+    <button class="scan-toggle" id="scanToggle">Start Scanning</button>
+    <div class="manual-entry">
+      <input type="text" id="manualId" placeholder="Or type ID manually…" inputmode="text">
+      <button id="manualBtn">Log</button>
+    </div>
+  </div>
+
+  <div class="result-banner" id="resultBanner">
+    <p class="rb-name" id="rbName"></p>
+    <p class="rb-detail" id="rbDetail"></p>
+  </div>
+
+  <section class="panel">
+    <h2>Today's Log <span class="count" id="todayCount">0 entries</span></h2>
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th>In</th><th>Out</th></tr></thead>
+      <tbody id="todayTable"><tr class="empty-row"><td colspan="4">No scans yet today</td></tr></tbody>
+    </table>
+    <div class="toolbar">
+      <button id="exportBtn">Export CSV</button>
+      <button id="clearTodayBtn" class="danger">Clear Today</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Employee Roster <span class="count" id="rosterCount">0 registered</span></h2>
+    <div class="roster-form">
+      <input type="text" name="id" id="newId" placeholder="Barcode / ID value">
+      <input type="text" name="name" id="newName" placeholder="Employee name">
+      <button id="addEmployeeBtn">Add</button>
+    </div>
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th></th></tr></thead>
+      <tbody id="rosterTable"><tr class="empty-row"><td colspan="3">No employees added yet</td></tr></tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>Stored on this device only · works offline once loaded</footer>
+
+<script>
+(function(){
+  const EMP_KEY = 'attendance_employees_v1';
+  const LOG_KEY = 'attendance_log_v1';
+
+  function loadEmployees(){ try{ return JSON.parse(localStorage.getItem(EMP_KEY)) || []; }catch(e){ return []; } }
+  function saveEmployees(list){ localStorage.setItem(EMP_KEY, JSON.stringify(list)); }
+  function loadLog(){ try{ return JSON.parse(localStorage.getItem(LOG_KEY)) || []; }catch(e){ return []; } }
+  function saveLog(list){ localStorage.setItem(LOG_KEY, JSON.stringify(list)); }
+
+  let employees = loadEmployees();
+  let log = loadLog();
+
+  function todayStr(){
+    const d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function timeStr(){
+    return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+  function findEmployee(id){ return employees.find(e => e.id === id); }
+
+  // ---- Live clock ----
+  function tickClock(){
+    document.getElementById('liveClock').textContent = new Date().toLocaleString([], {
+      weekday:'short', hour:'2-digit', minute:'2-digit', second:'2-digit'
+    });
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  // ---- Core scan handler ----
+  function handleScan(rawId){
+    const id = (rawId || '').trim();
+    if(!id) return;
+
+    const emp = findEmployee(id);
+    const name = emp ? emp.name : null;
+    const today = todayStr();
+
+    let entry = log.find(r => r.id === id && r.date === today);
+
+    if(!entry){
+      entry = { id, name: name || id, date: today, timeIn: timeStr(), timeOut: '' };
+      log.push(entry);
+      saveLog(log);
+      showBanner('in', entry.name, 'Time IN logged at ' + entry.timeIn + (name ? '' : '  ·  ID not in roster'));
+    } else if(entry.timeIn && !entry.timeOut){
+      entry.timeOut = timeStr();
+      saveLog(log);
+      showBanner('out', entry.name, 'Time OUT logged at ' + entry.timeOut);
+    } else {
+      showBanner('warn', entry.name, 'Already completed today — In ' + entry.timeIn + ' / Out ' + entry.timeOut);
+    }
+    renderToday();
+  }
+
+  function showBanner(kind, name, detail){
+    const b = document.getElementById('resultBanner');
+    b.className = 'result-banner ' + kind;
+    b.style.display = 'block';
+    document.getElementById('rbName').textContent = name;
+    document.getElementById('rbDetail').textContent = detail;
+  }
+
+  // ---- Camera scanner (html5-qrcode) ----
+  let html5QrCode = null;
+  let scanning = false;
+  const toggleBtn = document.getElementById('scanToggle');
+
+  async function startScan(){
+    html5QrCode = new Html5Qrcode("reader", { formatsToSupport: [
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.CODE_39,
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.QR_CODE
+    ]});
+    try{
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 260, height: 140 } },
+        (decodedText) => {
+          handleScan(decodedText);
+          // brief pause to avoid double-fires on the same badge
+          html5QrCode.pause(true);
+          setTimeout(()=>{ if(scanning) html5QrCode.resume(); }, 1500);
+        },
+        ()=>{ /* per-frame decode errors, ignore */ }
+      );
+      scanning = true;
+      toggleBtn.textContent = 'Stop Scanning';
+      toggleBtn.classList.add('active');
+    }catch(err){
+      alert('Could not access camera: ' + err + '\nYou can still type the ID manually below.');
+    }
+  }
+
+  async function stopScan(){
+    if(html5QrCode){
+      try{ await html5QrCode.stop(); html5QrCode.clear(); }catch(e){}
+    }
+    scanning = false;
+    toggleBtn.textContent = 'Start Scanning';
+    toggleBtn.classList.remove('active');
+  }
+
+  toggleBtn.addEventListener('click', ()=>{ scanning ? stopScan() : startScan(); });
+
+  // ---- Manual entry ----
+  document.getElementById('manualBtn').addEventListener('click', ()=>{
+    const input = document.getElementById('manualId');
+    handleScan(input.value);
+    input.value = '';
+  });
+  document.getElementById('manualId').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ document.getElementById('manualBtn').click(); }
+  });
+
+  // ---- Today's table ----
+  function renderToday(){
+    const today = todayStr();
+    const rows = log.filter(r => r.date === today).sort((a,b)=> a.timeIn < b.timeIn ? 1 : -1);
+    const tbody = document.getElementById('todayTable');
+    document.getElementById('todayCount').textContent = rows.length + (rows.length===1 ? ' entry' : ' entries');
+    if(rows.length === 0){
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No scans yet today</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td class="mono">${escapeHtml(r.id)}</td>
+        <td>${escapeHtml(r.name)}</td>
+        <td class="mono">${r.timeIn || '—'}</td>
+        <td class="mono">${r.timeOut || '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('clearTodayBtn').addEventListener('click', ()=>{
+    if(!confirm('Clear all of today\'s log entries? This cannot be undone.')) return;
+    const today = todayStr();
+    log = log.filter(r => r.date !== today);
+    saveLog(log);
+    renderToday();
+  });
+
+  // ---- CSV export ----
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    if(log.length === 0){ alert('No log entries to export yet.'); return; }
+    const rows = [['ID','Name','Date','Time In','Time Out'], ...log.map(r=>[r.id, r.name, r.date, r.timeIn, r.timeOut])];
+    const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'attendance_' + todayStr() + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  function csvEscape(v){
+    v = String(v ?? '');
+    return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+  }
+  function escapeHtml(v){
+    return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---- Roster ----
+  function renderRoster(){
+    const tbody = document.getElementById('rosterTable');
+    document.getElementById('rosterCount').textContent = employees.length + (employees.length===1 ? ' registered' : ' registered');
+    if(employees.length === 0){
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No employees added yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = employees.map(e => `
+      <tr>
+        <td class="mono">${escapeHtml(e.id)}</td>
+        <td>${escapeHtml(e.name)}</td>
+        <td><button class="del-btn" data-id="${escapeHtml(e.id)}" title="Remove">✕</button></td>
+      </tr>
+    `).join('');
+    tbody.querySelectorAll('.del-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        employees = employees.filter(e => e.id !== btn.dataset.id);
+        saveEmployees(employees);
+        renderRoster();
+      });
+    });
+  }
+
+  document.getElementById('addEmployeeBtn').addEventListener('click', ()=>{
+    const idInput = document.getElementById('newId');
+    const nameInput = document.getElementById('newName');
+    const id = idInput.value.trim();
+    const name = nameInput.value.trim();
+    if(!id || !name){ alert('Enter both an ID and a name.'); return; }
+    if(findEmployee(id)){ alert('That ID is already registered.'); return; }
+    employees.push({id, name});
+    saveEmployees(employees);
+    idInput.value = ''; nameInput.value = '';
+    renderRoster();
+  });
+
+  // ---- Init ----
+  renderToday();
+  renderRoster();
+})();
+</script>
+
+</body>
+</html>
