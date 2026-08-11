@@ -288,6 +288,45 @@
   tickClock();
   setInterval(tickClock, 1000);
 
+  // ---- Text-to-speech announcement ----
+  function firstName(fullName){
+    if(!fullName) return '';
+    // "LAST, FIRST MIDDLE" -> First; falls back to the whole string if no comma
+    const afterComma = fullName.includes(',') ? fullName.split(',')[1] : fullName;
+    const cleaned = (afterComma || fullName).trim().split(/\s+/)[0];
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
+  }
+
+  function daypartGreeting(){
+    const h = new Date().getHours();
+    if(h < 12) return 'Good morning';
+    if(h < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  function speak(text){
+    if(!('speechSynthesis' in window)) return;
+    try{
+      window.speechSynthesis.cancel(); // don't stack announcements
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.rate = 1;
+      window.speechSynthesis.speak(utter);
+    }catch(e){ /* ignore speech errors, never block the scan flow */ }
+  }
+
+  function announce(kind, name){
+    const greeting = daypartGreeting();
+    const who = name ? firstName(name) : '';
+    if(kind === 'in'){
+      speak(`${greeting}${who ? ', ' + who : ''}. Time in recorded.`);
+    } else if(kind === 'out'){
+      speak(`${greeting}${who ? ', ' + who : ''}. Time out recorded.`);
+    } else if(kind === 'warn'){
+      speak(`${who ? who + ', y' : 'Y'}ou already completed your attendance for today.`);
+    }
+  }
+
   // ---- Core scan handler ----
   function handleScan(rawId){
     const id = (rawId || '').trim();
@@ -304,12 +343,15 @@
       log.push(entry);
       saveLog(log);
       showBanner('in', entry.name, 'Time IN logged at ' + entry.timeIn + (name ? '' : '  ·  ID not in roster'));
+      announce('in', name);
     } else if(entry.timeIn && !entry.timeOut){
       entry.timeOut = timeStr();
       saveLog(log);
       showBanner('out', entry.name, 'Time OUT logged at ' + entry.timeOut);
+      announce('out', name);
     } else {
       showBanner('warn', entry.name, 'Already completed today — In ' + entry.timeIn + ' / Out ' + entry.timeOut);
+      announce('warn', name);
     }
     renderToday();
   }
@@ -365,7 +407,20 @@
     toggleBtn.classList.remove('active');
   }
 
-  toggleBtn.addEventListener('click', ()=>{ scanning ? stopScan() : startScan(); });
+  toggleBtn.addEventListener('click', ()=>{
+    if(!scanning){
+      // "Unlock" speech synthesis with a near-silent utterance triggered by this tap —
+      // mobile browsers require the first speech call to happen inside a user gesture.
+      if('speechSynthesis' in window){
+        const unlock = new SpeechSynthesisUtterance(' ');
+        unlock.volume = 0;
+        window.speechSynthesis.speak(unlock);
+      }
+      startScan();
+    } else {
+      stopScan();
+    }
+  });
 
   // ---- Manual entry ----
   document.getElementById('manualBtn').addEventListener('click', ()=>{
