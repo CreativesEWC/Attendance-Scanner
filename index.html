@@ -262,12 +262,59 @@
   const EMP_KEY = 'attendance_employees_v1';
   const LOG_KEY = 'attendance_log_v1';
 
+  // Built-in company roster (Easy Ways Connection Corp — Active, Aug 2026).
+  // Loaded automatically the first time this page runs on a device with an
+  // empty roster. If you've already added/edited employees locally, this is
+  // NOT re-applied — your local roster always wins once it exists.
+  const DEFAULT_ROSTER = [
+    { id: "EW-0001-2023", name: "CAY, CATHERINE" },
+    { id: "EW-0069-2024", name: "MONTECLARO, RODNEY PAGAS" },
+    { id: "EW-0076-2024", name: "DE LEON, EDEN ROSE REYES" },
+    { id: "EW-0024-2025", name: "HERRERA, BOYET JUSTIMBASTE" },
+    { id: "EW-0066-2025", name: "VILLANUEVA, HILARRY P." },
+    { id: "EW-0095-2025", name: "SANTOS, KENNETH FLORES" },
+    { id: "EW-0096-2026", name: "OKABE, SHIZUMI AI B" },
+    { id: "EW-0097-2026", name: "SANTOS, KATHLEEN FLORES" },
+    { id: "EW-0098-2026", name: "INTIA, TRICIA MAE L" },
+    { id: "EW-0020-2023", name: "BUHAT, BHEA A." },
+    { id: "EW-0044-2024", name: "CARIÑO, LADY ANN GASPAR" },
+    { id: "EW-0011-2024", name: "MORTEL, ANGELICA" },
+    { id: "EW-0077-2024", name: "DE LEON, EDZ MARIELLE REYES" },
+    { id: "EW-0085-2024", name: "DELA CRUZ, RYZZEL MAE BOLLOSA" },
+    { id: "EW-0099-2025", name: "MENDOZA, ARA" },
+    { id: "EW-0100-2025", name: "BAÑARES, KATE JEWEL TEJADA" },
+    { id: "EW-0101-2025", name: "CRUZIN, KRISTINE BALDICASA" },
+    { id: "EW-0102-2025", name: "SAN JOSE, DANIELA M" },
+    { id: "EW-0103-2026", name: "TOLOSA, RIALYN B" },
+    { id: "EW-0104-2026", name: "SIM, FERMEL" },
+    { id: "EW-0105-2026", name: "BAUTISTA, NYCHA B" },
+    { id: "EW-0106-2026", name: "CURANGCURANG, IRENE CELLO" },
+    { id: "EW-0107-2026", name: "FRANCISCO, LORANA" },
+    { id: "EW-0108-2026", name: "BELEN, MARJORIE" },
+    { id: "EW-0109-2026", name: "ANCAJA, COLEEN FRANCISCO" },
+    { id: "EW-0110-2026", name: "SENIAGA, MARIA VELENE" },
+    { id: "EW-0111-2026", name: "CASTILLO, LIZA LESLIE IGLESIA" },
+    { id: "EW-0112-2026", name: "JIMENA, JESSA NICOLE MARIÑAS" },
+    { id: "EW-0113-2026", name: "LACAP, ANA MARIE" },
+    { id: "EW-0114-2026", name: "FRANCISCO, IYAH" },
+    { id: "EW-0115-2026", name: "MUSTAPHA, JONAISAH IBRAHIM" },
+    { id: "EW-0116-2026", name: "CAPISTRANO, FEBRIANE PAMPLIA" },
+    { id: "EW-0117-2026", name: "MARIANO, ANGELICA MAE CASTA" },
+    { id: "EW-0118-2026", name: "TESTANADO, LEIVERY ANN" },
+    { id: "EW-0010-2023", name: "GABRIEL, MARY ANN S." },
+    { id: "EW-0049-2023", name: "GABRIEL, GLENN" }
+  ];
+
   function loadEmployees(){ try{ return JSON.parse(localStorage.getItem(EMP_KEY)) || []; }catch(e){ return []; } }
   function saveEmployees(list){ localStorage.setItem(EMP_KEY, JSON.stringify(list)); }
   function loadLog(){ try{ return JSON.parse(localStorage.getItem(LOG_KEY)) || []; }catch(e){ return []; } }
   function saveLog(list){ localStorage.setItem(LOG_KEY, JSON.stringify(list)); }
 
   let employees = loadEmployees();
+  if(employees.length === 0){
+    employees = DEFAULT_ROSTER.slice();
+    saveEmployees(employees);
+  }
   let log = loadLog();
 
   function todayStr(){
@@ -290,6 +337,7 @@
 
   // ---- Text-to-speech announcement ----
   function firstName(fullName){
+
     if(!fullName) return '';
     // "LAST, FIRST MIDDLE" -> First; falls back to the whole string if no comma
     const afterComma = fullName.includes(',') ? fullName.split(',')[1] : fullName;
@@ -333,16 +381,24 @@
     if(!id) return;
 
     const emp = findEmployee(id);
-    const name = emp ? emp.name : null;
+
+    // Not in the roster at all — refuse the scan, log nothing.
+    if(!emp){
+      showBanner('warn', 'Not Registered', `"${id}" is not a recognized employee ID. This scan was not recorded.`);
+      speak('This ID is not registered.');
+      return;
+    }
+
+    const name = emp.name;
     const today = todayStr();
 
     let entry = log.find(r => r.id === id && r.date === today);
 
     if(!entry){
-      entry = { id, name: name || id, date: today, timeIn: timeStr(), timeOut: '' };
+      entry = { id, name, date: today, timeIn: timeStr(), timeOut: '' };
       log.push(entry);
       saveLog(log);
-      showBanner('in', entry.name, 'Time IN logged at ' + entry.timeIn + (name ? '' : '  ·  ID not in roster'));
+      showBanner('in', entry.name, 'Time IN logged at ' + entry.timeIn);
       announce('in', name);
     } else if(entry.timeIn && !entry.timeOut){
       entry.timeOut = timeStr();
