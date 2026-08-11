@@ -24,7 +24,8 @@
     --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   }
   *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; height:100%; background:var(--navy-950); color:var(--paper); font-family:var(--font-body); overflow:hidden; }
+  html,body{ margin:0; padding:0; height:100%; background:var(--navy-950); color:var(--paper); font-family:var(--font-body); }
+  body{ overflow-y:auto; }
 
   .badge-strip{
     background:repeating-linear-gradient(135deg,var(--navy-900),var(--navy-900) 12px,var(--navy-800) 12px,var(--navy-800) 24px);
@@ -71,11 +72,15 @@
   .kiosk-header .clock .time{ font-size:30px; font-weight:700; }
   .kiosk-header .clock .date{ font-size:13px; color:#9fb0d6; }
 
-  .scan-zone{ flex:1; display:flex; align-items:center; justify-content:center; gap:60px; padding:20px 40px; }
+  .scan-zone{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    gap:24px; padding:24px 24px 10px; text-align:center;
+  }
 
   .camera-frame{
-    position:relative; width:420px; height:420px; border-radius:24px; overflow:hidden;
+    position:relative; width:100%; max-width:520px; aspect-ratio:1/1; border-radius:24px; overflow:hidden;
     background:#000; border:3px solid var(--navy-700); box-shadow:0 0 0 10px rgba(232,161,58,0.06);
+    flex-shrink:0;
   }
   .camera-frame #reader{ width:100%; height:100%; }
   .camera-frame #reader video{ width:100% !important; height:100% !important; object-fit:cover; }
@@ -85,19 +90,19 @@
   .scan-corner.bl{ bottom:14px; left:14px; border-bottom:4px solid; border-left:4px solid; border-radius:0 0 0 8px; }
   .scan-corner.br{ bottom:14px; right:14px; border-bottom:4px solid; border-right:4px solid; border-radius:0 0 8px 0; }
 
-  .instructions{ max-width:360px; }
-  .instructions .icon{ font-size:64px; margin-bottom:14px; }
-  .instructions h2{ font-family:var(--font-display); font-size:34px; margin:0 0 12px; line-height:1.15; }
-  .instructions p{ color:#9fb0d6; font-size:16px; line-height:1.55; margin:0; }
+  .instructions{ max-width:440px; }
+  .instructions .icon{ font-size:48px; margin-bottom:10px; }
+  .instructions h2{ font-family:var(--font-display); font-size:26px; margin:0 0 10px; line-height:1.2; }
+  .instructions p{ color:#9fb0d6; font-size:15px; line-height:1.5; margin:0; }
   .instructions .manual-toggle{
-    margin-top:22px; background:none; border:1px solid var(--line); color:#9fb0d6;
+    margin-top:16px; background:none; border:1px solid var(--line); color:#9fb0d6;
     padding:10px 18px; border-radius:8px; font-size:13px; cursor:pointer; font-family:var(--font-body);
   }
 
-  .manual-panel{ display:none; margin-top:16px; gap:8px; }
+  .manual-panel{ display:none; margin-top:14px; gap:8px; justify-content:center; }
   .manual-panel.open{ display:flex; }
   .manual-panel input{
-    flex:1; background:var(--navy-800); border:1px solid var(--line); color:var(--paper);
+    flex:1; max-width:260px; background:var(--navy-800); border:1px solid var(--line); color:var(--paper);
     border-radius:8px; padding:12px 14px; font-family:var(--font-mono); font-size:14px;
   }
   .manual-panel button{
@@ -106,8 +111,14 @@
   }
 
   .kiosk-footer{
-    padding:12px 36px; text-align:center; font-family:var(--font-mono); font-size:11px; color:#4a5a85;
+    padding:14px 36px; text-align:center; font-family:var(--font-mono); font-size:11px; color:#4a5a85;
     border-top:1px solid var(--line);
+  }
+
+  @media (min-width: 900px){
+    .scan-zone{ flex-direction:row; align-items:center; justify-content:center; text-align:left; gap:60px; }
+    .camera-frame{ width:420px; max-width:420px; }
+    .instructions .manual-panel{ justify-content:flex-start; }
   }
 
   /* ---------- Confirmation overlay ---------- */
@@ -164,10 +175,18 @@
   .badge-card.reject .reject-id{ font-family:var(--font-mono); font-size:13px; color:#8a8272; margin-top:4px; }
   .badge-card.reject .badge-message{ padding-bottom:30px; font-size:15px; }
 
-  @media (max-width: 900px){
-    .scan-zone{ flex-direction:column; gap:26px; padding:20px; }
-    .camera-frame{ width:320px; height:320px; }
+  /* ---------- Birthday variant ---------- */
+  .badge-card.birthday .badge-top{ background:linear-gradient(90deg, var(--amber-500), var(--coral-500)); }
+  .badge-card.birthday .badge-top .co-name{ color:var(--navy-950); }
+  .badge-card.birthday .badge-top .badge-id{ color:rgba(10,15,30,0.65); }
+  .badge-card.birthday .avatar{ background:linear-gradient(135deg, var(--amber-500), var(--coral-500)); border-color:var(--amber-400); color:var(--navy-950); }
+  .birthday-banner{
+    text-align:center; font-family:var(--font-display); font-size:22px; font-weight:700;
+    color:var(--coral-700); padding:4px 30px 0; animation:bounce .6s ease infinite alternate;
   }
+  @keyframes bounce{ from{ transform:translateY(0);} to{ transform:translateY(-4px);} }
+
+
 </style>
 </head>
 <body>
@@ -238,41 +257,41 @@
   const LOG_KEY = 'attendance_log_v1';
 
   const DEFAULT_ROSTER = [
-    { id:"EW-0001-2023", name:"CAY, CATHERINE", position:"Co-Founder" },
-    { id:"EW-0069-2024", name:"MONTECLARO, RODNEY PAGAS", position:"Multimedia Artist" },
-    { id:"EW-0076-2024", name:"DE LEON, EDEN ROSE REYES", position:"Administrative Staff" },
-    { id:"EW-0024-2025", name:"HERRERA, BOYET JUSTIMBASTE", position:"Customer Service Rep." },
-    { id:"EW-0066-2025", name:"VILLANUEVA, HILARRY P.", position:"Multimedia Artist" },
-    { id:"EW-0095-2025", name:"SANTOS, KENNETH FLORES", position:"Customer Service Rep." },
-    { id:"EW-0096-2026", name:"OKABE, SHIZUMI AI B", position:"Customer Service Rep." },
-    { id:"EW-0097-2026", name:"SANTOS, KATHLEEN FLORES", position:"RTS Admin" },
-    { id:"EW-0098-2026", name:"INTIA, TRICIA MAE L", position:"Customer Service Rep." },
-    { id:"EW-0020-2023", name:"BUHAT, BHEA A.", position:"Online Live Seller" },
-    { id:"EW-0044-2024", name:"CARIÑO, LADY ANN GASPAR", position:"Online Live Seller" },
-    { id:"EW-0011-2024", name:"MORTEL, ANGELICA", position:"Online Live Seller" },
-    { id:"EW-0077-2024", name:"DE LEON, EDZ MARIELLE REYES", position:"Online Live Seller" },
-    { id:"EW-0085-2024", name:"DELA CRUZ, RYZZEL MAE BOLLOSA", position:"Online Live Seller" },
-    { id:"EW-0099-2025", name:"MENDOZA, ARA", position:"Online Live Seller" },
-    { id:"EW-0100-2025", name:"BAÑARES, KATE JEWEL TEJADA", position:"Online Live Seller" },
-    { id:"EW-0101-2025", name:"CRUZIN, KRISTINE BALDICASA", position:"Online Live Seller" },
-    { id:"EW-0102-2025", name:"SAN JOSE, DANIELA M", position:"Online Live Seller" },
-    { id:"EW-0103-2026", name:"TOLOSA, RIALYN B", position:"Online Live Seller" },
-    { id:"EW-0104-2026", name:"SIM, FERMEL", position:"Online Live Seller" },
-    { id:"EW-0105-2026", name:"BAUTISTA, NYCHA B", position:"Online Live Seller" },
-    { id:"EW-0106-2026", name:"CURANGCURANG, IRENE CELLO", position:"Online Live Seller" },
-    { id:"EW-0107-2026", name:"FRANCISCO, LORANA", position:"Online Live Seller" },
-    { id:"EW-0108-2026", name:"BELEN, MARJORIE", position:"Online Live Seller" },
-    { id:"EW-0109-2026", name:"ANCAJA, COLEEN FRANCISCO", position:"Online Live Seller" },
-    { id:"EW-0110-2026", name:"SENIAGA, MARIA VELENE", position:"Online Live Seller" },
-    { id:"EW-0111-2026", name:"CASTILLO, LIZA LESLIE IGLESIA", position:"Online Live Seller" },
-    { id:"EW-0112-2026", name:"JIMENA, JESSA NICOLE MARIÑAS", position:"Online Live Seller" },
-    { id:"EW-0113-2026", name:"LACAP, ANA MARIE", position:"Online Live Seller" },
-    { id:"EW-0114-2026", name:"FRANCISCO, IYAH", position:"Online Live Seller" },
-    { id:"EW-0115-2026", name:"MUSTAPHA, JONAISAH IBRAHIM", position:"Online Live Seller" },
-    { id:"EW-0116-2026", name:"CAPISTRANO, FEBRIANE PAMPLIA", position:"Online Live Seller" },
-    { id:"EW-0117-2026", name:"MARIANO, ANGELICA MAE CASTA", position:"Online Live Seller" },
-    { id:"EW-0118-2026", name:"TESTANADO, LEIVERY ANN", position:"Online Live Seller" },
-    { id:"EW-0010-2023", name:"GABRIEL, MARY ANN S.", position:"Housekeeper" },
+    { id:"EW-0001-2023", name:"CAY, CATHERINE", position:"Co-Founder", birthday:"04-05"  },
+    { id:"EW-0069-2024", name:"MONTECLARO, RODNEY PAGAS", position:"Multimedia Artist", birthday:"08-23"  },
+    { id:"EW-0076-2024", name:"DE LEON, EDEN ROSE REYES", position:"Administrative Staff", birthday:"09-26"  },
+    { id:"EW-0024-2025", name:"HERRERA, BOYET JUSTIMBASTE", position:"Customer Service Rep.", birthday:"02-04"  },
+    { id:"EW-0066-2025", name:"VILLANUEVA, HILARRY P.", position:"Multimedia Artist", birthday:"01-14"  },
+    { id:"EW-0095-2025", name:"SANTOS, KENNETH FLORES", position:"Customer Service Rep.", birthday:"05-20"  },
+    { id:"EW-0096-2026", name:"OKABE, SHIZUMI AI B", position:"Customer Service Rep.", birthday:"07-07"  },
+    { id:"EW-0097-2026", name:"SANTOS, KATHLEEN FLORES", position:"RTS Admin", birthday:"05-15"  },
+    { id:"EW-0098-2026", name:"INTIA, TRICIA MAE L", position:"Customer Service Rep.", birthday:"07-09"  },
+    { id:"EW-0020-2023", name:"BUHAT, BHEA A.", position:"Online Live Seller", birthday:"10-27"  },
+    { id:"EW-0044-2024", name:"CARIÑO, LADY ANN GASPAR", position:"Online Live Seller", birthday:"12-02"  },
+    { id:"EW-0011-2024", name:"MORTEL, ANGELICA", position:"Online Live Seller", birthday:"05-29"  },
+    { id:"EW-0077-2024", name:"DE LEON, EDZ MARIELLE REYES", position:"Online Live Seller", birthday:"09-25"  },
+    { id:"EW-0085-2024", name:"DELA CRUZ, RYZZEL MAE BOLLOSA", position:"Online Live Seller", birthday:"09-17"  },
+    { id:"EW-0099-2025", name:"MENDOZA, ARA", position:"Online Live Seller", birthday:"03-27"  },
+    { id:"EW-0100-2025", name:"BAÑARES, KATE JEWEL TEJADA", position:"Online Live Seller", birthday:"03-13"  },
+    { id:"EW-0101-2025", name:"CRUZIN, KRISTINE BALDICASA", position:"Online Live Seller", birthday:"10-15"  },
+    { id:"EW-0102-2025", name:"SAN JOSE, DANIELA M", position:"Online Live Seller", birthday:"03-05"  },
+    { id:"EW-0103-2026", name:"TOLOSA, RIALYN B", position:"Online Live Seller", birthday:"08-30"  },
+    { id:"EW-0104-2026", name:"SIM, FERMEL", position:"Online Live Seller", birthday:"10-20"  },
+    { id:"EW-0105-2026", name:"BAUTISTA, NYCHA B", position:"Online Live Seller", birthday:"09-09"  },
+    { id:"EW-0106-2026", name:"CURANGCURANG, IRENE CELLO", position:"Online Live Seller", birthday:"03-17"  },
+    { id:"EW-0107-2026", name:"FRANCISCO, LORANA", position:"Online Live Seller", birthday:"04-27"  },
+    { id:"EW-0108-2026", name:"BELEN, MARJORIE", position:"Online Live Seller", birthday:"08-02"  },
+    { id:"EW-0109-2026", name:"ANCAJA, COLEEN FRANCISCO", position:"Online Live Seller", birthday:"11-11"  },
+    { id:"EW-0110-2026", name:"SENIAGA, MARIA VELENE", position:"Online Live Seller", birthday:"02-17"  },
+    { id:"EW-0111-2026", name:"CASTILLO, LIZA LESLIE IGLESIA", position:"Online Live Seller", birthday:"02-19"  },
+    { id:"EW-0112-2026", name:"JIMENA, JESSA NICOLE MARIÑAS", position:"Online Live Seller", birthday:"04-25"  },
+    { id:"EW-0113-2026", name:"LACAP, ANA MARIE", position:"Online Live Seller", birthday:"08-03"  },
+    { id:"EW-0114-2026", name:"FRANCISCO, IYAH", position:"Online Live Seller", birthday:"04-04"  },
+    { id:"EW-0115-2026", name:"MUSTAPHA, JONAISAH IBRAHIM", position:"Online Live Seller", birthday:"03-15"  },
+    { id:"EW-0116-2026", name:"CAPISTRANO, FEBRIANE PAMPLIA", position:"Online Live Seller", birthday:"11-24"  },
+    { id:"EW-0117-2026", name:"MARIANO, ANGELICA MAE CASTA", position:"Online Live Seller", birthday:"10-13"  },
+    { id:"EW-0118-2026", name:"TESTANADO, LEIVERY ANN", position:"Online Live Seller", birthday:"12-07"  },
+    { id:"EW-0010-2023", name:"GABRIEL, MARY ANN S.", position:"Housekeeper", birthday:"04-22"  },
     { id:"EW-0049-2023", name:"GABRIEL, GLENN", position:"Maintenance Staff" }
   ];
 
@@ -286,12 +305,13 @@
     employees = DEFAULT_ROSTER.slice();
     saveEmployees(employees);
   } else {
-    // fill in position for any existing entries that predate this field
+    // fill in position/birthday for any existing entries that predate these fields
     let touched = false;
     employees.forEach(e=>{
-      if(!e.position){
-        const match = DEFAULT_ROSTER.find(d=>d.id===e.id);
-        if(match){ e.position = match.position; touched = true; }
+      const match = DEFAULT_ROSTER.find(d=>d.id===e.id);
+      if(match){
+        if(!e.position){ e.position = match.position; touched = true; }
+        if(!e.birthday && match.birthday){ e.birthday = match.birthday; touched = true; }
       }
     });
     if(touched) saveEmployees(employees);
@@ -350,17 +370,49 @@
 
   // ---- Confirmation card rendering ----
   let dismissTimer = null;
-  function showCard(html, isReject, autoMs){
+  function showCard(html, isReject, autoMs, extraClass){
     const overlay = document.getElementById('confirmOverlay');
     const card = document.getElementById('badgeCard');
-    card.className = 'badge-card' + (isReject ? ' reject' : '');
+    card.className = 'badge-card' + (isReject ? ' reject' : '') + (extraClass ? ' ' + extraClass : '');
     card.innerHTML = html;
     overlay.classList.add('show');
     clearTimeout(dismissTimer);
     dismissTimer = setTimeout(()=>{ overlay.classList.remove('show'); }, autoMs || 4000);
   }
 
-  function renderAcceptedCard(emp, entry, kind){
+  function isBirthdayToday(birthdayMMDD){
+    if(!birthdayMMDD) return false;
+    const now = new Date();
+    const todayMMDD = String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    return birthdayMMDD === todayMMDD;
+  }
+
+  // Short cheerful jingle played on a birthday scan (synthesized tones, no lyrics/melody reproduced)
+  function playBirthdayJingle(){
+    try{
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!Ctx) return;
+      const ctx = new Ctx();
+      const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50]; // C5 major scale run
+      let t = ctx.currentTime;
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.18, t + 0.02);
+        gain.gain.linearRampToValueAtTime(0, t + 0.18);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.2);
+        t += 0.14;
+      });
+      setTimeout(()=>{ try{ ctx.close(); }catch(e){} }, 2000);
+    }catch(e){ /* ignore audio errors, never block the scan flow */ }
+  }
+
+  function renderAcceptedCard(emp, entry, kind, birthday){
     const { display, initials } = firstAndLast(emp.name);
     const inVal = entry.timeIn ? `<div class="stamp-mark in">IN · ${entry.timeIn}</div>` : `<div class="value">— not yet —</div>`;
     const outVal = entry.timeOut ? `<div class="stamp-mark out">OUT · ${entry.timeOut}</div>` : `<div class="value">— not yet —</div>`;
@@ -368,11 +420,13 @@
     if(kind === 'in') message = 'Time In recorded. See you later today!';
     else if(kind === 'out') message = 'Time Out recorded. Have a good rest!';
     else message = 'Attendance already completed for today.';
+    const bdayBanner = birthday ? `<div class="birthday-banner">🎉 Happy Birthday, ${firstAndLast(emp.name).display.split(' ')[0]}! 🎂</div>` : '';
     return `
       <div class="badge-top">
         <span class="co-name">Easy Ways Connection Corp.</span>
         <span class="badge-id">${emp.id}</span>
       </div>
+      ${bdayBanner}
       <div class="badge-body">
         <div class="avatar">${initials}</div>
         <div>
@@ -406,9 +460,18 @@
   }
 
   // ---- Core scan handler ----
+  const recentScans = {}; // id -> timestamp of last processed scan
+  const SCAN_COOLDOWN_MS = 8000; // ignore repeat reads of the same badge within this window
+
   function handleScan(rawId){
     const id = (rawId || '').trim();
     if(!id) return;
+
+    const now = Date.now();
+    if(recentScans[id] && (now - recentScans[id]) < SCAN_COOLDOWN_MS){
+      return; // same badge still in view / re-scanned too soon — ignore silently
+    }
+    recentScans[id] = now;
 
     const emp = findEmployee(id);
     if(!emp){
@@ -433,10 +496,15 @@
     }
     saveLog(log);
 
-    showCard(renderAcceptedCard(emp, entry, kind));
+    const birthday = isBirthdayToday(emp.birthday);
+    showCard(renderAcceptedCard(emp, entry, kind, birthday), false, birthday ? 6000 : 4000, birthday ? 'birthday' : '');
+
     const who = firstNameOnly(emp.name);
     const greeting = daypartGreeting();
-    if(kind === 'in') speak(`${greeting}, ${who}. Time in recorded.`);
+    if(birthday){
+      playBirthdayJingle();
+      speak(`Happy birthday, ${who}! Wishing you a wonderful day from everyone at Easy Ways Connection Corp!`);
+    } else if(kind === 'in') speak(`${greeting}, ${who}. Time in recorded.`);
     else if(kind === 'out') speak(`${greeting}, ${who}. Time out recorded.`);
     else speak(`${who}, you already completed your attendance for today.`);
   }
