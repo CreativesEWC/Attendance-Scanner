@@ -206,8 +206,8 @@
 
 <header>
   <div>
-    <p class="eyebrow">Company ID · Barcode Log</p>
-    <h1>Badge Scan</h1>
+    <p class="eyebrow">Company Attendance System 2026 · Version 0.004.2026</p>
+    <h1>Easy Ways Connection Corp.</h1>
   </div>
   <div class="clock" id="liveClock">—</div>
 </header>
@@ -251,6 +251,9 @@
       <thead><tr><th>ID</th><th>Name</th><th></th></tr></thead>
       <tbody id="rosterTable"><tr class="empty-row"><td colspan="3">No employees added yet</td></tr></tbody>
     </table>
+    <div class="toolbar">
+      <button id="loadDefaultRosterBtn">Load Company Roster (36)</button>
+    </div>
   </section>
 
 </main>
@@ -574,6 +577,23 @@
     saveEmployees(employees);
     idInput.value = ''; nameInput.value = '';
     renderRoster();
+  });
+
+  document.getElementById('loadDefaultRosterBtn').addEventListener('click', ()=>{
+    let added = 0;
+    DEFAULT_ROSTER.forEach(person => {
+      if(!findEmployee(person.id)){
+        employees.push({ id: person.id, name: person.name });
+        added++;
+      }
+    });
+    if(added > 0){
+      saveEmployees(employees);
+      renderRoster();
+      alert(added + ' employee(s) added from the company roster. Existing entries were left untouched.');
+    } else {
+      alert('This device already has the full company roster loaded — nothing new to add.');
+    }
   });
 
   // ---- Init ----
