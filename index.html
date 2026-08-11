@@ -206,8 +206,8 @@
 
 <header>
   <div>
-    <p class="eyebrow">Company Attendance System 2026 · Version 0.004.2026</p>
-    <h1>Easy Ways Connection Corp.</h1>
+    <p class="eyebrow">Company ID · Barcode Log</p>
+    <h1>Badge Scan</h1>
   </div>
   <div class="clock" id="liveClock">—</div>
 </header>
@@ -237,6 +237,9 @@
     <div class="toolbar">
       <button id="exportBtn">Export CSV</button>
       <button id="clearTodayBtn" class="danger">Clear Today</button>
+    </div>
+    <div class="toolbar" style="margin-top:8px;">
+      <button id="clearAllBtn" class="danger">Clear All History (all dates)</button>
     </div>
   </section>
 
@@ -515,6 +518,13 @@
     if(!confirm('Clear all of today\'s log entries? This cannot be undone.')) return;
     const today = todayStr();
     log = log.filter(r => r.date !== today);
+    saveLog(log);
+    renderToday();
+  });
+
+  document.getElementById('clearAllBtn').addEventListener('click', ()=>{
+    if(!confirm('This clears EVERY logged scan on this device, from every date — including anything not shown in Today\'s Log. This cannot be undone. Continue?')) return;
+    log = [];
     saveLog(log);
     renderToday();
   });
