@@ -177,26 +177,26 @@
     box-shadow: none; 
   }
   
-  .profile-photo-container { 
-    margin-top: 10px; /* Pulls the top of the container all the way up near the top edge */
+ .profile-photo-container { 
+    margin-top: 0px; /* Pulls it all the way to the top */
     width: 100%; 
-    height: 335px; /* Makes the height reach right down to the teal banner */
+    height: 350px; /* Expands the height upward to reach your red line mark */
     position: relative;
     z-index: 1;
-    padding: 0 12px; /* Slight side padding so it aligns nicely with the card edges */
+    padding: 0; /* Removes inner side padding so it touches the outer card borders */
   }
-
-.profile-photo, .profile-photo-fallback { 
-  width: 100%; 
-  height: 100%; 
-  border-radius: 0; /* Changed from 6px to 0 for sharp corners */
-  box-sizing: border-box; /* Ensures border stays within exact container dimensions */
-}
-
-.profile-photo { 
-  object-fit: cover; 
-  object-position: center 5%; /* Focuses on the upper body/face */
-}
+  
+  .profile-photo, .profile-photo-fallback { 
+    width: 100%; 
+    height: 100%; 
+    border: none; 
+    border-radius: 0; /* Removes rounded corners so it meets the top and sides flush */
+  }
+  
+  .profile-photo { 
+    object-fit: cover; 
+    object-position: center 10%; /* Focuses on the face/upper body as it stretches up */
+  }
   
   .profile-photo-fallback { 
     background: transparent; /* Lets the SVG background show through if there is no photo */
