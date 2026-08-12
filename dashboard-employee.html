@@ -605,33 +605,38 @@ document.getElementById('saveEmployeePhotoBtn').addEventListener('click', async 
     btn.textContent = 'Save Photo';
   }
 });
-      // 2. Get the Public URL
-      const { data: { publicUrl } } = supabaseClient.storage
-        .from('profile-photos')
-        .getPublicUrl(filePath);
 
-      // 3. CRITICAL: Save this publicUrl back into the employee's row!
-      const { error: updateError } = await supabaseClient
-        .from('employees') // Matches your table name from line 541
-        .update({ avatar_url: publicUrl })
-        .eq('id', emp.id);
+// ---- Load Employee Attendance History ----
+  async function loadMyAttendance() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('attendance_logs')
+        .select('*')
+        .eq('employee_id', emp.id)
+        .order('log_date', { ascending: false })
+        .limit(10);
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      // 4. Update the UI element instantly so the user sees their new photo right away
-      const profileImageEl = document.getElementById('userProfileImage'); // Match your img tag ID
-      if (profileImageEl) {
-        profileImageEl.src = publicUrl;
-      }
-
-      alert('Profile photo updated successfully!');
+      // Hide the loading message and reveal your dashboard content
+      const loadingMsg = document.getElementById('loadingMsg');
+      const content = document.getElementById('content');
+      
+      if (loadingMsg) loadingMsg.style.display = 'none';
+      if (content) content.style.display = 'block';
 
     } catch (err) {
-      console.error('Error uploading photo:', err);
-      alert('Failed to upload photo. Please try again.');
+      console.error('Error loading attendance:', err);
+      const loadingMsg = document.getElementById('loadingMsg');
+      if (loadingMsg) {
+        loadingMsg.textContent = 'Could not load attendance logs.';
+        loadingMsg.style.color = 'var(--coral-500)';
+      }
     }
-  });
-}
+  }
+
+  // Make sure to actually call it inside your main async function:
+  await loadMyAttendance();
   
   // ---- Auth guard ----
   const emp = await getMyEmployeeRecord();
