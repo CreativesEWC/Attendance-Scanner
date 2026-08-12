@@ -49,6 +49,38 @@
   .status-pill.pending{ background:rgba(232,161,58,0.15); color:var(--amber-400); }
   .empty-row td{ text-align:center; color:#5c6d99; padding:26px 6px; font-style:italic; }
   .loading{ text-align:center; padding:40px; color:#7488b6; font-family:var(--font-mono); font-size:13px; }
+
+  /* ---- Live Seller schedule (Part 2) ---- */
+  .sch-card{ background:var(--navy-900); border:1px solid var(--line); border-radius:16px; padding:18px 20px; margin-bottom:22px; cursor:pointer; }
+  .sch-card h2{ font-family:var(--font-mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--amber-400); margin:0 0 8px; }
+  .sch-card .today-line{ font-size:14px; }
+  .sch-card .hint{ font-family:var(--font-mono); font-size:11px; color:#5c6d99; margin-top:6px; }
+
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(5,8,18,.72); align-items:center; justify-content:center; padding:20px; z-index:50; }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{ background:var(--navy-900); border:1px solid var(--line); border-radius:16px; padding:22px; width:100%; max-width:420px; max-height:88vh; overflow-y:auto; }
+  .modal-box h2{ font-family:var(--font-mono); font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--amber-400); margin:0 0 16px; }
+
+  .day-row{ display:flex; align-items:center; gap:12px; background:var(--navy-800); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:8px; }
+  .day-row .day-badge{ width:44px; height:44px; border-radius:10px; border:1px solid var(--amber-500); color:var(--amber-400); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; font-family:var(--font-display); }
+  .day-row .day-badge .d{ font-size:16px; font-weight:700; line-height:1; }
+  .day-row .day-badge .l{ font-size:8px; text-transform:uppercase; letter-spacing:.04em; color:#7488b6; margin-top:1px; }
+  .day-row .day-info{ flex:1; }
+  .day-row .day-time{ font-family:var(--font-mono); font-size:12px; color:var(--amber-400); }
+  .day-row .day-brand{ font-size:13px; font-weight:600; }
+  .day-row.off .day-time, .day-row.off .day-brand{ color:#7488b6; }
+  .day-row.off .day-badge{ border-color:var(--line); color:#5c6d99; }
+  .day-row button.change-link{ background:none; border:none; color:#5c6d99; font-family:var(--font-mono); font-size:10px; cursor:pointer; text-decoration:underline; padding:0; flex-shrink:0; }
+
+  .modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:16px; flex-wrap:wrap; }
+  .btn2{ border-radius:8px; padding:8px 14px; font-size:12px; font-family:var(--font-body); cursor:pointer; border:1px solid var(--line); background:none; color:var(--paper); }
+  .btn2.primary{ background:var(--amber-500); color:var(--navy-950); border:none; font-weight:700; }
+  .btn2:disabled{ opacity:.5; cursor:default; }
+  .modal-box textarea, .modal-box select{
+    width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper);
+    border-radius:8px; padding:10px 12px; font-size:13px; font-family:var(--font-body); margin-bottom:10px;
+  }
+  .modal-box textarea{ min-height:70px; resize:vertical; }
 </style>
 </head>
 <body>
@@ -79,6 +111,12 @@
       </div>
     </div>
 
+    <div class="sch-card" id="schCard" style="display:none;">
+      <h2>Your Schedule for the Week</h2>
+      <div class="today-line" id="schTodayLine">—</div>
+      <div class="hint">Tap to see your full week</div>
+    </div>
+
     <div class="stats-row">
       <div class="stat-box">
         <div class="num" id="statThisMonth">0</div>
@@ -105,6 +143,29 @@
   </div>
 
 </main>
+
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal-box">
+    <h2>Your Schedule for the Week</h2>
+    <div id="scheduleDaysList"></div>
+    <div class="modal-actions">
+      <button class="btn2 primary" id="requestChangeBtn">Request Change Schedule</button>
+      <button class="btn2" id="closeScheduleModalBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="requestChangeModal">
+  <div class="modal-box">
+    <h2>Request Schedule Change</h2>
+    <select id="rcDate"></select>
+    <textarea id="rcReason" placeholder="What change are you requesting, and why?"></textarea>
+    <div class="modal-actions">
+      <button class="btn2 primary" id="rcSubmitBtn">Submit Request</button>
+      <button class="btn2" id="rcCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script src="supabase-config.js"></script>
 <script>
@@ -195,6 +256,157 @@
         </tr>
       `;
     }).join('');
+  }
+
+  // ==========================================================
+  // PART 2 — Live Seller Schedule
+  // ==========================================================
+
+  const isLiveSeller = emp.positions && emp.positions.name === 'Live Seller';
+  let weekSchedule = [];
+
+  function todayStr(){
+    const d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function addDays(dateStr, n){
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  if (isLiveSeller) {
+    document.getElementById('schCard').style.display = 'block';
+
+    // Monday-start week containing today
+    const now = new Date();
+    const dow = now.getDay(); // 0=Sun..6=Sat
+    const mondayOffset = dow === 0 ? -6 : 1 - dow;
+    const weekStart = addDays(todayStr(), mondayOffset);
+    const weekEnd = addDays(weekStart, 6);
+
+    async function loadWeekSchedule(){
+      const { data, error } = await supabaseClient
+        .from('live_seller_schedule')
+        .select('*, brands(name), platforms(name)')
+        .eq('employee_id', emp.id)
+        .gte('schedule_date', weekStart)
+        .lte('schedule_date', weekEnd)
+        .order('schedule_date', { ascending: true });
+      if(error){ console.error(error); return; }
+      weekSchedule = data || [];
+      renderTodayLine();
+      renderWeekModal();
+    }
+
+    function fmtWeekday(dateStr, style){
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString([], style);
+    }
+
+    function renderTodayLine(){
+      const today = todayStr();
+      const row = weekSchedule.find(r => r.schedule_date === today);
+      const el = document.getElementById('schTodayLine');
+      if(!row){
+        el.innerHTML = '<span style="color:#5c6d99;">No schedule set for today</span>';
+      } else if(row.status === 'day_off'){
+        el.innerHTML = '<strong style="color:var(--amber-400);">Today: Day Off</strong>';
+      } else {
+        const brand = row.brands ? row.brands.name : 'a shop';
+        const shift = (row.shift_start && row.shift_end) ? `${row.shift_start}–${row.shift_end}` : '';
+        el.innerHTML = `<strong style="color:var(--amber-400);">Today: ${shift}</strong> ${escapeHtml2(brand)}`;
+      }
+    }
+
+    function escapeHtml2(v){
+      return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function renderWeekModal(){
+      const list = document.getElementById('scheduleDaysList');
+      const days = [];
+      for(let i=0;i<7;i++) days.push(addDays(weekStart, i));
+      list.innerHTML = days.map(dateStr => {
+        const row = weekSchedule.find(r => r.schedule_date === dateStr);
+        const dLabel = fmtWeekday(dateStr, {weekday:'narrow'});
+        const wLabel = fmtWeekday(dateStr, {weekday:'short'}).toLowerCase();
+        if(!row){
+          return `<div class="day-row off">
+            <div class="day-badge"><div class="d">${dLabel}</div><div class="l">${wLabel}</div></div>
+            <div class="day-info"><div class="day-brand">Not yet scheduled</div></div>
+          </div>`;
+        }
+        if(row.status === 'day_off'){
+          return `<div class="day-row off">
+            <div class="day-badge"><div class="d">${dLabel}</div><div class="l">${wLabel}</div></div>
+            <div class="day-info"><div class="day-brand">DAY OFF</div></div>
+            <button class="change-link" data-reqdate="${dateStr}">change?</button>
+          </div>`;
+        }
+        const shift = (row.shift_start && row.shift_end) ? `${row.shift_start} to ${row.shift_end}` : '—';
+        const brand = row.brands ? escapeHtml2(row.brands.name) : '';
+        return `<div class="day-row">
+          <div class="day-badge"><div class="d">${dLabel}</div><div class="l">${wLabel}</div></div>
+          <div class="day-info"><div class="day-time">${shift}</div><div class="day-brand">${brand}</div></div>
+          <button class="change-link" data-reqdate="${dateStr}">change?</button>
+        </div>`;
+      }).join('');
+      list.querySelectorAll('[data-reqdate]').forEach(btn=>{
+        btn.addEventListener('click', ()=> openRequestChangeModal(btn.dataset.reqdate));
+      });
+    }
+
+    document.getElementById('schCard').addEventListener('click', ()=>{
+      document.getElementById('scheduleModal').classList.add('open');
+    });
+    document.getElementById('closeScheduleModalBtn').addEventListener('click', ()=>{
+      document.getElementById('scheduleModal').classList.remove('open');
+    });
+
+    function openRequestChangeModal(preselectDate){
+      const sel = document.getElementById('rcDate');
+      const days = [];
+      for(let i=0;i<7;i++) days.push(addDays(weekStart, i));
+      sel.innerHTML = days.map(dateStr => {
+        const label = new Date(dateStr + 'T00:00:00').toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
+        return `<option value="${dateStr}" ${dateStr === preselectDate ? 'selected' : ''}>${label}</option>`;
+      }).join('');
+      document.getElementById('rcReason').value = '';
+      document.getElementById('requestChangeModal').classList.add('open');
+    }
+
+    document.getElementById('requestChangeBtn').addEventListener('click', ()=> openRequestChangeModal(todayStr()));
+    document.getElementById('rcCancelBtn').addEventListener('click', ()=>{
+      document.getElementById('requestChangeModal').classList.remove('open');
+    });
+
+    document.getElementById('rcSubmitBtn').addEventListener('click', async ()=>{
+      const date_from = document.getElementById('rcDate').value;
+      const reason = document.getElementById('rcReason').value.trim();
+      if(!reason){ alert('Please describe what change you\'re requesting.'); return; }
+      const matchedDay = weekSchedule.find(r => r.schedule_date === date_from);
+
+      const btn = document.getElementById('rcSubmitBtn');
+      btn.disabled = true; btn.textContent = 'Submitting…';
+
+      const { error } = await supabaseClient.from('tickets').insert({
+        employee_id: emp.id,
+        ticket_type: 'schedule_change',
+        date_from,
+        reason,
+        related_schedule_id: matchedDay ? matchedDay.id : null
+      });
+
+      btn.disabled = false; btn.textContent = 'Submit Request';
+
+      if(error){ alert('Could not submit request: ' + error.message); return; }
+      document.getElementById('requestChangeModal').classList.remove('open');
+      document.getElementById('scheduleModal').classList.remove('open');
+      alert('Your schedule change request has been sent for admin review.');
+    });
+
+    await loadWeekSchedule();
   }
 
   // ---- Sign out ----
