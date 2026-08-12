@@ -122,7 +122,7 @@
     position: relative; 
     z-index: 2; 
     width: 100%; 
-    padding: 16px 24px; /* Reduced top padding to make room for a bigger photo */
+    padding: 16px 0 0 0; /* Removed left/right padding so the photo touches the edges */
     display: flex; flex-direction: column; 
     align-items: center; 
   }
@@ -131,6 +131,7 @@
     width: 100%;
     display: flex;
     justify-content: flex-end; 
+    padding-right: 20px; /* Keeps the logo away from the very edge */
   }
 
   .front-logo-wrap {
@@ -141,7 +142,7 @@
   }
   
   .header-logo { 
-    width: 32px; height: 32px; /* Slightly smaller to fit the text below it nicely */
+    width: 32px; height: 32px; 
     background: #fff; border-radius: 6px; padding: 3px; object-fit: contain; 
   }
 
@@ -158,15 +159,22 @@
   .profile-photo-container { 
     margin-top: 10px; 
     width: 100%; 
-    padding: 0 8px; /* Slight edge padding so it doesn't hit the absolute sides */
+    padding: 0; /* Removed edge padding */
   }
   
   .profile-photo, .profile-photo-fallback { 
-    width: 100%; height: 270px; /* Massive size for the half-body cutout */
-    border-radius: 10px; border: 3px solid #ffffff; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+    width: 100%; 
+    height: 330px; /* Made taller so the bottom edge hides cleanly behind the teal banner */
+    border: none; /* Removed the white outline */
+    border-radius: 0; /* Removed rounded corners so it sits flush */
+    box-shadow: none; /* Removed the drop shadow */
   }
-  .profile-photo { object-fit: cover; }
+  
+  .profile-photo { 
+    object-fit: cover; 
+    object-position: bottom center; /* Anchors the cutout subject to the bottom */
+  }
+  
   .profile-photo-fallback { 
     background: #0e6e6b; 
     display: flex; align-items: center; justify-content: center; 
