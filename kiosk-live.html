@@ -291,7 +291,7 @@
     if(kind === 'in') message = 'Time In recorded. See you later today!';
     else if(kind === 'out') message = 'Time Out recorded. Have a good rest!';
     else message = 'Attendance already completed for today.';
-    const brandName = employee.brands ? employee.brands.name : '';
+    const positionLabel = employee.positions ? employee.positions.name : '';
     const bdayBanner = birthday ? `<div class="birthday-banner">🎉 Happy Birthday, ${firstNameOnly(employee.name)}! 🎂</div>` : '';
     return `
       <div class="badge-top">
@@ -303,7 +303,7 @@
         <div class="avatar">${initials}</div>
         <div>
           <div class="badge-name">${display}</div>
-          <div class="badge-position">${brandName}</div>
+          <div class="badge-position">${positionLabel}</div>
         </div>
       </div>
       <div class="stamp-row">
@@ -374,7 +374,7 @@
     try{
       const { data: employee, error: empErr } = await supabaseClient
         .from('employees')
-        .select('*, brands(name)')
+        .select('*, brands(name), positions(name)')
         .eq('badge_id', id)
         .maybeSingle();
 
