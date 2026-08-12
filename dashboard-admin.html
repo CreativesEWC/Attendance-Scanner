@@ -315,7 +315,7 @@
   tickClock(); setInterval(tickClock, 1000 * 30);
 
   // --- ADMIN PROFILE PHOTO UPLOAD FUNCTION ---
-  async function adminUploadEmployeePhoto(employeeId) {
+  window.adminUploadEmployeePhoto = async function(employeeId) {
     const fileInput = document.querySelector(`input[data-employee-id="${employeeId}"]`);
     const file = fileInput ? fileInput.files[0] : null;
     
