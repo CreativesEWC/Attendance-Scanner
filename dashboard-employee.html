@@ -362,19 +362,13 @@
   <div id="content" style="display:none;">
 
     <div class="profile-card">
-  <div class="avatar-wrap">
-    <div class="avatar" id="avatarInitials">?</div>
-    <img class="avatar-img" id="avatarImg" alt="Profile photo">
-  
-    <div class="employee-photo-upload" style="margin-top: 12px; text-align: center;">
-      <input type="file" id="employeePhotoInput" accept="image/*" style="font-size: 12px; color: var(--paper);" />
-      <br>
-      <button class="btn primary" id="saveEmployeePhotoBtn" style="margin-top: 8px;">Save Photo</button>
-    </div>
-  </div>
-</div>
-
-</div>
+      <div class="avatar-wrap">
+        <div class="avatar" id="avatarInitials">?</div>
+        <img class="avatar-img" id="avatarImg" alt="Profile photo">
+        <label class="avatar-edit" for="avatarInput" title="Change photo">✎
+          <input type="file" id="avatarInput" accept="image/*">
+        </label>
+      </div>
       <div>
         <div class="name" id="empName">—</div>
         <div class="meta" id="empPositionBrand">—</div>
@@ -537,96 +531,6 @@
 <script>
 (async function(){
 
-// Attach this to the file input element where employees choose their profile picture
-document.getElementById('saveEmployeePhotoBtn').addEventListener('click', async () => {
-    const fileInput = document.getElementById('employeePhotoInput');
-    const file = fileInput ? fileInput.files[0] : null;
-
-    if (!file) {
-      alert("Please select an image file first.");
-      return;
-    }
-
-    const fileName = `public/${emp.id}_${Date.now()}_${file.name}`;
-
-    try {
-      const btn = document.getElementById('saveEmployeePhotoBtn');
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-
-      // 1. Upload to Supabase Storage 'avatars' bucket
-      const { error: uploadError } = await supabaseClient.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // 2. Get Public URL
-      const { data: publicUrlData } = supabaseClient.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      const imageUrl = publicUrlData.publicUrl;
-
-      // 3. Save URL to the employee record table using profile_image column
-      const { error: dbError } = await supabaseClient
-        .from('employees')
-        .update({ profile_image: imageUrl })
-        .eq('id', emp.id);
-
-      if (dbError) throw dbError;
-
-      // 4. Instantly update the UI image tag on screen
-      const profileImageEl = document.getElementById('avatarImg');
-      if (profileImageEl) {
-        profileImageEl.src = imageUrl;
-      }
-
-      alert("Profile picture updated successfully!");
-      window.location.reload();
-
-    } catch (err) {
-    console.error("Error uploading image:", err);
-    alert("Failed to upload image: " + err.message);
-  } finally {
-    const btn = document.getElementById('saveEmployeePhotoBtn');
-    btn.disabled = false;
-    btn.textContent = 'Save Photo';
-  }
-});
-
-// ---- Load Employee Attendance History ----
-  async function loadMyAttendance() {
-    try {
-      const { data, error } = await supabaseClient
-        .from('attendance_logs')
-        .select('*')
-        .eq('employee_id', emp.id)
-        .order('log_date', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-
-      // Hide the loading message and reveal your dashboard content
-      const loadingMsg = document.getElementById('loadingMsg');
-      const content = document.getElementById('content');
-      
-      if (loadingMsg) loadingMsg.style.display = 'none';
-      if (content) content.style.display = 'block';
-
-    } catch (err) {
-      console.error('Error loading attendance:', err);
-      const loadingMsg = document.getElementById('loadingMsg');
-      if (loadingMsg) {
-        loadingMsg.textContent = 'Could not load attendance logs.';
-        loadingMsg.style.color = 'var(--coral-500)';
-      }
-    }
-  }
-
-  // Make sure to actually call it inside your main async function:
-  await loadMyAttendance();
-  
   // ---- Auth guard ----
   const emp = await getMyEmployeeRecord();
   if (!emp) { window.location.href = 'login.html'; return; }
