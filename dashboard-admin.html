@@ -503,28 +503,35 @@
       tbody.innerHTML = '<tr class="empty-row"><td colspan="5">No matching employees</td></tr>';
       return;
     }
-    tbody.innerHTML = rows.map(e => `
-      <tr>
-        <td class="mono">${escapeHtml(e.badge_id)}</td>
-        <td>
-          ${escapeHtml(e.name)}
-          <!-- Admin Profile Photo Upload UI -->
-          <div class="admin-photo-upload" style="margin-top: 8px;">
-            <label style="font-size: 10px; color: #7488b6; display: block;">UPDATE PHOTO</label>
-            <input type="file" class="admin-file-input" data-employee-id="${e.id}" style="font-size: 11px; color: var(--paper); margin-bottom: 4px;" />
-            <br>
-            <button class="btn primary" style="padding: 4px 8px; font-size: 11px;" onclick="adminUploadEmployeePhoto('${e.id}')">Save Photo</button>
-          </div>
-        </td>
-        <td>${e.positions ? escapeHtml(e.positions.name) : '<span style="color:#5c6d99;">—</span>'}</td>
-        <td class="mono">${escapeHtml(e.role)}</td>
-        <td class="row-actions">
-          <button class="btn danger" data-del="${e.id}">Remove</button>
-        </td>
-      </tr>
-    `).join('');
-    
-    // ... keep your existing delete event listeners below this ...
+    tbody.innerHTML = rows.map(e => {
+      // Fallback avatar style if no image exists yet
+      const avatarSrc = e.profile_image ? escapeHtml(e.profile_image) : 'https://via.placeholder.com/40?text=No+Img';
+      
+      return `
+        <tr>
+          <td class="mono">${escapeHtml(e.badge_id)}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="${avatarSrc}" alt="Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line);" />
+              <div>
+                <div>${escapeHtml(e.name)}</div>
+                <!-- Admin Profile Photo Upload UI -->
+                <div class="admin-photo-upload" style="margin-top: 6px;">
+                  <input type="file" class="admin-file-input" data-employee-id="${e.id}" style="font-size: 10px; color: var(--paper); margin-bottom: 2px;" />
+                  <button class="btn primary" style="padding: 2px 6px; font-size: 10px;" onclick="adminUploadEmployeePhoto('${e.id}')">Save Photo</button>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>${e.positions ? escapeHtml(e.positions.name) : '<span style="color:#5c6d99;">—</span>'}</td>
+          <td class="mono">${escapeHtml(e.role)}</td>
+          <td class="row-actions">
+            <button class="btn danger" data-del="${e.id}">Remove</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
     tbody.querySelectorAll('[data-del]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const target = allEmployees.find(e => e.id === btn.dataset.del);
