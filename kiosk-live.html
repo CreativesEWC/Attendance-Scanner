@@ -153,6 +153,9 @@
         <p>Your first scan of the day records Time In. Your next scan records Time Out.
            Unregistered IDs will not be recorded.</p>
         <div class="usb-note">✓ USB barcode scanner also active — just scan, no tapping needed</div>
+        <div class="scan-hint" id="scanHint" style="display:none; color:var(--amber-400); font-family:var(--font-mono); font-size:12px; margin-top:8px;">
+          Having trouble? Hold the badge flat, 6–8 inches away, barcode facing the camera straight-on — or use manual entry below.
+        </div>
         <button class="manual-toggle" id="manualToggleBtn">Trouble scanning? Enter ID manually</button>
         <div class="manual-panel" id="manualPanel">
           <input type="text" id="manualId" placeholder="e.g. EW-0076-2024">
@@ -332,9 +335,35 @@
   const recentScans = {};
   const SCAN_COOLDOWN_MS = 8000;
   let busy = false;
+  let lastScanWasAccepted = true; // controls how long the camera pauses after a read
+  let consecutiveRejects = 0;     // repeated bad reads → surface manual-entry hint
+
+  function showScanHint(){
+    document.getElementById('scanHint').style.display = 'block';
+    const panel = document.getElementById('manualPanel');
+    if(!panel.classList.contains('open')) panel.classList.add('open');
+  }
+  function hideScanHint(){
+    document.getElementById('scanHint').style.display = 'none';
+  }
+
+  // Code39 decoders occasionally mis-read a character under poor lighting or
+  // a soft-focus frame (commonly 0↔O, 1↔I, or stray whitespace around the
+  // start/stop asterisks some printers include). Badge IDs are a fixed
+  // "EW-####-####" shape, so we can safely normalize before the DB lookup
+  // instead of forcing a re-scan for what's really just noisy decoding.
+  function normalizeBadgeId(raw){
+    let s = (raw || '').trim().toUpperCase();
+    s = s.replace(/^\*+|\*+$/g, '');      // strip Code39 start/stop asterisks if the decoder includes them
+    s = s.replace(/\s+/g, '');            // stray whitespace from scan noise
+    if (/^EW-[O0-9]{4}-[O0-9]{4}$/.test(s)) {
+      s = s.replace(/O/g, '0');           // letter O misread in the numeric segments only
+    }
+    return s;
+  }
 
   async function handleScan(rawId){
-    const id = (rawId || '').trim();
+    const id = normalizeBadgeId(rawId);
     if(!id || busy) return;
 
     const now = Date.now();
@@ -350,10 +379,16 @@
         .maybeSingle();
 
       if(empErr || !employee){
+        lastScanWasAccepted = false;
+        consecutiveRejects++;
+        if(consecutiveRejects >= 3) showScanHint();
         showCard(renderRejectCard(id), true, 3000);
         speak('This ID is not registered.');
         return;
       }
+      lastScanWasAccepted = true;
+      consecutiveRejects = 0;
+      hideScanHint();
 
       const today = todayStr();
       const { data: existingRow } = await supabaseClient
@@ -404,26 +439,76 @@
 
   // ---- Camera ----
   let html5QrCode = null;
+  // Code39 badge IDs (e.g. EW-0069-2024) are 1D barcodes: wide, short, and
+  // print-quality sensitive. A square qrbox and low fps starve the decoder of
+  // the frames/width it needs, so this config widens the scan window,
+  // raises the frame rate, and (where supported) hands off to the phone's
+  // native BarcodeDetector, which reads Code39 far more reliably than the
+  // pure-JS zxing fallback used otherwise.
   async function startCamera(){
-    html5QrCode = new Html5Qrcode("reader", { formatsToSupport: [
-      Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39,
-      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
-      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.QR_CODE
-    ]});
+    html5QrCode = new Html5Qrcode("reader", {
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.CODE_39, Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.QR_CODE
+      ],
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+      verbose: false
+    });
+
+    // Wide/short box matches a 1D barcode's aspect ratio far better than a
+    // square one — the decoder gets more horizontal bar data per frame.
+    const qrboxFn = (viewfinderWidth, viewfinderHeight) => {
+      const w = Math.floor(Math.min(viewfinderWidth * 0.85, 480));
+      const h = Math.floor(Math.min(viewfinderHeight * 0.4, 180));
+      return { width: w, height: h };
+    };
+
     try{
       await html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 280, height: 280 } },
-        (decodedText) => {
-          handleScan(decodedText);
-          html5QrCode.pause(true);
-          setTimeout(()=>{ html5QrCode.resume(); }, 3200);
+        {
+          fps: 15,
+          qrbox: qrboxFn,
+          aspectRatio: 1.777,
+          disableFlip: false
         },
-        ()=>{}
+        async (decodedText) => {
+          await handleScan(decodedText);
+          html5QrCode.pause(true);
+          // Accepted scans get the full pause (badge card is worth reading);
+          // rejects/unregistered IDs resume fast since a misread is the
+          // likely cause and the person needs to try again right away.
+          const resumeDelay = lastScanWasAccepted ? 3200 : 1200;
+          setTimeout(()=>{ html5QrCode.resume(); }, resumeDelay);
+        },
+        ()=>{ /* per-frame decode miss, expected constantly while aiming */ }
       );
+      await applyFocusAndZoom();
     }catch(err){
       console.warn('Camera unavailable, USB scanner and manual entry still work:', err);
     }
+  }
+
+  // iPhone 11 camera autofocus tends to hunt/stay soft up close, which is
+  // exactly where a badge gets held. Where the browser exposes MediaTrack
+  // capabilities for it, force continuous autofocus and a touch of zoom so
+  // the barcode's bars are sharp and fill more of the frame.
+  async function applyFocusAndZoom(){
+    try{
+      const track = html5QrCode.getRunningTrackCameraCapabilities ? null : null;
+      const videoEl = document.querySelector('#reader video');
+      if(!videoEl || !videoEl.srcObject) return;
+      const streamTrack = videoEl.srcObject.getVideoTracks()[0];
+      if(!streamTrack) return;
+      const caps = streamTrack.getCapabilities ? streamTrack.getCapabilities() : {};
+      const constraints = {};
+      if(caps.focusMode && caps.focusMode.includes('continuous')) constraints.focusMode = 'continuous';
+      if(caps.zoom && caps.zoom.max) constraints.zoom = Math.min(caps.zoom.max, (caps.zoom.min || 1) + (caps.zoom.max - (caps.zoom.min||1)) * 0.15);
+      if(Object.keys(constraints).length){
+        await streamTrack.applyConstraints({ advanced: [constraints] });
+      }
+    }catch(e){ /* not all browsers/cameras expose this — safe to ignore */ }
   }
 
   // ---- USB HID barcode scanner support ----
@@ -460,6 +545,7 @@
 
   document.getElementById('manualToggleBtn').addEventListener('click', ()=>{
     document.getElementById('manualPanel').classList.toggle('open');
+    hideScanHint();
   });
   document.getElementById('manualBtn').addEventListener('click', ()=>{
     const input = document.getElementById('manualId');
