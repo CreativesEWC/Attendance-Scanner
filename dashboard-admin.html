@@ -327,14 +327,14 @@
     const fileName = `public/${employeeId}_${Date.now()}_${file.name}`;
 
     try {
-      const { error: uploadError } = await supabaseClient.storage
-        .from('employee_images')
+     const { error: uploadError } = await supabaseClient.storage
+        .from('avatars') // <-- Change from 'employee_images' to 'avatars'
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
       const { data: publicUrlData } = supabaseClient.storage
-        .from('employee_images')
+        .from('avatars') // <-- Change from 'employee_images' to 'avatars'
         .getPublicUrl(fileName);
 
       const imageUrl = publicUrlData.publicUrl;
