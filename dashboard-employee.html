@@ -180,7 +180,7 @@
   .profile-photo-container { 
   margin-top: 5px; /* Moves the container closer to the top logo */
   width: 100%; 
-  height: 310px; /* Makes the photo box taller to fill the card */
+  height: 290px; /* Makes the photo box taller to fill the card */
   position: relative;
   z-index: 1;
   padding: 0 16px; 
@@ -196,7 +196,7 @@
 
 .profile-photo { 
   object-fit: cover; 
-  object-position: center 15%; /* Focuses on the upper body/face */
+  object-position: center 5%; /* Focuses on the upper body/face */
 }
   
   .profile-photo-fallback { 
@@ -206,8 +206,8 @@
   }
   
   .profile-photo { 
-    object-fit: cover; 
-    object-position: bottom center; /* Anchors the cutout subject to the bottom */
+    object-fit: container; 
+    object-position: center; /* Anchors the cutout subject to the bottom */
   }
   
   .profile-photo-fallback { 
