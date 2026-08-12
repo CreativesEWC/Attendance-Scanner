@@ -1043,6 +1043,33 @@ async function submitTicket() {
     </div>
   </div>
 </div>
+
+<!-- Employee Announcement View & Comment Modal -->
+<div id="announcementModal" class="modal-overlay">
+  <div class="modal-box">
+    <h2 id="modalAnnouncementTitle">Announcement Title</h2>
+    <p id="modalAnnouncementDate" style="font-size: 11px; color: #7488b6; margin-bottom: 12px;"></p>
+    <div id="modalAnnouncementBody" style="font-size: 13px; margin-bottom: 24px;">
+      <!-- Announcement text will load here -->
+    </div>
+    
+    <!-- Comment Section inside the modal -->
+    <div class="announcement-comments" style="border-top: 1px solid var(--line); padding-top: 16px;">
+      <h3 style="font-size: 14px; margin-bottom: 12px;">Comments</h3>
+      
+      <div id="commentFeed" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;">
+        <!-- Comments will load here -->
+      </div>
+
+      <textarea id="commentReplyText" placeholder="Write a reply..." style="width: 100%; min-height: 60px; margin-bottom: 8px; border-radius: 4px; padding: 8px;"></textarea>
+      
+      <div class="modal-actions" style="margin-top: 0; justify-content: space-between;">
+        <button class="btn2" onclick="closeAnnouncementModal()">Close</button>
+        <button class="btn2 primary" onclick="postComment()">Post Reply</button>
+      </div>
+    </div>
+  </div>
+</div>
   
 </body>
 </html>
