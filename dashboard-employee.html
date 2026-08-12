@@ -80,6 +80,20 @@
     width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper);
     border-radius:8px; padding:10px 12px; font-size:13px; font-family:var(--font-body); margin-bottom:10px;
   }
+
+  .announce-card{
+    background:var(--navy-900); border:1px solid var(--line); border-radius:14px;
+    padding:16px 18px; margin-bottom:12px; cursor:pointer;
+  }
+  .announce-card:last-child{ margin-bottom:0; }
+  .announce-card .a-title{ font-family:var(--font-display); font-size:16px; font-weight:700; }
+  .announce-card .a-meta{ font-family:var(--font-mono); font-size:11px; color:#7488b6; margin-top:4px; }
+  .announce-card .a-preview{ font-size:13px; color:#9fb0d6; margin-top:8px; line-height:1.4;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .empty-note{ color:#5c6d99; font-style:italic; font-size:13px; }
+  .modal-box .a-full-body{ font-size:14px; line-height:1.6; color:var(--paper); white-space:pre-wrap; margin-top:4px; }
+  .modal-box .a-full-meta{ font-family:var(--font-mono); font-size:11px; color:#7488b6; margin-bottom:14px; }
+
   .modal-box textarea{ min-height:70px; resize:vertical; }
 </style>
 </head>
@@ -140,6 +154,11 @@
       </table>
     </section>
 
+    <section class="panel">
+      <h2>Announcements</h2>
+      <div id="announcementsList"><div class="empty-note">Loading announcements…</div></div>
+    </section>
+
   </div>
 
 </main>
@@ -163,6 +182,17 @@
     <div class="modal-actions">
       <button class="btn2 primary" id="rcSubmitBtn">Submit Request</button>
       <button class="btn2" id="rcCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="announceModal">
+  <div class="modal-box">
+    <h2 id="announceModalTitle">—</h2>
+    <div class="a-full-meta" id="announceModalMeta">—</div>
+    <div class="a-full-body" id="announceModalBody">—</div>
+    <div class="modal-actions">
+      <button class="btn2" id="announceModalCloseBtn">Close</button>
     </div>
   </div>
 </div>
@@ -192,6 +222,59 @@
   }
 
   const { display, initials } = firstAndLast(emp.name);
+// ---- Announcements ----
+  async function loadAnnouncements(){
+    const { data: posts, error } = await supabaseClient
+      .from('announcements')
+      .select('*, brands(name)')
+      .order('created_at', { ascending: false })
+      .limit(20);
+ 
+    const list = document.getElementById('announcementsList');
+    if (error) {
+      list.innerHTML = '<div class="empty-note">Could not load announcements.</div>';
+      console.error(error);
+      return;
+    }
+    if (!posts || posts.length === 0) {
+      list.innerHTML = '<div class="empty-note">No announcements yet.</div>';
+      return;
+    }
+ 
+    list.innerHTML = posts.map(p => {
+      const brandLabel = p.brands ? p.brands.name : 'Company-wide';
+      const postedDate = new Date(p.created_at).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'});
+      const eventLine = p.event_date
+        ? ` · Event: ${new Date(p.event_date + 'T00:00:00').toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'})}${p.location ? ' @ ' + p.location : ''}`
+        : '';
+      return `
+        <div class="announce-card" data-id="${p.id}">
+          <div class="a-title">${p.title}</div>
+          <div class="a-meta">${brandLabel} · Posted ${postedDate}${eventLine}</div>
+          <div class="a-preview">${p.body}</div>
+        </div>
+      `;
+    }).join('');
+ 
+    list.querySelectorAll('.announce-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const post = posts.find(p => p.id === card.dataset.id);
+        if (!post) return;
+        const brandLabel = post.brands ? post.brands.name : 'Company-wide';
+        const postedDate = new Date(post.created_at).toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
+        document.getElementById('announceModalTitle').textContent = post.title;
+        document.getElementById('announceModalMeta').textContent = `${brandLabel} · Posted ${postedDate}`;
+        document.getElementById('announceModalBody').textContent = post.body;
+        document.getElementById('announceModal').classList.add('open');
+      });
+    });
+  }
+  loadAnnouncements();
+ 
+  document.getElementById('announceModalCloseBtn').addEventListener('click', ()=>{
+    document.getElementById('announceModal').classList.remove('open');
+  });
+
   document.getElementById('avatarInitials').textContent = initials;
   document.getElementById('empName').textContent = display || emp.name;
   document.getElementById('empPositionBrand').textContent = emp.positions ? emp.positions.name : 'No position set';
