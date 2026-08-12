@@ -105,16 +105,24 @@
 
   /* ---- Digital ID ---- */
   .id-modal-box{ max-width:290px; padding:0; overflow:visible; background:transparent; border:none; box-shadow:none; position:relative; }
-  .id-card{ position:relative; width:100%; background:#eef8f6; border-radius:18px; overflow:hidden; box-shadow:0 12px 34px rgba(0,0,0,.45); font-family:var(--font-body); color:#0b3b39; }
-  .id-card-top{ position:relative; height:64px; background:linear-gradient(120deg,#0e6e6b 0%,#14a098 45%,#57c7b8 100%); display:flex; align-items:center; justify-content:flex-end; padding:0 14px; overflow:hidden; }
+  
+  /* Added flex and height to the master id-card so both front and back share the strict shape */
+  .id-card{ display:flex; flex-direction:column; height:480px; position:relative; width:100%; background:#eef8f6; border-radius:18px; overflow:hidden; box-shadow:0 12px 34px rgba(0,0,0,.45); font-family:var(--font-body); color:#0b3b39; }
+  
+  .id-card-top{ position:relative; height:64px; background:linear-gradient(120deg,#0e6e6b 0%,#14a098 45%,#57c7b8 100%); display:flex; align-items:center; justify-content:flex-end; padding:0 14px; overflow:hidden; flex-shrink:0; }
   .id-card-top::after{ content:''; position:absolute; left:-15%; bottom:-38px; width:130%; height:70px; background:#f4c452; border-radius:50%; opacity:.85; }
   .id-card-logo{ position:relative; z-index:2; width:40px; height:40px; background:#fff; border-radius:9px; padding:4px; object-fit:contain; }
   .id-card-photo-wrap{ padding:14px 14px 0; }
   .id-card-photo{ width:100%; height:280px; object-fit:cover; border-radius:10px; background:#0e6e6b; display:block; }
-  .id-card-photo-fallback{ width:100%; height:220px; border-radius:10px; background:#0e6e6b; display:flex; align-items:center; justify-content:center; color:#eafaf4; font-family:var(--font-display); font-size:48px; font-weight:700; }
+  
+  /* Adjusted fallback height to 280px to perfectly match the photo */
+  .id-card-photo-fallback{ width:100%; height:280px; border-radius:10px; background:#0e6e6b; display:flex; align-items:center; justify-content:center; color:#eafaf4; font-family:var(--font-display); font-size:48px; font-weight:700; }
+  
   .id-card-position{ background:#0e6e6b; color:#fff; text-align:center; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:10px 10px 2px; }
   .id-card-name{ background:#0e6e6b; color:#fff; text-align:center; font-family:var(--font-display); font-size:17px; font-weight:700; padding:0 10px 12px; }
-  .id-card-barcode-strip{ background:#f7f4ec; padding:8px 14px 2px; text-align:center; }
+  
+  /* Added margin-top:auto to push the barcode strictly to the bottom edge */
+  .id-card-barcode-strip{ margin-top:auto; background:#f7f4ec; padding:8px 14px 2px; text-align:center; }
   .id-card-barcode-strip svg{ max-width:100%; height:40px; }
   .id-card-badgeid{ text-align:center; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; color:#5c6a8f; padding-bottom:12px; background:#f7f4ec; }
 
