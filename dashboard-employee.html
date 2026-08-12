@@ -351,6 +351,7 @@
   <div class="header-actions">
     <button id="signOutBtn">Sign Out</button>
     <button id="digitalIdBtn">Digital ID</button>
+    <button id="ticketBtn" onclick="openTicketModal()">Submit Ticket</button>
   </div>
 </header>
 
@@ -971,7 +972,77 @@
   });
 
 })();
+
+  // --- TICKETING SYSTEM JS ---
+
+// 1. Open the modal
+function openTicketModal() {
+  document.getElementById('ticketModal').classList.add('open');
+}
+
+// 2. Close the modal and clear the text box
+function closeTicketModal() {
+  document.getElementById('ticketModal').classList.remove('open');
+  document.getElementById('ticketDescription').value = ''; 
+}
+
+// 3. Handle the form submission
+async function submitTicket() {
+  const type = document.getElementById('ticketType').value;
+  const description = document.getElementById('ticketDescription').value;
+  
+  if (!description.trim()) {
+      alert("Please enter the details of your request.");
+      return;
+  }
+  
+  // NOTE: When your Supabase table is ready, uncomment this block to save to the database.
+  // Make sure to pass the correct employee ID if required by your database.
+  /*
+  try {
+      const { error } = await supabaseClient
+        .from('tickets')
+        .insert([{ 
+            // employee_id: emp.id, // Uncomment if you need to attach the employee's ID
+            ticket_type: type, 
+            reason: description, 
+            status: 'pending' 
+        }]);
+        
+      if (error) throw error;
+  } catch (err) {
+      console.error('Error submitting ticket:', err);
+      alert('Could not submit request: ' + err.message);
+      return;
+  }
+  */
+  
+  alert('Ticket submitted successfully!');
+  closeTicketModal();
+}
+  
 </script>
 
+<!-- Ticket Submission Modal (Place just above </body>) -->
+<div id="ticketModal" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Submit Request</h2>
+    
+    <label style="font-family: var(--font-mono); font-size: 11px; color: #7488b6;">REQUEST TYPE</label>
+    <select id="ticketType">
+      <option value="general">General Support Ticket</option>
+      <option value="overtime">Overtime Submission</option>
+    </select>
+    
+    <label style="font-family: var(--font-mono); font-size: 11px; color: #7488b6; margin-top: 10px; display: block;">DETAILS</label>
+    <textarea id="ticketDescription" placeholder="Please provide dates, hours, or support details here..."></textarea>
+    
+    <div class="modal-actions">
+      <button class="btn2" onclick="closeTicketModal()">Cancel</button>
+      <button class="btn2 primary" onclick="submitTicket()">Submit</button>
+    </div>
+  </div>
+</div>
+  
 </body>
 </html>
