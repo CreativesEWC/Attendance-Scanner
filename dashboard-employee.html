@@ -126,7 +126,19 @@
   .id-card-barcode-strip svg{ max-width:100%; height:40px; }
   .id-card-badgeid{ text-align:center; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; color:#5c6a8f; padding-bottom:12px; background:#f7f4ec; }
 
-  .id-card.back{ display:flex; flex-direction:column; height:480px; padding:16px 16px 0; background:linear-gradient(160deg,#e9f7f3 0%,#cdeee6 100%); }
+  /* ---- Custom Back ID Layout ---- */
+  .id-card.back { display:flex; flex-direction:column; height:480px; background: transparent; }
+  
+  .id-card-back-content {
+    position: relative;
+    z-index: 2; /* Keeps the text above your custom background */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 16px 16px 0;
+  }
+
   .id-card-back-top{ display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
   .id-card-back-logo{ width:32px; height:32px; background:#fff; border-radius:8px; padding:3px; object-fit:contain; }
   .id-card-company-name{ font-family:var(--font-mono); font-size:9px; letter-spacing:.05em; color:#0e6e6b; font-weight:700; line-height:1.3; text-transform:uppercase; }
@@ -137,10 +149,10 @@
   .id-emergency-name{ font-weight:700; text-align:center; font-size:13px; }
   .id-emergency-address, .id-emergency-phone{ text-align:center; font-size:10.5px; color:#3c5c59; margin-top:2px; }
 
-  /* ---- New rules to anchor the barcode to the bottom ---- */
-  .id-card.back .id-card-barcode-strip { margin-top: auto; background: transparent; padding: 0; }
-  .id-card.back .id-card-barcode-strip svg { background: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px; }
-  .id-card.back .id-card-badgeid { background: transparent; padding-bottom: 16px; margin-top: 8px; }
+  /* Anchors the barcode to the bottom over the new background */
+  .id-card-back-content .id-card-barcode-strip { margin-top: auto; background: transparent; padding: 0; }
+  .id-card-back-content .id-card-barcode-strip svg { background: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px; }
+  .id-card-back-content .id-card-badgeid { background: transparent; padding-bottom: 16px; margin-top: 8px; }
 
   .id-barcode-overlay { 
     position: absolute; 
@@ -291,10 +303,10 @@
   <div class="modal-box id-modal-box">
 
     <div class="id-card" id="idCardFront">
-      <!-- Your Custom Image Background -->
-      <img class="id-card-bg" src="frontID_background.jpg" alt="ID Background">
+      <!-- Image Background (Updated to SVG) -->
+      <img class="id-card-bg" src="frontID_background.svg" alt="ID Background">
 
-      <!-- Front ID Content (Aligned Right) -->
+      <!-- Front ID Content -->
       <div class="id-card-content">
         <img class="header-logo" id="idLogoFront" alt="Company logo">
         
@@ -314,24 +326,29 @@
     </div>
 
     <div class="id-card back" id="idCardBack" style="display:none;">
-      <div class="id-card-back-top">
-        <img class="id-card-back-logo" id="idLogoBack" alt="Company logo">
-        <div class="id-card-company-name">Easy Ways<br>Connection<br>Corporation</div>
+      <!-- Back Image Background -->
+      <img class="id-card-bg" src="backID_background.svg" alt="Back ID Background">
+
+      <!-- Back ID Content -->
+      <div class="id-card-back-content">
+        <div class="id-card-back-top">
+          <img class="id-card-back-logo" id="idLogoBack" alt="Company logo">
+          <div class="id-card-company-name">Easy Ways<br>Connection<br>Corporation</div>
+        </div>
+        <div class="id-terms">
+          <h3>Terms &amp; Conditions</h3>
+          <p><strong>Identification:</strong> Carry this ID card at all times during working hours for identification purposes.</p>
+          <p><strong>Authorized Use:</strong> This ID card is strictly for official use and should not be shared or used for unauthorized purposes.</p>
+        </div>
+        <div class="id-emergency">
+          <div class="id-emergency-title">In case of emergency please contact:</div>
+          <div class="id-emergency-name" id="idEmergName">—</div>
+          <div class="id-emergency-address" id="idEmergAddress"></div>
+          <div class="id-emergency-phone" id="idEmergPhone"></div>
+        </div>
+        <div class="id-card-barcode-strip"><svg id="idBarcodeBackSvg"></svg></div>
+        <div class="id-card-badgeid" id="idBadgeBack">—</div>
       </div>
-      <div class="id-terms">
-        <h3>Terms &amp; Conditions</h3>
-        <p><strong>Identification:</strong> Carry this ID card at all times during working hours for identification purposes.</p>
-        <p><strong>Authorized Use:</strong> This ID card is strictly for official use and should not be shared or used for unauthorized purposes.</p>
-      </div>
-      <div class="id-emergency">
-        <div class="id-emergency-title">In case of emergency please contact:</div>
-        <div class="id-emergency-name" id="idEmergName">—</div>
-        <div class="id-emergency-address" id="idEmergAddress"></div>
-        <div class="id-emergency-phone" id="idEmergPhone"></div>
-      </div>
-      <div class="id-card-barcode-strip"><svg id="idBarcodeBackSvg"></svg></div>
-      <div class="id-card-badgeid" id="idBadgeBack">—</div>
-    </div>
 
     <div class="id-barcode-overlay" id="idBarcodeOverlay" style="display:none;">
       <div class="id-overlay-barcode-wrap"><svg id="idOverlayBarcodeSvg"></svg></div>
