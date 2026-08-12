@@ -142,8 +142,31 @@
   .id-card.back .id-card-barcode-strip svg { background: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px; }
   .id-card.back .id-card-badgeid { background: transparent; padding-bottom: 16px; margin-top: 8px; }
 
-  .id-barcode-overlay{ position:absolute; inset:0; background:#fff; border-radius:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:20px; box-shadow:0 12px 34px rgba(0,0,0,.45); }
-  .id-overlay-barcode-wrap svg{ height:80px; width:280px; transform:rotate(-90deg); }
+  .id-barcode-overlay { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); /* Centers the compact box precisely in the middle */
+    width: 90%; /* Gives a nice even margin on the left and right */
+    height: auto; /* Hugs the barcode and button tightly */
+    background: #fff; 
+    border-radius: 12px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 16px; 
+    padding: 24px; 
+    box-shadow: 0 15px 40px rgba(0,0,0,0.65); 
+    z-index: 10; 
+  }
+  
+  .id-overlay-barcode-wrap svg { 
+    height: 80px; 
+    width: 100%; 
+    max-width: 260px; 
+    /* Removed the -90deg rotation so it stays horizontal */
+  }
   .id-barcode-overlay .btn2{ background:var(--navy-900); border-color:var(--line); color:var(--paper); }
 
   .id-modal-actions{ display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
@@ -441,10 +464,17 @@
     const { data: urlData } = supabaseClient.storage.from('avatars').getPublicUrl(path);
     const publicUrl = urlData.publicUrl;
 
+    // 1. Update the employees database table
     const { error: updateError } = await supabaseClient
       .from('employees')
       .update({ avatar_url: publicUrl })
       .eq('id', emp.id);
+
+    // 2. CRITICAL FIX: Update the Supabase Auth session metadata
+    // This ensures that when you refresh, the browser remembers the new picture!
+    await supabaseClient.auth.updateUser({
+      data: { avatar_url: publicUrl }
+    });
 
     if(updateError){ alert('Photo uploaded but could not be saved: ' + updateError.message); e.target.value=''; return; }
 
