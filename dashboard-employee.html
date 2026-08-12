@@ -129,9 +129,9 @@
   .id-emergency-name{ font-weight:700; text-align:center; font-size:13px; }
   .id-emergency-address, .id-emergency-phone{ text-align:center; font-size:10.5px; color:#3c5c59; margin-top:2px; }
 
-  .id-barcode-overlay{ position:absolute; inset:0; background:#fff; border-radius:18px; display:flex; align-items:center; justify-content:center; gap:18px; padding:20px; box-shadow:0 12px 34px rgba(0,0,0,.45); }
-  .id-overlay-barcode-wrap svg{ height:60px; width:230px; transform:rotate(-90deg); }
-  .id-vert-label{ writing-mode:vertical-rl; transform:rotate(180deg); font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:.05em; color:#0b3b39; white-space:nowrap; }
+  .id-barcode-overlay{ position:absolute; inset:0; background:#fff; border-radius:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:20px; box-shadow:0 12px 34px rgba(0,0,0,.45); }
+  .id-overlay-barcode-wrap svg{ height:80px; width:280px; transform:rotate(-90deg); }
+  .id-barcode-overlay .btn2{ background:var(--navy-900); border-color:var(--line); color:var(--paper); }
 
   .id-modal-actions{ display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
   .id-modal-actions .btn2{ font-size:11px; padding:7px 12px; background:var(--navy-900); border-color:var(--line); color:var(--paper); }
@@ -284,9 +284,8 @@
     </div>
 
     <div class="id-barcode-overlay" id="idBarcodeOverlay" style="display:none;">
-      <div class="id-vert-label" id="idOverlayName">—</div>
       <div class="id-overlay-barcode-wrap"><svg id="idOverlayBarcodeSvg"></svg></div>
-      <div class="id-vert-label" id="idOverlayBadge">—</div>
+      <button class="btn2" id="idBarcodeCloseBtn">Close</button>
     </div>
 
     <div class="id-modal-actions">
@@ -440,7 +439,7 @@
     try{
       JsBarcode('#idBarcodeFrontSvg', code, { format:'CODE128', displayValue:false, height:40, margin:0 });
       JsBarcode('#idBarcodeBackSvg', code, { format:'CODE128', displayValue:false, height:40, margin:0 });
-      JsBarcode('#idOverlayBarcodeSvg', code, { format:'CODE128', displayValue:false, height:60, margin:0 });
+      JsBarcode('#idOverlayBarcodeSvg', code, { format:'CODE128', displayValue:false, height:80, margin:0 });
     }catch(e){ console.error('Barcode render failed:', e); }
   }
 
@@ -453,8 +452,6 @@
     document.getElementById('idName').textContent = nameUpper;
     document.getElementById('idBadgeFront').textContent = badge;
     document.getElementById('idBadgeBack').textContent = badge;
-    document.getElementById('idOverlayBadge').textContent = badge;
-    document.getElementById('idOverlayName').textContent = nameUpper;
 
     document.getElementById('idEmergName').textContent = emp.emergency_contact_name || 'Not on file';
     document.getElementById('idEmergAddress').textContent = emp.emergency_contact_address || '';
@@ -500,6 +497,9 @@
   });
   document.getElementById('idEnlargeBtn').addEventListener('click', () => {
     document.getElementById('idBarcodeOverlay').style.display = 'flex';
+  });
+  document.getElementById('idBarcodeCloseBtn').addEventListener('click', () => {
+    document.getElementById('idBarcodeOverlay').style.display = 'none';
   });
   document.getElementById('idCloseBtn').addEventListener('click', () => {
     document.getElementById('digitalIdModal').classList.remove('open');
