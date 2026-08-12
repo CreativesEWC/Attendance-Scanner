@@ -286,17 +286,26 @@
   <div class="modal-box id-modal-box">
 
     <div class="id-card" id="idCardFront">
-      <div class="id-card-top">
-        <img class="id-card-logo" id="idLogoFront" alt="Company logo">
+      <!-- Your Custom Image Background -->
+      <img class="id-card-bg" src="frontID_background.jpg" alt="ID Background">
+
+      <!-- Front ID Content (Aligned Right) -->
+      <div class="id-card-content">
+        <img class="header-logo" id="idLogoFront" alt="Company logo">
+        
+        <div class="profile-photo-container">
+          <img class="profile-photo" id="idPhoto" alt="Employee photo" style="display:none;">
+          <div class="profile-photo-fallback" id="idPhotoFallback">?</div>
+        </div>
+        
+        <div class="user-info">
+          <div class="user-name" id="idName">—</div>
+          <div class="user-title" id="idPosition">—</div>
+          <div class="user-id" id="idBadgeFront">—</div>
+        </div>
+
+        <div class="id-card-barcode-strip"><svg id="idBarcodeFrontSvg"></svg></div>
       </div>
-      <div class="id-card-photo-wrap">
-        <img class="id-card-photo" id="idPhoto" alt="Employee photo" style="display:none;">
-        <div class="id-card-photo-fallback" id="idPhotoFallback">?</div>
-      </div>
-      <div class="id-card-position" id="idPosition">—</div>
-      <div class="id-card-name" id="idName">—</div>
-      <div class="id-card-barcode-strip"><svg id="idBarcodeFrontSvg"></svg></div>
-      <div class="id-card-badgeid" id="idBadgeFront">—</div>
     </div>
 
     <div class="id-card back" id="idCardBack" style="display:none;">
