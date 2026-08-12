@@ -110,7 +110,6 @@
   .id-card{ display:flex; flex-direction:column; height:480px; position:relative; width:100%; background:#eef8f6; border-radius:18px; overflow:hidden; box-shadow:0 12px 34px rgba(0,0,0,.45); font-family:var(--font-body); color:#0b3b39; }
   
   /* ---- Custom Front ID Layout ---- */
-  /* ---- Custom Front ID Layout ---- */
   .id-card-bg { 
     position: absolute; 
     top: 0; left: 0; 
@@ -123,60 +122,81 @@
     position: relative; 
     z-index: 2; 
     width: 100%; 
-    padding: 24px; 
+    padding: 16px 24px; /* Reduced top padding to make room for a bigger photo */
     display: flex; flex-direction: column; 
-    align-items: center; /* Centers the photo horizontally */
-    flex-grow: 1; 
+    align-items: center; 
   }
 
   .id-card-top-right {
     width: 100%;
     display: flex;
-    justify-content: flex-end; /* Keeps the logo on the right side */
+    justify-content: flex-end; 
+  }
+
+  .front-logo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
   
   .header-logo { 
-    width: 40px; height: 40px; 
-    background: #fff; border-radius: 9px; padding: 4px; object-fit: contain; 
+    width: 32px; height: 32px; /* Slightly smaller to fit the text below it nicely */
+    background: #fff; border-radius: 6px; padding: 3px; object-fit: contain; 
+  }
+
+  .front-logo-text {
+    font-family: var(--font-mono);
+    font-size: 7px;
+    line-height: 1.1;
+    color: #0e6e6b;
+    font-weight: 700;
+    margin-top: 4px;
+    text-transform: uppercase;
   }
   
-  .profile-photo-container { margin-top: 24px; }
+  .profile-photo-container { 
+    margin-top: 10px; 
+    width: 100%; 
+    padding: 0 8px; /* Slight edge padding so it doesn't hit the absolute sides */
+  }
   
   .profile-photo, .profile-photo-fallback { 
-    width: 110px; height: 140px; 
-    border-radius: 8px; border: 3px solid #ffffff; 
+    width: 100%; height: 270px; /* Massive size for the half-body cutout */
+    border-radius: 10px; border: 3px solid #ffffff; 
     box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
   }
   .profile-photo { object-fit: cover; }
   .profile-photo-fallback { 
     background: #0e6e6b; 
     display: flex; align-items: center; justify-content: center; 
-    color: #eafaf4; font-family: var(--font-display); font-size: 48px; font-weight: 700; 
+    color: #eafaf4; font-family: var(--font-display); font-size: 56px; font-weight: 700; 
   }
   
-  /* Bottom Banner Styling (Matches your 2nd image) */
+  /* Bottom Banner Styling (Pinned to absolute bottom) */
   .id-card-bottom-banner {
-    position: relative;
-    z-index: 2;
+    position: absolute; /* This completely eliminates the bottom gap */
+    bottom: 0;
+    left: 0;
+    z-index: 3;
     width: 100%;
-    margin-top: auto; /* Forces banner to the absolute bottom */
     display: flex;
     flex-direction: column;
   }
 
   .id-card-text-block {
-    background: #0e6e6b; /* Solid Teal block */
-    padding: 12px 10px;
+    background: #0e6e6b; 
+    padding: 8px 10px; /* Tighter padding so it doesn't overlap the tall photo */
     text-align: center;
     color: #fff;
   }
   
-  .user-title { font-size: 11px; font-family: var(--font-mono); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
-  .user-name { font-size: 17px; font-family: var(--font-display); font-weight: 700; }
+  .user-title { font-size: 10px; font-family: var(--font-mono); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
+  .user-name { font-size: 16px; font-family: var(--font-display); font-weight: 700; }
   
   #idCardFront .id-card-barcode-strip { 
-    background: #f7f4ec; /* Cream background */
-    padding: 8px 14px 12px; 
+    background: #f7f4ec; 
+    padding: 8px 14px 10px; 
     text-align: center; 
     width: 100%; 
   }
@@ -185,7 +205,6 @@
     font-size: 11px; font-family: var(--font-mono); font-weight: 600; 
     color: #5c6a8f; letter-spacing: 1px; margin-top: 4px; 
   }
-
   /* ---- Custom Back ID Layout ---- */
   .id-card.back { display:flex; flex-direction:column; height:480px; background: transparent; }
   
@@ -370,7 +389,10 @@
       <!-- Top Content (Logo & Centered Photo) -->
       <div class="id-card-content">
         <div class="id-card-top-right">
-          <img class="header-logo" id="idLogoFront" alt="Company logo">
+          <div class="front-logo-wrap">
+            <img class="header-logo" id="idLogoFront" alt="Company logo">
+            <div class="front-logo-text">EASY WAYS<br>CONNECTION<br>CORPORATION</div>
+          </div>
         </div>
         
         <div class="profile-photo-container">
@@ -379,7 +401,7 @@
         </div>
       </div>
 
-      <!-- Bottom Banner (Name, Position, Barcode matching the 2nd image) -->
+      <!-- Bottom Banner (Pinned securely to the bottom) -->
       <div class="id-card-bottom-banner">
         <div class="id-card-text-block">
           <div class="user-title" id="idPosition">—</div>
