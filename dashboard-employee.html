@@ -178,24 +178,25 @@
   }
   
  .profile-photo-container { 
-    margin-top: 0px; /* Pulls it all the way to the top */
-    width: 100%; 
-    height: 350px; /* Expands the height upward to reach your red line mark */
-    position: relative;
-    z-index: 1;
-    padding: 0; /* Removes inner side padding so it touches the outer card borders */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 360px; /* Reaches all the way down to the teal banner */
+    z-index: 1; /* Sits behind the logo and bottom banner, but above the background */
+    padding: 0;
   }
   
   .profile-photo, .profile-photo-fallback { 
     width: 100%; 
     height: 100%; 
     border: none; 
-    border-radius: 0; /* Removes rounded corners so it meets the top and sides flush */
+    border-radius: 0; 
   }
   
   .profile-photo { 
     object-fit: cover; 
-    object-position: center 10%; /* Focuses on the face/upper body as it stretches up */
+    object-position: center 15%; /* Focuses on the face/shoulders */
   }
   
   .profile-photo-fallback { 
@@ -454,7 +455,13 @@
       <!-- Background Image -->
       <img class="id-card-bg" src="frontID_background.svg" alt="ID Background">
       
-      <!-- Top Content (Logo & Centered Photo) -->
+      <!-- BACKGROUND PHOTO (Stretches all the way to the top and sides) -->
+      <div class="profile-photo-container">
+        <img class="profile-photo" id="idPhoto" alt="Employee photo" style="display:none;">
+        <div class="profile-photo-fallback" id="idPhotoFallback">?</div>
+      </div>
+      
+      <!-- Top Content (Logo only) -->
       <div class="id-card-content">
         <div class="id-card-top-right">
           <div class="front-logo-wrap">
@@ -462,14 +469,9 @@
             <div class="front-logo-text">EASY WAYS<br>CONNECTION<br>CORPORATION</div>
           </div>
         </div>
-        
-        <div class="profile-photo-container">
-          <img class="profile-photo" id="idPhoto" alt="Employee photo" style="display:none;">
-          <div class="profile-photo-fallback" id="idPhotoFallback">?</div>
-        </div>
       </div>
 
-      <!-- Bottom Banner (Pinned securely to the bottom) -->
+      <!-- Bottom Banner -->
       <div class="id-card-bottom-banner">
         <div class="id-card-text-block">
           <div class="user-title" id="idPosition">—</div>
