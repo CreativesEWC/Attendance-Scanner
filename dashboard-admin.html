@@ -90,6 +90,9 @@
   .loading-note{ color:#7488b6; }
   .error-note{ color:var(--coral-500); }
 
+  .wd-check{ display:flex; align-items:center; gap:5px; font-size:12px; color:#9fb0d6; background:var(--navy-800); border:1px solid var(--line); border-radius:8px; padding:8px 10px; cursor:pointer; }
+  .wd-check input{ accent-color:var(--amber-500); }
+
   footer{ text-align:center; padding:20px; font-family:var(--font-mono); font-size:11px; color:#4a5a85; }
 </style>
 </head>
@@ -117,6 +120,7 @@
     <button class="tab-btn" data-tab="attendance">Attendance</button>
     <button class="tab-btn" data-tab="tickets">Tickets <span class="badge-count" id="ticketsBadge" style="display:none;"></span></button>
     <button class="tab-btn" data-tab="announcements">Announcements</button>
+    <button class="tab-btn" data-tab="schedule">Live Seller Schedule</button>
   </nav>
 
   <main>
@@ -129,7 +133,7 @@
         </div>
         <div id="rosterLoading" class="loading-note">Loading roster…</div>
         <table style="display:none;" id="rosterTable">
-          <thead><tr><th>Badge ID</th><th>Name</th><th>Brand</th><th>Role</th><th></th></tr></thead>
+          <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Role</th><th></th></tr></thead>
           <tbody id="rosterTableBody"></tbody>
         </table>
       </section>
@@ -139,6 +143,9 @@
         <div class="form-row">
           <input type="text" id="newBadgeId" placeholder="Badge ID (e.g. EW-0076-2024)" style="font-family:var(--font-mono);">
           <input type="text" id="newName" placeholder="Full name" style="flex:1; min-width:160px;">
+          <select id="newPosition"><option value="">No position set</option></select>
+        </div>
+        <div class="form-row">
           <select id="newBrand"><option value="">No brand assigned</option></select>
           <select id="newRole">
             <option value="employee">Employee</option>
@@ -149,6 +156,19 @@
           <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
         </div>
         <p class="loading-note" style="padding-top:0;">New employees can view their own record once their login is linked. Ask an admin to send them an invite from Supabase Auth, then their account will match automatically by email.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Manage Positions <span class="count" id="positionsCount">—</span></h2>
+        <div class="form-row">
+          <input type="text" id="newPositionName" placeholder="New position name (e.g. Live Seller)" style="flex:1; min-width:200px;">
+          <button class="btn primary" id="addPositionBtn">Add Position</button>
+        </div>
+        <div id="positionsLoading" class="loading-note">Loading positions…</div>
+        <table style="display:none;" id="positionsTable">
+          <thead><tr><th>Position</th><th></th></tr></thead>
+          <tbody id="positionsTableBody"></tbody>
+        </table>
       </section>
     </section>
 
@@ -162,7 +182,7 @@
         </div>
         <div id="attendanceLoading" class="loading-note">Loading attendance…</div>
         <table style="display:none;" id="attendanceTable">
-          <thead><tr><th>Badge ID</th><th>Name</th><th>Brand</th><th>Time In</th><th>Time Out</th></tr></thead>
+          <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Time In</th><th>Time Out</th></tr></thead>
           <tbody id="attendanceTableBody"></tbody>
         </table>
       </section>
@@ -208,6 +228,60 @@
         <table style="display:none;" id="annTable">
           <thead><tr><th>Title</th><th>Brand</th><th>Event</th><th>Posted</th><th></th></tr></thead>
           <tbody id="annTableBody"></tbody>
+        </table>
+      </section>
+    </section>
+
+    <section class="tab-panel" id="tab-schedule">
+      <section class="panel">
+        <h2>Assign Schedule</h2>
+        <div class="form-row">
+          <select id="schEmployee" style="flex:1; min-width:200px;"><option value="">Loading live sellers…</option></select>
+          <select id="schStatus">
+            <option value="scheduled">Scheduled (live day)</option>
+            <option value="day_off">Day Off</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <input type="date" id="schDateFrom" title="From date">
+          <input type="date" id="schDateTo" title="To date (leave same as From for a single day)">
+        </div>
+        <div class="form-row" id="schWeekdayRow">
+          <label style="font-family:var(--font-mono); font-size:11px; color:#7488b6; display:flex; align-items:center; margin-right:4px;">Apply to:</label>
+          <label class="wd-check"><input type="checkbox" value="1" checked> Mon</label>
+          <label class="wd-check"><input type="checkbox" value="2" checked> Tue</label>
+          <label class="wd-check"><input type="checkbox" value="3" checked> Wed</label>
+          <label class="wd-check"><input type="checkbox" value="4" checked> Thu</label>
+          <label class="wd-check"><input type="checkbox" value="5" checked> Fri</label>
+          <label class="wd-check"><input type="checkbox" value="6" checked> Sat</label>
+          <label class="wd-check"><input type="checkbox" value="0" checked> Sun</label>
+        </div>
+        <div class="form-row" id="schLiveDetailsRow">
+          <select id="schBrand"><option value="">Select brand…</option></select>
+          <select id="schPlatform"><option value="">Select platform…</option></select>
+        </div>
+        <div class="form-row" id="schShiftRow">
+          <input type="time" id="schShiftStart" title="Shift start">
+          <input type="time" id="schShiftEnd" title="Shift end">
+        </div>
+        <div class="form-row">
+          <textarea id="schNotes" placeholder="Optional note (shown to the employee)…"></textarea>
+        </div>
+        <div class="form-row">
+          <button class="btn primary" id="schSubmitBtn">Save Schedule</button>
+        </div>
+        <p class="loading-note" style="padding-top:0;">Saving posts one row per matching date and automatically notifies the employee on their dashboard — no extra step needed.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Upcoming Schedule <span class="count" id="schCount">—</span></h2>
+        <div class="form-row">
+          <select id="schFilterEmployee"><option value="">All live sellers</option></select>
+        </div>
+        <div id="schLoading" class="loading-note">Loading schedule…</div>
+        <table style="display:none;" id="schTable">
+          <thead><tr><th>Date</th><th>Employee</th><th>Status</th><th>Brand / Platform</th><th>Shift</th><th></th></tr></thead>
+          <tbody id="schTableBody"></tbody>
         </table>
       </section>
     </section>
@@ -272,6 +346,7 @@
 
   let allEmployees = [];
   let allBrands = [];
+  let allPositions = [];
 
   async function loadBrands(){
     const { data, error } = await supabaseClient.from('brands').select('*').order('name');
@@ -285,12 +360,83 @@
     });
   }
 
+  async function loadPositions(){
+    document.getElementById('positionsLoading').style.display = 'block';
+    document.getElementById('positionsLoading').className = 'loading-note';
+    document.getElementById('positionsLoading').textContent = 'Loading positions…';
+    document.getElementById('positionsTable').style.display = 'none';
+
+    const { data, error } = await supabaseClient.from('positions').select('*').order('name');
+    document.getElementById('positionsLoading').style.display = 'none';
+    if(error){
+      document.getElementById('positionsLoading').textContent = 'Could not load positions: ' + error.message;
+      document.getElementById('positionsLoading').className = 'error-note';
+      document.getElementById('positionsLoading').style.display = 'block';
+      return;
+    }
+    allPositions = data || [];
+
+    // Populate the Add Employee dropdown
+    const addSel = document.getElementById('newPosition');
+    addSel.innerHTML = '<option value="">No position set</option>';
+    allPositions.forEach(p=>{
+      const opt = document.createElement('option');
+      opt.value = p.id; opt.textContent = p.name;
+      addSel.appendChild(opt);
+    });
+
+    // Render the manage table
+    document.getElementById('positionsTable').style.display = 'table';
+    document.getElementById('positionsCount').textContent = allPositions.length + ' position' + (allPositions.length === 1 ? '' : 's');
+    const tbody = document.getElementById('positionsTableBody');
+    if(allPositions.length === 0){
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="2">No positions defined yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = allPositions.map(p => `
+      <tr>
+        <td>${escapeHtml(p.name)}</td>
+        <td><button class="btn danger" data-delpos="${p.id}">Delete</button></td>
+      </tr>
+    `).join('');
+    tbody.querySelectorAll('[data-delpos]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const pos = allPositions.find(p => p.id === btn.dataset.delpos);
+        if(!pos) return;
+        const inUse = allEmployees.some(e => e.position_id === pos.id);
+        const warning = inUse
+          ? `\n\nHeads up: at least one employee currently has "${pos.name}" set. Deleting it will clear their position (it won't remove the employee).`
+          : '';
+        if(!confirm(`Delete position "${pos.name}"?${warning}`)) return;
+        const { error } = await supabaseClient.from('positions').delete().eq('id', pos.id);
+        if(error){ alert('Could not delete position: ' + error.message); return; }
+        await loadPositions();
+        await loadRoster();
+      });
+    });
+  }
+
+  document.getElementById('addPositionBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('newPositionName').value.trim();
+    if(!name){ alert('Enter a position name.'); return; }
+    const btn = document.getElementById('addPositionBtn');
+    btn.disabled = true; btn.textContent = 'Adding…';
+    const { error } = await supabaseClient.from('positions').insert({ name });
+    btn.disabled = false; btn.textContent = 'Add Position';
+    if(error){
+      alert('Could not add position: ' + error.message + (error.message.includes('duplicate') ? '\n(That position already exists.)' : ''));
+      return;
+    }
+    document.getElementById('newPositionName').value = '';
+    await loadPositions();
+  });
+
   async function loadRoster(){
     document.getElementById('rosterLoading').style.display = 'block';
     document.getElementById('rosterTable').style.display = 'none';
     const { data, error } = await supabaseClient
       .from('employees')
-      .select('*, brands(name)')
+      .select('*, brands(name), positions(name)')
       .order('name');
     document.getElementById('rosterLoading').style.display = 'none';
     if(error){
@@ -319,7 +465,7 @@
       <tr>
         <td class="mono">${escapeHtml(e.badge_id)}</td>
         <td>${escapeHtml(e.name)}</td>
-        <td>${e.brands ? escapeHtml(e.brands.name) : '<span style="color:#5c6d99;">No Brand Assign</span>'}</td>
+        <td>${e.positions ? escapeHtml(e.positions.name) : '<span style="color:#5c6d99;">—</span>'}</td>
         <td class="mono">${escapeHtml(e.role)}</td>
         <td class="row-actions">
           <button class="btn danger" data-del="${e.id}">Remove</button>
@@ -343,6 +489,7 @@
   document.getElementById('addEmployeeBtn').addEventListener('click', async ()=>{
     const badge_id = document.getElementById('newBadgeId').value.trim();
     const name = document.getElementById('newName').value.trim();
+    const position_id = document.getElementById('newPosition').value || null;
     const brand_id = document.getElementById('newBrand').value || null;
     const role = document.getElementById('newRole').value;
     if(!badge_id || !name){ alert('Badge ID and name are required.'); return; }
@@ -350,7 +497,7 @@
     const btn = document.getElementById('addEmployeeBtn');
     btn.disabled = true; btn.textContent = 'Adding…';
 
-    const { error } = await supabaseClient.from('employees').insert({ badge_id, name, brand_id, role });
+    const { error } = await supabaseClient.from('employees').insert({ badge_id, name, position_id, brand_id, role });
 
     btn.disabled = false; btn.textContent = 'Add Employee';
 
@@ -360,6 +507,7 @@
     }
     document.getElementById('newBadgeId').value = '';
     document.getElementById('newName').value = '';
+    document.getElementById('newPosition').value = '';
     document.getElementById('newBrand').value = '';
     document.getElementById('newRole').value = 'employee';
     await loadRoster();
@@ -381,7 +529,7 @@
 
     const { data, error } = await supabaseClient
       .from('attendance_logs')
-      .select('*, employees(badge_id, name, brands(name))')
+      .select('*, employees(badge_id, name, positions(name))')
       .eq('log_date', date)
       .order('time_in', { ascending: false });
 
@@ -408,7 +556,7 @@
       <tr>
         <td class="mono">${r.employees ? escapeHtml(r.employees.badge_id) : '—'}</td>
         <td>${r.employees ? escapeHtml(r.employees.name) : '(removed employee)'}</td>
-        <td>${r.employees && r.employees.brands ? escapeHtml(r.employees.brands.name) : '<span style="color:#5c6d99;">No Brand Assign</span>'}</td>
+        <td>${r.employees && r.employees.positions ? escapeHtml(r.employees.positions.name) : '<span style="color:#5c6d99;">—</span>'}</td>
         <td class="mono">${fmtTime(r.time_in)}</td>
         <td class="mono">${fmtTime(r.time_out)}</td>
       </tr>
@@ -426,11 +574,11 @@
     const date = document.getElementById('attendanceDate').value || todayStr();
     const fmtTime = iso => iso ? new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
     const rows = [
-      ['Badge ID','Name','Brand','Date','Time In','Time Out'],
+      ['Badge ID','Name','Position','Date','Time In','Time Out'],
       ...currentAttendanceRows.map(r => [
         r.employees ? r.employees.badge_id : '',
         r.employees ? r.employees.name : '(removed employee)',
-        r.employees && r.employees.brands ? r.employees.brands.name : '',
+        r.employees ? (r.employees.positions ? r.employees.positions.name : '') : '',
         date, fmtTime(r.time_in), fmtTime(r.time_out)
       ])
     ];
@@ -446,6 +594,7 @@
 
   // ---- Part 2 init ----
   await loadBrands();
+  await loadPositions();
   await loadRoster();
   setAttendanceDateToToday();
   await loadAttendance();
@@ -627,6 +776,192 @@
   await loadTickets();
   await loadBrandsIntoAnnForm();
   await loadAnnouncements();
+
+  // ==========================================================
+  // PART 4 — Live Seller Schedule
+  // ==========================================================
+
+  TICKET_TYPE_LABELS.schedule_change = 'Schedule Change Request';
+
+  let allPlatforms = [];
+  let liveSellers = [];
+
+  async function loadPlatforms(){
+    const { data, error } = await supabaseClient.from('platforms').select('*').order('name');
+    if(error){ console.error(error); return; }
+    allPlatforms = data || [];
+    const sel = document.getElementById('schPlatform');
+    allPlatforms.forEach(p=>{
+      const opt = document.createElement('option');
+      opt.value = p.id; opt.textContent = p.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  function loadBrandsIntoSchForm(){
+    const sel = document.getElementById('schBrand');
+    allBrands.forEach(b=>{
+      const opt = document.createElement('option');
+      opt.value = b.id; opt.textContent = b.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function loadLiveSellers(){
+    const liveSellerPos = allPositions.find(p => p.name === 'Live Seller');
+    liveSellers = liveSellerPos ? allEmployees.filter(e => e.position_id === liveSellerPos.id) : [];
+
+    const empSel = document.getElementById('schEmployee');
+    const filterSel = document.getElementById('schFilterEmployee');
+    if(liveSellers.length === 0){
+      empSel.innerHTML = '<option value="">No employees with the "Live Seller" position yet</option>';
+      return;
+    }
+    empSel.innerHTML = '<option value="">Select a live seller…</option>' +
+      liveSellers.map(e => `<option value="${e.id}">${escapeHtml(e.name)} (${escapeHtml(e.badge_id)})</option>`).join('');
+    filterSel.innerHTML = '<option value="">All live sellers</option>' +
+      liveSellers.map(e => `<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('');
+  }
+
+  function toggleSchStatusFields(){
+    const isDayOff = document.getElementById('schStatus').value === 'day_off';
+    document.getElementById('schLiveDetailsRow').style.display = isDayOff ? 'none' : 'flex';
+    document.getElementById('schShiftRow').style.display = isDayOff ? 'none' : 'flex';
+  }
+  document.getElementById('schStatus').addEventListener('change', toggleSchStatusFields);
+  toggleSchStatusFields();
+
+  function datesInRange(fromStr, toStr, allowedWeekdays){
+    const dates = [];
+    let d = new Date(fromStr + 'T00:00:00');
+    const end = new Date(toStr + 'T00:00:00');
+    while(d <= end){
+      if(allowedWeekdays.has(d.getDay())){
+        dates.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+      }
+      d.setDate(d.getDate()+1);
+    }
+    return dates;
+  }
+
+  document.getElementById('schSubmitBtn').addEventListener('click', async ()=>{
+    const employee_id = document.getElementById('schEmployee').value;
+    const status = document.getElementById('schStatus').value;
+    const dateFrom = document.getElementById('schDateFrom').value;
+    const dateTo = document.getElementById('schDateTo').value || dateFrom;
+    const brand_id = document.getElementById('schBrand').value || null;
+    const platform_id = document.getElementById('schPlatform').value || null;
+    const shift_start = document.getElementById('schShiftStart').value || null;
+    const shift_end = document.getElementById('schShiftEnd').value || null;
+    const notes = document.getElementById('schNotes').value.trim() || null;
+
+    if(!employee_id){ alert('Select a live seller.'); return; }
+    if(!dateFrom){ alert('Pick at least a From date.'); return; }
+    if(dateTo < dateFrom){ alert('The To date is before the From date.'); return; }
+    if(status === 'scheduled' && !brand_id){ alert('Select a brand for a scheduled (live) day.'); return; }
+
+    const allowedWeekdays = new Set(
+      Array.from(document.querySelectorAll('#schWeekdayRow input:checked')).map(cb => Number(cb.value))
+    );
+    if(allowedWeekdays.size === 0){ alert('Select at least one weekday to apply this to.'); return; }
+
+    const dates = datesInRange(dateFrom, dateTo, allowedWeekdays);
+    if(dates.length === 0){ alert('No matching dates in that range for the selected weekdays.'); return; }
+
+    const rows = dates.map(schedule_date => ({
+      employee_id, schedule_date, status,
+      brand_id: status === 'day_off' ? null : brand_id,
+      platform_id: status === 'day_off' ? null : platform_id,
+      shift_start: status === 'day_off' ? null : shift_start,
+      shift_end: status === 'day_off' ? null : shift_end,
+      notes, created_by: emp.id
+    }));
+
+    const btn = document.getElementById('schSubmitBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    // upsert so re-running an overlapping range updates existing days
+    // (and fires the update-notification trigger) instead of erroring
+    // on the unique(employee_id, schedule_date) constraint.
+    const { error } = await supabaseClient
+      .from('live_seller_schedule')
+      .upsert(rows, { onConflict: 'employee_id,schedule_date' });
+
+    btn.disabled = false; btn.textContent = 'Save Schedule';
+
+    if(error){ alert('Could not save schedule: ' + error.message); return; }
+
+    document.getElementById('schNotes').value = '';
+    await loadSchedule();
+    alert(`Saved ${dates.length} day${dates.length === 1 ? '' : 's'}. The employee has been notified on their dashboard.`);
+  });
+
+  async function loadSchedule(){
+    document.getElementById('schLoading').style.display = 'block';
+    document.getElementById('schLoading').className = 'loading-note';
+    document.getElementById('schLoading').textContent = 'Loading schedule…';
+    document.getElementById('schTable').style.display = 'none';
+
+    const filterEmployee = document.getElementById('schFilterEmployee').value;
+    let query = supabaseClient
+      .from('live_seller_schedule')
+      .select('*, employees(name, badge_id), brands(name), platforms(name)')
+      .gte('schedule_date', todayStr())
+      .order('schedule_date', { ascending: true });
+    if(filterEmployee) query = query.eq('employee_id', filterEmployee);
+
+    const { data, error } = await query;
+    document.getElementById('schLoading').style.display = 'none';
+    if(error){
+      document.getElementById('schLoading').textContent = 'Could not load schedule: ' + error.message;
+      document.getElementById('schLoading').className = 'error-note';
+      document.getElementById('schLoading').style.display = 'block';
+      return;
+    }
+
+    const rows = data || [];
+    document.getElementById('schTable').style.display = 'table';
+    document.getElementById('schCount').textContent = rows.length + (rows.length === 1 ? ' day' : ' days');
+    const tbody = document.getElementById('schTableBody');
+    if(rows.length === 0){
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No upcoming schedule entries</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => {
+      const dateLabel = new Date(r.schedule_date + 'T00:00:00').toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'});
+      const statusPill = r.status === 'day_off'
+        ? '<span class="pill rejected">Day Off</span>'
+        : '<span class="pill approved">Scheduled</span>';
+      const brandPlatform = r.status === 'day_off' ? '—' :
+        [r.brands ? r.brands.name : null, r.platforms ? r.platforms.name : null].filter(Boolean).map(escapeHtml).join(' · ') || '—';
+      const shift = (r.shift_start && r.shift_end) ? `${r.shift_start}–${r.shift_end}` : '—';
+      return `
+        <tr>
+          <td class="mono">${dateLabel}</td>
+          <td>${r.employees ? escapeHtml(r.employees.name) : '(removed)'}</td>
+          <td>${statusPill}</td>
+          <td>${brandPlatform}</td>
+          <td class="mono">${shift}</td>
+          <td><button class="btn danger" data-delsch="${r.id}">Delete</button></td>
+        </tr>
+      `;
+    }).join('');
+    tbody.querySelectorAll('[data-delsch]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(!confirm('Delete this schedule entry?')) return;
+        const { error } = await supabaseClient.from('live_seller_schedule').delete().eq('id', btn.dataset.delsch);
+        if(error){ alert('Could not delete: ' + error.message); return; }
+        await loadSchedule();
+      });
+    });
+  }
+
+  document.getElementById('schFilterEmployee').addEventListener('change', loadSchedule);
+
+  await loadPlatforms();
+  loadBrandsIntoSchForm();
+  await loadLiveSellers();
+  await loadSchedule();
 
 })();
 </script>
