@@ -506,7 +506,16 @@
     tbody.innerHTML = rows.map(e => `
       <tr>
         <td class="mono">${escapeHtml(e.badge_id)}</td>
-        <td>${escapeHtml(e.name)}</td>
+        <td>
+          ${escapeHtml(e.name)}
+          <!-- Admin Profile Photo Upload UI -->
+          <div class="admin-photo-upload" style="margin-top: 8px;">
+            <label style="font-size: 10px; color: #7488b6; display: block;">UPDATE PHOTO</label>
+            <input type="file" class="admin-file-input" data-employee-id="${e.id}" style="font-size: 11px; color: var(--paper); margin-bottom: 4px;" />
+            <br>
+            <button class="btn primary" style="padding: 4px 8px; font-size: 11px;" onclick="adminUploadEmployeePhoto('${e.id}')">Save Photo</button>
+          </div>
+        </td>
         <td>${e.positions ? escapeHtml(e.positions.name) : '<span style="color:#5c6d99;">—</span>'}</td>
         <td class="mono">${escapeHtml(e.role)}</td>
         <td class="row-actions">
@@ -514,6 +523,8 @@
         </td>
       </tr>
     `).join('');
+    
+    // ... keep your existing delete event listeners below this ...
     tbody.querySelectorAll('[data-del]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         const target = allEmployees.find(e => e.id === btn.dataset.del);
