@@ -133,7 +133,7 @@
   const { display, initials } = firstAndLast(emp.name);
   document.getElementById('avatarInitials').textContent = initials;
   document.getElementById('empName').textContent = display || emp.name;
-  document.getElementById('empPositionBrand').textContent = (emp.brands ? emp.brands.name : 'No brand assigned') + (emp.is_brand_manager ? ' · Brand Manager' : '');
+  document.getElementById('empPositionBrand').textContent = emp.positions ? emp.positions.name : 'No position set';
   document.getElementById('empBadgeId').textContent = emp.badge_id || 'No badge ID on file';
 
   // ---- Load attendance history ----
