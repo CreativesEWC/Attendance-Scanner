@@ -369,6 +369,23 @@
           <input type="file" id="avatarInput" accept="image/*">
         </label>
       </div>
+      <div class="profile-card">
+  <div class="avatar-wrap">
+    <div class="avatar" id="avatarInitials">?</div>
+    <img class="avatar-img" id="avatarImg" alt="Profile photo">
+    <label class="avatar-edit" for="avatarInput" title="Change photo">✏️
+      <input type="file" id="avatarInput" accept="image/*">
+    </label>
+  </div>
+  
+  <!-- INSERT IT HERE -->
+  <div class="employee-photo-upload" style="margin-top: 12px; text-align: center;">
+    <input type="file" id="employeePhotoInput" style="font-size: 12px; color: var(--paper);" />
+    <br>
+    <button class="btn primary" id="saveEmployeePhotoBtn" style="margin-top: 8px;">Save Photo</button>
+  </div>
+
+</div>
       <div>
         <div class="name" id="empName">—</div>
         <div class="meta" id="empPositionBrand">—</div>
@@ -532,24 +549,62 @@
 (async function(){
 
 // Attach this to the file input element where employees choose their profile picture
-const fileInput = document.getElementById('photoInput'); // Make sure this matches your HTML input ID
+document.getElementById('saveEmployeePhotoBtn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('employeePhotoInput');
+    const file = fileInput ? fileInput.files[0] : null;
 
-if (fileInput) {
-  fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    if (!file) {
+      alert("Please select an image file first.");
+      return;
+    }
+
+    const fileName = `public/${emp.id}_${Date.now()}_${file.name}`;
 
     try {
-      // Use emp.id from your already loaded employee record
-      const filePath = `avatars/${emp.id}-${Date.now()}`;
+      const btn = document.getElementById('saveEmployeePhotoBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
 
-      // 1. Upload file to Supabase Storage bucket
-      const { data: uploadData, error: uploadError } = await supabaseClient.storage
-        .from('profile-photos') // Your storage bucket name
-        .upload(filePath, file);
+      // 1. Upload to Supabase Storage 'avatars' bucket
+      const { error: uploadError } = await supabaseClient.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
+      // 2. Get Public URL
+      const { data: publicUrlData } = supabaseClient.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const imageUrl = publicUrlData.publicUrl;
+
+      // 3. Save URL to the employee record table using profile_image column
+      const { error: dbError } = await supabaseClient
+        .from('employees')
+        .update({ profile_image: imageUrl })
+        .eq('id', emp.id);
+
+      if (dbError) throw dbError;
+
+      // 4. Instantly update the UI image tag on screen
+      const profileImageEl = document.getElementById('avatarImg');
+      if (profileImageEl) {
+        profileImageEl.src = imageUrl;
+      }
+
+      alert("Profile picture updated successfully!");
+      window.location.reload();
+
+    } catch (err) {
+    console.error("Error uploading image:", err);
+    alert("Failed to upload image: " + err.message);
+  } finally {
+    const btn = document.getElementById('saveEmployeePhotoBtn');
+    btn.disabled = false;
+    btn.textContent = 'Save Photo';
+  }
+});
       // 2. Get the Public URL
       const { data: { publicUrl } } = supabaseClient.storage
         .from('profile-photos')
