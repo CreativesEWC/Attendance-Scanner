@@ -178,26 +178,27 @@
   }
   
   .profile-photo-container { 
-    margin-top: 55px; /* Pushes the photo box down slightly from the top logo */
-    width: 100%; 
-    height: 150px; /* Controls the exact height window of the photo frame */
-    position: relative;
-    z-index: 1;
-    padding: 0 20px; /* Adds a clean left/right margin so it doesn't touch the outer card borders */
-  }
-  
-  .profile-photo, .profile-photo-fallback { 
-    width: 100%; 
-    height: 100%; 
-    border: none; 
-    border-radius: 8px; /* Gives the photo a subtle, clean edge */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-  }
-  
-  .profile-photo { 
-    object-fit: cover; /* Fills the frame nicely without awkward stretching */
-    object-position: center 20%; /* Focuses on the upper-body portion of the cutout */
-  }
+  margin-top: 15px; /* Moves the container closer to the top logo */
+  width: 100%; 
+  height: 310px; /* Makes the photo box taller to fill the card */
+  position: relative;
+  z-index: 1;
+  padding: 0 16px; 
+  box-sizing: border-box; /* Prevents padding from breaking 100% width layout */
+}
+
+.profile-photo, .profile-photo-fallback { 
+  width: 100%; 
+  height: 100%; 
+  border: 2px solid #000000; /* Added thick black border as seen in the photo */
+  border-radius: 0; /* Changed from 6px to 0 for sharp corners */
+  box-sizing: border-box; /* Ensures border stays within exact container dimensions */
+}
+
+.profile-photo { 
+  object-fit: cover; 
+  object-position: center 15%; /* Focuses on the upper body/face */
+}
   
   .profile-photo-fallback { 
     background: transparent; /* Lets the SVG background show through if there is no photo */
