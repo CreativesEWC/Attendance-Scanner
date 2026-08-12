@@ -308,6 +308,19 @@
   if (!emp) { window.location.href = 'login.html'; return; }
   if (emp.role !== 'employee') { routeToRoleHome(emp); return; }
 
+  // ---- Ensure avatar_url is fresh (fixes blank avatar after refresh) ----
+  const { data: freshAvatarData, error: avatarFetchError } = await supabaseClient
+    .from('employees')
+    .select('avatar_url')
+    .eq('id', emp.id)
+    .single();
+
+  if (!avatarFetchError && freshAvatarData) {
+    emp.avatar_url = freshAvatarData.avatar_url;
+  } else if (avatarFetchError) {
+    console.error('Could not refresh avatar_url:', avatarFetchError);
+  }
+  
   // ---- Fill in profile card ----
   function firstAndLast(fullName){
     if(!fullName) return { display:'', initials:'?' };
