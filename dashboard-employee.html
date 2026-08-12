@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EWC Corp. — My Attendance</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
 <style>
   :root{
     --navy-950:#0a0f1e; --navy-900:#0f1830; --navy-800:#16213f; --navy-700:#22315a;
@@ -23,11 +24,17 @@
   header h1{ font-family:var(--font-display); font-size:20px; margin:0; }
   header .sub{ font-family:var(--font-mono); font-size:11px; color:var(--amber-400); letter-spacing:.08em; text-transform:uppercase; margin-top:2px; }
   #signOutBtn{ background:none; border:1px solid var(--line); color:#9fb0d6; border-radius:8px; padding:9px 16px; font-family:var(--font-body); font-size:13px; cursor:pointer; }
+  .header-actions{ display:flex; gap:10px; }
+  #digitalIdBtn{ background:none; border:1px solid var(--amber-500); color:var(--amber-400); border-radius:8px; padding:9px 16px; font-family:var(--font-body); font-size:13px; cursor:pointer; }
 
   main{ max-width:760px; margin:0 auto; padding:24px 20px 60px; }
 
   .profile-card{ background:var(--navy-900); border:1px solid var(--line); border-radius:16px; padding:22px 24px; margin-bottom:22px; display:flex; align-items:center; gap:18px; }
   .avatar{ width:60px; height:60px; border-radius:50%; background:var(--navy-950); color:var(--amber-400); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:22px; font-weight:700; border:2px solid var(--amber-500); flex-shrink:0; }
+  .avatar-wrap{ position:relative; flex-shrink:0; }
+  .avatar-img{ width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--amber-500); display:none; }
+  .avatar-edit{ position:absolute; bottom:-2px; right:-2px; width:22px; height:22px; border-radius:50%; background:var(--amber-500); color:var(--navy-950); display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; border:2px solid var(--navy-900); }
+  .avatar-edit input{ display:none; }
   .profile-card .name{ font-family:var(--font-display); font-size:22px; font-weight:700; }
   .profile-card .meta{ font-family:var(--font-mono); font-size:12px; color:#9fb0d6; margin-top:3px; }
   .profile-card .badge-id{ font-family:var(--font-mono); font-size:11px; color:#5c6a8f; margin-top:2px; }
@@ -95,6 +102,39 @@
   .modal-box .a-full-meta{ font-family:var(--font-mono); font-size:11px; color:#7488b6; margin-bottom:14px; }
 
   .modal-box textarea{ min-height:70px; resize:vertical; }
+
+  /* ---- Digital ID ---- */
+  .id-modal-box{ max-width:340px; padding:0; overflow:visible; background:transparent; border:none; box-shadow:none; position:relative; }
+  .id-card{ position:relative; width:100%; background:#eef8f6; border-radius:18px; overflow:hidden; box-shadow:0 12px 34px rgba(0,0,0,.45); font-family:var(--font-body); color:#0b3b39; }
+  .id-card-top{ position:relative; height:64px; background:linear-gradient(120deg,#0e6e6b 0%,#14a098 45%,#57c7b8 100%); display:flex; align-items:center; justify-content:flex-end; padding:0 14px; overflow:hidden; }
+  .id-card-top::after{ content:''; position:absolute; left:-15%; bottom:-38px; width:130%; height:70px; background:#f4c452; border-radius:50%; opacity:.85; }
+  .id-card-logo{ position:relative; z-index:2; width:40px; height:40px; background:#fff; border-radius:9px; padding:4px; object-fit:contain; }
+  .id-card-photo-wrap{ padding:14px 14px 0; }
+  .id-card-photo{ width:100%; height:220px; object-fit:cover; border-radius:10px; background:#0e6e6b; display:block; }
+  .id-card-photo-fallback{ width:100%; height:220px; border-radius:10px; background:#0e6e6b; display:flex; align-items:center; justify-content:center; color:#eafaf4; font-family:var(--font-display); font-size:48px; font-weight:700; }
+  .id-card-position{ background:#0e6e6b; color:#fff; text-align:center; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:10px 10px 2px; }
+  .id-card-name{ background:#0e6e6b; color:#fff; text-align:center; font-family:var(--font-display); font-size:17px; font-weight:700; padding:0 10px 12px; }
+  .id-card-barcode-strip{ background:#f7f4ec; padding:8px 14px 2px; text-align:center; }
+  .id-card-barcode-strip svg{ max-width:100%; height:40px; }
+  .id-card-badgeid{ text-align:center; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; color:#5c6a8f; padding-bottom:12px; background:#f7f4ec; }
+
+  .id-card.back{ padding:16px 16px 0; background:linear-gradient(160deg,#e9f7f3 0%,#cdeee6 100%); }
+  .id-card-back-top{ display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
+  .id-card-back-logo{ width:32px; height:32px; background:#fff; border-radius:8px; padding:3px; object-fit:contain; }
+  .id-card-company-name{ font-family:var(--font-mono); font-size:9px; letter-spacing:.05em; color:#0e6e6b; font-weight:700; line-height:1.3; text-transform:uppercase; }
+  .id-terms h3{ font-family:var(--font-display); font-size:13px; color:#0e6e6b; margin:0 0 8px; text-align:center; letter-spacing:.03em; text-transform:uppercase; }
+  .id-terms p{ font-size:10.5px; line-height:1.5; color:#1b4a47; margin:0 0 9px; text-align:center; }
+  .id-emergency{ background:#fff; border-radius:10px; padding:10px 12px; margin-bottom:12px; }
+  .id-emergency-title{ font-size:9.5px; font-weight:700; color:#0e6e6b; text-align:center; margin-bottom:6px; text-transform:uppercase; letter-spacing:.03em; }
+  .id-emergency-name{ font-weight:700; text-align:center; font-size:13px; }
+  .id-emergency-address, .id-emergency-phone{ text-align:center; font-size:10.5px; color:#3c5c59; margin-top:2px; }
+
+  .id-barcode-overlay{ position:absolute; inset:0; background:#fff; border-radius:18px; display:flex; align-items:center; justify-content:center; gap:18px; padding:20px; box-shadow:0 12px 34px rgba(0,0,0,.45); }
+  .id-overlay-barcode-wrap svg{ height:60px; width:230px; transform:rotate(-90deg); }
+  .id-vert-label{ writing-mode:vertical-rl; transform:rotate(180deg); font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:.05em; color:#0b3b39; white-space:nowrap; }
+
+  .id-modal-actions{ display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+  .id-modal-actions .btn2{ font-size:11px; padding:7px 12px; background:var(--navy-900); border-color:var(--line); color:var(--paper); }
 </style>
 </head>
 <body>
@@ -107,7 +147,10 @@
       <div class="sub">Easy Ways Connection Corp.</div>
     </div>
   </div>
-  <button id="signOutBtn">Sign Out</button>
+  <div class="header-actions">
+    <button id="signOutBtn">Sign Out</button>
+    <button id="digitalIdBtn">Digital ID</button>
+  </div>
 </header>
 
 <main>
@@ -117,7 +160,13 @@
   <div id="content" style="display:none;">
 
     <div class="profile-card">
-      <div class="avatar" id="avatarInitials">?</div>
+      <div class="avatar-wrap">
+        <div class="avatar" id="avatarInitials">?</div>
+        <img class="avatar-img" id="avatarImg" alt="Profile photo">
+        <label class="avatar-edit" for="avatarInput" title="Change photo">✎
+          <input type="file" id="avatarInput" accept="image/*">
+        </label>
+      </div>
       <div>
         <div class="name" id="empName">—</div>
         <div class="meta" id="empPositionBrand">—</div>
@@ -194,6 +243,60 @@
     <div class="modal-actions">
       <button class="btn2" id="announceModalCloseBtn">Close</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="digitalIdModal">
+  <div class="modal-box id-modal-box">
+
+    <div class="id-card" id="idCardFront">
+      <div class="id-card-top">
+        <img class="id-card-logo" id="idLogoFront" alt="Company logo">
+      </div>
+      <div class="id-card-photo-wrap">
+        <img class="id-card-photo" id="idPhoto" alt="Employee photo" style="display:none;">
+        <div class="id-card-photo-fallback" id="idPhotoFallback">?</div>
+      </div>
+      <div class="id-card-position" id="idPosition">—</div>
+      <div class="id-card-name" id="idName">—</div>
+      <div class="id-card-barcode-strip"><svg id="idBarcodeFrontSvg"></svg></div>
+      <div class="id-card-badgeid" id="idBadgeFront">—</div>
+    </div>
+
+    <div class="id-card back" id="idCardBack" style="display:none;">
+      <div class="id-card-back-top">
+        <img class="id-card-back-logo" id="idLogoBack" alt="Company logo">
+        <div class="id-card-company-name">Easy Ways<br>Connection<br>Corporation</div>
+      </div>
+      <div class="id-terms">
+        <h3>Terms &amp; Conditions</h3>
+        <p><strong>Identification:</strong> Carry this ID card at all times during working hours for identification purposes.</p>
+        <p><strong>Authorized Use:</strong> This ID card is strictly for official use and should not be shared or used for unauthorized purposes.</p>
+      </div>
+      <div class="id-emergency">
+        <div class="id-emergency-title">In case of emergency please contact:</div>
+        <div class="id-emergency-name" id="idEmergName">—</div>
+        <div class="id-emergency-address" id="idEmergAddress"></div>
+        <div class="id-emergency-phone" id="idEmergPhone"></div>
+      </div>
+      <div class="id-card-barcode-strip"><svg id="idBarcodeBackSvg"></svg></div>
+      <div class="id-card-badgeid" id="idBadgeBack">—</div>
+    </div>
+
+    <div class="id-barcode-overlay" id="idBarcodeOverlay" style="display:none;">
+      <div class="id-vert-label" id="idOverlayName">—</div>
+      <div class="id-overlay-barcode-wrap"><svg id="idOverlayBarcodeSvg"></svg></div>
+      <div class="id-vert-label" id="idOverlayBadge">—</div>
+    </div>
+
+    <div class="id-modal-actions">
+      <button class="btn2" id="idToggleBtn">Show Back ID</button>
+      <button class="btn2" id="idEnlargeBtn">Enlarge Barcode</button>
+    </div>
+    <div class="id-modal-actions">
+      <button class="btn2" id="idCloseBtn">Close</button>
+    </div>
+
   </div>
 </div>
 
@@ -279,6 +382,128 @@
   document.getElementById('empName').textContent = display || emp.name;
   document.getElementById('empPositionBrand').textContent = emp.positions ? emp.positions.name : 'No position set';
   document.getElementById('empBadgeId').textContent = emp.badge_id || 'No badge ID on file';
+
+  // ---- Profile photo ----
+  function renderAvatar(url){
+    const imgEl = document.getElementById('avatarImg');
+    const initialsEl = document.getElementById('avatarInitials');
+    if(url){
+      imgEl.src = url;
+      imgEl.style.display = 'block';
+      initialsEl.style.display = 'none';
+    } else {
+      imgEl.style.display = 'none';
+      initialsEl.style.display = 'flex';
+    }
+  }
+  renderAvatar(emp.avatar_url);
+
+  document.getElementById('avatarInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith('image/')){ alert('Please choose an image file.'); e.target.value=''; return; }
+    if(file.size > 3 * 1024 * 1024){ alert('Image must be under 3MB.'); e.target.value=''; return; }
+
+    const ext = file.name.split('.').pop();
+    const path = `${emp.id}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true });
+
+    if(uploadError){ alert('Upload failed: ' + uploadError.message); e.target.value=''; return; }
+
+    const { data: urlData } = supabaseClient.storage.from('avatars').getPublicUrl(path);
+    const publicUrl = urlData.publicUrl;
+
+    const { error: updateError } = await supabaseClient
+      .from('employees')
+      .update({ avatar_url: publicUrl })
+      .eq('id', emp.id);
+
+    if(updateError){ alert('Photo uploaded but could not be saved: ' + updateError.message); e.target.value=''; return; }
+
+    emp.avatar_url = publicUrl;
+    renderAvatar(publicUrl);
+    e.target.value = '';
+  });
+
+  // ---- Digital ID ----
+  const idLogoSrc = document.querySelector('.brand-mark img').src;
+  document.getElementById('idLogoFront').src = idLogoSrc;
+  document.getElementById('idLogoBack').src = idLogoSrc;
+
+  let idBackVisible = false;
+
+  function renderBarcodes(){
+    const code = emp.badge_id || String(emp.id);
+    try{
+      JsBarcode('#idBarcodeFrontSvg', code, { format:'CODE128', displayValue:false, height:40, margin:0 });
+      JsBarcode('#idBarcodeBackSvg', code, { format:'CODE128', displayValue:false, height:40, margin:0 });
+      JsBarcode('#idOverlayBarcodeSvg', code, { format:'CODE128', displayValue:false, height:60, margin:0 });
+    }catch(e){ console.error('Barcode render failed:', e); }
+  }
+
+  function populateDigitalId(){
+    const nameUpper = (display || emp.name || '').toUpperCase();
+    const posUpper = (emp.positions ? emp.positions.name : 'Staff').toUpperCase();
+    const badge = emp.badge_id || 'No badge ID on file';
+
+    document.getElementById('idPosition').textContent = posUpper;
+    document.getElementById('idName').textContent = nameUpper;
+    document.getElementById('idBadgeFront').textContent = badge;
+    document.getElementById('idBadgeBack').textContent = badge;
+    document.getElementById('idOverlayBadge').textContent = badge;
+    document.getElementById('idOverlayName').textContent = nameUpper;
+
+    document.getElementById('idEmergName').textContent = emp.emergency_contact_name || 'Not on file';
+    document.getElementById('idEmergAddress').textContent = emp.emergency_contact_address || '';
+    document.getElementById('idEmergPhone').textContent = emp.emergency_contact_phone || '';
+
+    const photoEl = document.getElementById('idPhoto');
+    const fallbackEl = document.getElementById('idPhotoFallback');
+    if(emp.avatar_url){
+      photoEl.src = emp.avatar_url;
+      photoEl.style.display = 'block';
+      fallbackEl.style.display = 'none';
+    } else {
+      photoEl.style.display = 'none';
+      fallbackEl.style.display = 'flex';
+      fallbackEl.textContent = initials;
+    }
+
+    renderBarcodes();
+  }
+
+  function showIdFront(){
+    document.getElementById('idCardFront').style.display = 'block';
+    document.getElementById('idCardBack').style.display = 'none';
+    document.getElementById('idBarcodeOverlay').style.display = 'none';
+    document.getElementById('idToggleBtn').textContent = 'Show Back ID';
+    idBackVisible = false;
+  }
+  function showIdBack(){
+    document.getElementById('idCardFront').style.display = 'none';
+    document.getElementById('idCardBack').style.display = 'block';
+    document.getElementById('idBarcodeOverlay').style.display = 'none';
+    document.getElementById('idToggleBtn').textContent = 'Show Front ID';
+    idBackVisible = true;
+  }
+
+  document.getElementById('digitalIdBtn').addEventListener('click', () => {
+    populateDigitalId();
+    showIdFront();
+    document.getElementById('digitalIdModal').classList.add('open');
+  });
+  document.getElementById('idToggleBtn').addEventListener('click', () => {
+    if(idBackVisible) showIdFront(); else showIdBack();
+  });
+  document.getElementById('idEnlargeBtn').addEventListener('click', () => {
+    document.getElementById('idBarcodeOverlay').style.display = 'flex';
+  });
+  document.getElementById('idCloseBtn').addEventListener('click', () => {
+    document.getElementById('digitalIdModal').classList.remove('open');
+  });
 
   // ---- Load attendance history ----
   const { data: rows, error } = await supabaseClient
