@@ -110,24 +110,32 @@
   .id-card{ display:flex; flex-direction:column; height:480px; position:relative; width:100%; background:#eef8f6; border-radius:18px; overflow:hidden; box-shadow:0 12px 34px rgba(0,0,0,.45); font-family:var(--font-body); color:#0b3b39; }
   
   /* ---- Custom Front ID Layout ---- */
+  /* ---- Custom Front ID Layout ---- */
   .id-card-bg { 
     position: absolute; 
     top: 0; left: 0; 
     width: 100%; height: 100%; 
     object-fit: cover; 
-    z-index: 1; /* Puts the image in the back */
+    z-index: 1; 
   }
   
   .id-card-content { 
-    position: relative; /* CRITICAL: This makes the z-index work */
-    z-index: 2; /* Puts the content on top of the background */
-    width: 100%; height: 100%; 
+    position: relative; 
+    z-index: 2; 
+    width: 100%; 
     padding: 24px; 
     display: flex; flex-direction: column; 
-    align-items: flex-end; /* Aligns text to the right side */
+    align-items: center; /* Centers the photo horizontally */
+    flex-grow: 1; 
+  }
+
+  .id-card-top-right {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end; /* Keeps the logo on the right side */
   }
   
-  .id-card-content .header-logo { 
+  .header-logo { 
     width: 40px; height: 40px; 
     background: #fff; border-radius: 9px; padding: 4px; object-fit: contain; 
   }
@@ -146,13 +154,37 @@
     color: #eafaf4; font-family: var(--font-display); font-size: 48px; font-weight: 700; 
   }
   
-  .user-info { text-align: right; margin-top: 16px; flex-grow: 1; }
-  .user-name { font-size: 18px; font-family: var(--font-display); font-weight: 700; color: #0f4c5c; }
-  .user-title { font-size: 12px; font-family: var(--font-mono); color: #4a7c85; margin-top: 2px; text-transform: uppercase; }
-  .user-id { font-size: 11px; font-family: var(--font-mono); font-weight: 600; color: #1d9ba8; margin-top: 8px; letter-spacing: 1px; }
+  /* Bottom Banner Styling (Matches your 2nd image) */
+  .id-card-bottom-banner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    margin-top: auto; /* Forces banner to the absolute bottom */
+    display: flex;
+    flex-direction: column;
+  }
+
+  .id-card-text-block {
+    background: #0e6e6b; /* Solid Teal block */
+    padding: 12px 10px;
+    text-align: center;
+    color: #fff;
+  }
   
-  #idCardFront .id-card-barcode-strip { width: 100%; margin-top: auto; padding: 0; background: transparent; text-align: center; }
-  #idCardFront .id-card-barcode-strip svg { height: 40px; max-width: 100%; background: rgba(255,255,255,0.8); border-radius: 6px; padding: 4px; }
+  .user-title { font-size: 11px; font-family: var(--font-mono); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+  .user-name { font-size: 17px; font-family: var(--font-display); font-weight: 700; }
+  
+  #idCardFront .id-card-barcode-strip { 
+    background: #f7f4ec; /* Cream background */
+    padding: 8px 14px 12px; 
+    text-align: center; 
+    width: 100%; 
+  }
+  #idCardFront .id-card-barcode-strip svg { height: 40px; max-width: 100%; }
+  .user-id { 
+    font-size: 11px; font-family: var(--font-mono); font-weight: 600; 
+    color: #5c6a8f; letter-spacing: 1px; margin-top: 4px; 
+  }
 
   /* ---- Custom Back ID Layout ---- */
   .id-card.back { display:flex; flex-direction:column; height:480px; background: transparent; }
@@ -330,34 +362,38 @@
 <div class="modal-overlay" id="digitalIdModal">
   <div class="modal-box id-modal-box">
 
+    <!-- FRONT ID -->
     <div class="id-card" id="idCardFront">
-      <!-- Image Background (Updated to SVG) -->
+      <!-- Background Image -->
       <img class="id-card-bg" src="frontID_background.svg" alt="ID Background">
-
-      <!-- Front ID Content -->
+      
+      <!-- Top Content (Logo & Centered Photo) -->
       <div class="id-card-content">
-        <img class="header-logo" id="idLogoFront" alt="Company logo">
+        <div class="id-card-top-right">
+          <img class="header-logo" id="idLogoFront" alt="Company logo">
+        </div>
         
         <div class="profile-photo-container">
           <img class="profile-photo" id="idPhoto" alt="Employee photo" style="display:none;">
           <div class="profile-photo-fallback" id="idPhotoFallback">?</div>
         </div>
-        
-        <div class="user-info">
-          <div class="user-name" id="idName">—</div>
+      </div>
+
+      <!-- Bottom Banner (Name, Position, Barcode matching the 2nd image) -->
+      <div class="id-card-bottom-banner">
+        <div class="id-card-text-block">
           <div class="user-title" id="idPosition">—</div>
+          <div class="user-name" id="idName">—</div>
+        </div>
+        <div class="id-card-barcode-strip">
+          <svg id="idBarcodeFrontSvg"></svg>
           <div class="user-id" id="idBadgeFront">—</div>
         </div>
-
-        <div class="id-card-barcode-strip"><svg id="idBarcodeFrontSvg"></svg></div>
       </div>
     </div>
 
+    <!-- BACK ID -->
     <div class="id-card back" id="idCardBack" style="display:none;">
-      <!-- Back Image Background -->
-      <img class="id-card-bg" src="backID_background.svg" alt="Back ID Background">
-
-      <!-- Back ID Content -->
       <div class="id-card-back-content">
         <div class="id-card-back-top">
           <img class="id-card-back-logo" id="idLogoBack" alt="Company logo">
@@ -377,12 +413,15 @@
         <div class="id-card-barcode-strip"><svg id="idBarcodeBackSvg"></svg></div>
         <div class="id-card-badgeid" id="idBadgeBack">—</div>
       </div>
+    </div>
 
+    <!-- COMPACT BARCODE OVERLAY -->
     <div class="id-barcode-overlay" id="idBarcodeOverlay" style="display:none;">
       <div class="id-overlay-barcode-wrap"><svg id="idOverlayBarcodeSvg"></svg></div>
       <button class="btn2" id="idBarcodeCloseBtn">Close</button>
     </div>
 
+    <!-- RESTORED MODAL BUTTONS -->
     <div class="id-modal-actions">
       <button class="btn2" id="idToggleBtn">Show Back ID</button>
       <button class="btn2" id="idEnlargeBtn">Enlarge Barcode</button>
