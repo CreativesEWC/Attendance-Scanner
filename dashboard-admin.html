@@ -316,53 +316,45 @@
 
   // --- ADMIN PROFILE PHOTO UPLOAD FUNCTION ---
   async function adminUploadEmployeePhoto(employeeId) {
-  // Find the file input associated with this employee
-  const fileInput = document.querySelector(`input[data-employee-id="${employeeId}"]`) || document.getElementById('adminPhotoInput');
-  const file = fileInput.files[0];
-  
-  if (!file) {
-    alert("Please select an image file first.");
-    return;
-  }
-
-  // Create a unique file path
-  const fileName = `public/${employeeId}_${Date.now()}_${file.name}`;
-
-  try {
-    // 1. Upload to Supabase Storage bucket ('employee_images')
-    const { data: uploadData, error: uploadError } = await supabaseClient.storage
-      .from('employee_images')
-      .upload(fileName, file, { upsert: true });
-
-    if (uploadError) throw uploadError;
-
-    // 2. Get the public URL of the uploaded image
-    const { data: publicUrlData } = supabaseClient.storage
-      .from('employee_images')
-      .getPublicUrl(fileName);
-
-    const imageUrl = publicUrlData.publicUrl;
-
-    // 3. Update the employee's row in the database with the new profile image URL
-    const { error: dbError } = await supabaseClient
-      .from('employees')
-      .update({ profile_image: imageUrl })
-      .eq('id', employeeId);
-
-    if (dbError) throw dbError;
-
-    alert("Employee profile picture updated successfully!");
+    const fileInput = document.querySelector(`input[data-employee-id="${employeeId}"]`);
+    const file = fileInput ? fileInput.files[0] : null;
     
-    // Refresh your roster list if you have a reload function
-    if (typeof loadRoster === 'function') {
-      await loadRoster();
+    if (!file) {
+      alert("Please select an image file first.");
+      return;
     }
 
-  } catch (err) {
-    console.error("Error uploading employee image:", err);
-    alert("Failed to upload image: " + err.message);
+    const fileName = `public/${employeeId}_${Date.now()}_${file.name}`;
+
+    try {
+      const { error: uploadError } = await supabaseClient.storage
+        .from('employee_images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabaseClient.storage
+        .from('employee_images')
+        .getPublicUrl(fileName);
+
+      const imageUrl = publicUrlData.publicUrl;
+
+      const { error: dbError } = await supabaseClient
+        .from('employees')
+        .update({ profile_image: imageUrl })
+        .eq('id', employeeId);
+
+      if (dbError) throw dbError;
+
+      alert("Employee profile picture updated successfully!");
+      if (typeof loadRoster === 'function') {
+        await loadRoster();
+      }
+    } catch (err) {
+      console.error("Error uploading employee image:", err);
+      alert("Failed to upload image: " + err.message);
+    }
   }
-}
   
   // ---- Sign out ----
   document.getElementById('signOutBtn').addEventListener('click', async ()=>{
