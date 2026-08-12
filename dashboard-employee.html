@@ -228,10 +228,36 @@
   .id-emergency-name{ font-weight:700; text-align:center; font-size:13px; }
   .id-emergency-address, .id-emergency-phone{ text-align:center; font-size:10.5px; color:#3c5c59; margin-top:2px; }
 
-  /* Anchors the barcode to the bottom over the new background */
-  .id-card-back-content .id-card-barcode-strip { margin-top: auto; background: transparent; padding: 0; }
-  .id-card-back-content .id-card-barcode-strip svg { background: rgba(255,255,255,0.7); border-radius: 6px; padding: 4px; }
-  .id-card-back-content .id-card-badgeid { background: transparent; padding-bottom: 16px; margin-top: 8px; }
+  /* Anchors the barcode to the bottom and centers everything perfectly */
+  .id-card-back-content .id-card-barcode-strip { 
+    margin-top: auto; 
+    background: transparent; 
+    padding: 0; 
+    width: 100%; 
+    text-align: center; /* Centers the barcode */
+  }
+  
+  .id-card-back-content .id-card-barcode-strip svg { 
+    background: rgba(255, 255, 255, 0.85); /* Slightly whiter background for easier scanning */
+    border-radius: 6px; 
+    padding: 4px 8px; 
+    height: 40px; 
+    max-width: 100%; 
+    display: inline-block;
+  }
+  
+  .id-card-back-content .id-card-badgeid { 
+    background: transparent; 
+    padding-bottom: 16px; 
+    margin-top: 8px; 
+    width: 100%; 
+    text-align: center; /* Centers the ID number */
+    font-family: var(--font-mono); /* Restores the monospace font */
+    font-size: 11px; 
+    letter-spacing: .1em; 
+    color: #1b4a47; /* Matches the text color of the terms above */
+    font-weight: 600;
+  }
 
   .id-barcode-overlay { 
     position: absolute; 
