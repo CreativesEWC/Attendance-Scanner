@@ -905,7 +905,7 @@
     const filterEmployee = document.getElementById('schFilterEmployee').value;
     let query = supabaseClient
       .from('live_seller_schedule')
-      .select('*, employees(name, badge_id), brands(name), platforms(name)')
+      .select('*, employees!employee_id(name, badge_id), brands(name), platforms(name)')
       .gte('schedule_date', todayStr())
       .order('schedule_date', { ascending: true });
     if(filterEmployee) query = query.eq('employee_id', filterEmployee);
