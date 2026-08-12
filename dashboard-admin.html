@@ -617,7 +617,7 @@
 
     let query = supabaseClient
       .from('tickets')
-      .select('*, employees(name, badge_id)')
+      .select('*, employees!employee_id(name, badge_id)')
       .order('created_at', { ascending: false });
     if(filter === 'pending') query = query.eq('status', 'pending');
 
