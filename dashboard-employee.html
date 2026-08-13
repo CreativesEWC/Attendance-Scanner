@@ -979,10 +979,41 @@
   const tkDynamicFields = document.getElementById('tkDynamicFields');
   const tkSubjectGroup = document.getElementById('tkSubjectGroup');
   const tkDateToGroup = document.getElementById('tkDateToGroup');
-  const tkTimeGroup = document.getElementById('tkTimeGroup');
+  const tkTimeContainer = document.getElementById('tkTimeContainer');
+  const tkTimeRows = document.getElementById('tkTimeRows');
+  const addTimeRowBtn = document.getElementById('addTimeRowBtn');
   const tkReason = document.getElementById('tkReason');
   const tkReasonHint = document.getElementById('tkReasonHint');
   let maxChars = 350;
+
+  // Helper function to build dynamic Time Rows
+  function renderTimeRow(showHours = true) {
+    const row = document.createElement('div');
+    row.className = 'tk-time-row';
+    row.style.display = 'flex';
+    row.style.gap = '10px';
+    row.style.marginBottom = '8px';
+    
+    const hoursHtml = showHours 
+      ? `<div style="flex:1; max-width:80px;"><input type="number" class="tk-th" placeholder="Hrs" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:8px; padding:10px 12px; font-size:13px;" /></div>` 
+      : `<div style="flex:1; max-width:80px; display:none;"></div>`;
+
+    row.innerHTML = `
+      <div style="flex:1;"><input type="time" class="tk-tf" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:8px; padding:10px 12px; font-size:13px;" /></div>
+      <div style="flex:1;"><input type="time" class="tk-tt" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:8px; padding:10px 12px; font-size:13px;" /></div>
+      ${hoursHtml}
+      <div style="display:flex; align-items:center;">
+        <button class="rm-row-btn" style="padding:0; width:24px; height:24px; background:transparent; border:none; color:var(--coral-500); font-size:22px; cursor:pointer;" title="Remove row">&times;</button>
+      </div>
+    `;
+    
+    row.querySelector('.rm-row-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (document.querySelectorAll('.tk-time-row').length > 1) row.remove();
+    });
+    
+    tkTimeRows.appendChild(row);
+  }
 
   // 1. Open the modal from the header button
   document.getElementById('ticketBtn').addEventListener('click', () => {
@@ -991,9 +1022,6 @@
     document.getElementById('tkSubject').value = '';
     document.getElementById('tkDateFrom').value = '';
     document.getElementById('tkDateTo').value = '';
-    document.getElementById('tkTimeFrom').value = '';
-    document.getElementById('tkTimeTo').value = '';
-    document.getElementById('tkHours').value = '';
     tkReason.value = '';
     document.getElementById('submitTicketModal').classList.add('open');
   });
@@ -1003,45 +1031,62 @@
     document.getElementById('submitTicketModal').classList.remove('open');
   });
 
-  // 3. Handle dynamic form changes based on dropdown selection
+  // 3. Handle Add Row button
+  addTimeRowBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    renderTimeRow(true);
+  });
+
+  // 4. Handle dynamic form changes based on dropdown selection
   tkType.addEventListener('change', () => {
     const type = tkType.value;
-    if (!type) {
-      tkDynamicFields.style.display = 'none';
-      return;
-    }
-    tkDynamicFields.style.display = 'block';
+    tkDynamicFields.style.display = type ? 'block' : 'none';
+    if (!type) return;
     
-    // Reset displays
+    // Reset displays to default state
     tkSubjectGroup.style.display = 'none';
     tkDateToGroup.style.display = 'block';
-    tkTimeGroup.style.display = 'none';
+    document.getElementById('lblDateFrom').textContent = 'Date (From)';
+    tkTimeContainer.style.display = 'none';
+    addTimeRowBtn.style.display = 'none';
+    document.getElementById('lblTotalHours').style.display = 'block';
+    tkTimeRows.innerHTML = ''; // clear rows
     maxChars = 350;
-    tkReasonHint.textContent = `Max ${maxChars} characters`;
 
     if (type === 'overtime') {
-      tkTimeGroup.style.display = 'flex';
-      tkDateToGroup.style.display = 'none'; // OT is usually for a single day
+      tkDateToGroup.style.display = 'none'; // Only 1 Date requested (Cutoff Date)
+      document.getElementById('lblDateFrom').textContent = 'Date (Cutoff)';
+      tkTimeContainer.style.display = 'block';
+      addTimeRowBtn.style.display = 'block';
+      renderTimeRow(true); // Generates row with Hrs
       maxChars = 100;
-      tkReasonHint.textContent = `Max ${maxChars} characters`;
     } 
+    else if (type === 'undertime') {
+      tkDateToGroup.style.display = 'none'; // Only 1 Date requested
+      document.getElementById('lblDateFrom').textContent = 'Date';
+      tkTimeContainer.style.display = 'block';
+      document.getElementById('lblTotalHours').style.display = 'none';
+      renderTimeRow(false); // Generates row WITHOUT Hrs
+      // addTimeRowBtn remains hidden for Undertime
+    }
     else if (type === 'schedule_change') {
       tkSubjectGroup.style.display = 'block';
       tkDateToGroup.style.display = 'none'; 
+      document.getElementById('lblDateFrom').textContent = 'Date';
       maxChars = 250;
-      tkReasonHint.textContent = `Max ${maxChars} characters`;
     }
+    
+    tkReasonHint.textContent = `Max ${maxChars} characters`;
+    if(tkReason.value.length > maxChars) tkReason.value = tkReason.value.substring(0, maxChars);
   });
 
-  // 4. Enforce character limits
+  // 5. Enforce character limits
   tkReason.addEventListener('input', () => {
-    if (tkReason.value.length > maxChars) {
-      tkReason.value = tkReason.value.substring(0, maxChars);
-    }
+    if (tkReason.value.length > maxChars) tkReason.value = tkReason.value.substring(0, maxChars);
     tkReasonHint.textContent = `${tkReason.value.length} / ${maxChars} characters`;
   });
 
-  // 5. Handle Submission to Database
+  // 6. Handle Submission to Database
   document.getElementById('tkSubmitBtn').addEventListener('click', async () => {
     const type = tkType.value;
     if (!type) { alert('Please select a request type.'); return; }
@@ -1061,17 +1106,36 @@
       status: 'pending'
     };
 
-    if (type === 'leave' || type === 'absence' || type === 'emergency_leave' || type === 'undertime') {
+    if (['leave', 'absence', 'emergency_leave'].includes(type)) {
       payload.date_to = date_to;
     } 
+    else if (type === 'undertime') {
+      const row = document.querySelector('.tk-time-row');
+      const tf = row.querySelector('.tk-tf').value;
+      const tt = row.querySelector('.tk-tt').value;
+      if(!tf || !tt) { alert('Please fill in Time From and Time To.'); return; }
+      payload.time_from = tf;
+      payload.time_to = tt;
+    }
     else if (type === 'overtime') {
-      const tFrom = document.getElementById('tkTimeFrom').value;
-      const tTo = document.getElementById('tkTimeTo').value;
-      const hrs = document.getElementById('tkHours').value;
-      if (!tFrom || !tTo || !hrs) { alert('Please fill in the Time From, Time To, and Total Hours.'); return; }
-      payload.time_from = tFrom;
-      payload.time_to = tTo;
-      payload.hours = hrs;
+      const rows = document.querySelectorAll('.tk-time-row');
+      let tfArr = [], ttArr = [], hrsArr = [];
+      let valid = true;
+      rows.forEach(r => {
+        const tf = r.querySelector('.tk-tf').value;
+        const tt = r.querySelector('.tk-tt').value;
+        const th = r.querySelector('.tk-th').value;
+        if(!tf || !tt || !th) valid = false;
+        tfArr.push(tf);
+        ttArr.push(tt);
+        hrsArr.push(th);
+      });
+      if (!valid) { alert('Please fill in all Time From, Time To, and Total Hours fields.'); return; }
+      
+      // Joins multiple times using a comma so they store cleanly in a single database cell
+      payload.time_from = tfArr.join(', ');
+      payload.time_to = ttArr.join(', ');
+      payload.hours = hrsArr.join(', ');
     } 
     else if (type === 'schedule_change') {
       const subj = document.getElementById('tkSubject').value.trim();
@@ -1166,7 +1230,7 @@
       <option value="schedule_change">Change Schedule Request</option>
     </select>
     
-    <!-- Dynamic Fields Container -->
+   <!-- Dynamic Fields Container -->
     <div id="tkDynamicFields" style="display:none; margin-top: 14px;">
       
       <div id="tkSubjectGroup" style="display:none; margin-bottom: 10px;">
@@ -1174,8 +1238,8 @@
       </div>
 
       <div style="display:flex; gap:10px; margin-bottom: 10px;">
-        <div style="flex:1;">
-          <label style="font-size:10px; color:#7488b6; text-transform:uppercase;">Date (From)</label>
+        <div style="flex:1;" id="tkDateFromGroup">
+          <label id="lblDateFrom" style="font-size:10px; color:#7488b6; text-transform:uppercase;">Date (From)</label>
           <input type="date" id="tkDateFrom" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:8px; padding:10px 12px; font-size:13px;" />
         </div>
         <div style="flex:1;" id="tkDateToGroup">
@@ -1184,19 +1248,17 @@
         </div>
       </div>
 
-      <div id="tkTimeGroup" style="display:none; gap:10px; margin-bottom: 10px;">
-        <div style="flex:1;">
-          <label style="font-size:10px; color:#7488b6; text-transform:uppercase;">Time (From)</label>
-          <input type="time" id="tkTimeFrom" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:8px; padding:10px 12px; font-size:13px;" />
+      <!-- NEW: Dynamic Time Rows Container -->
+      <div id="tkTimeContainer" style="display:none; margin-bottom: 10px;">
+        <div style="display:flex; gap:10px; margin-bottom: 4px; padding-right: 20px;">
+          <label style="flex:1; font-size:10px; color:#7488b6; text-transform:uppercase;">Time (From)</label>
+          <label style="flex:1; font-size:10px; color:#7488b6; text-transform:uppercase;">Time (To)</label>
+          <label id="lblTotalHours" style="flex:1; max-width:80px; font-size:10px; color:#7488b6; text-transform:uppercase;">Total Hrs</label>
         </div>
-        <div style="flex:1;">
-          <label style="font-size:10px; color:#7488b6; text-transform:uppercase;">Time (To)</label>
-          <input type="time" id="tkTimeTo" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:8px; padding:10px 12px; font-size:13px;" />
+        <div id="tkTimeRows">
+          <!-- Rows will be injected here via JavaScript -->
         </div>
-        <div style="flex:1;">
-          <label style="font-size:10px; color:#7488b6; text-transform:uppercase;">Total Hours</label>
-          <input type="number" id="tkHours" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:8px; padding:10px 12px; font-size:13px;" placeholder="e.g. 2" />
-        </div>
+        <button class="btn2" id="addTimeRowBtn" style="display:none; width:100%; margin-top:4px; border: 1px dashed var(--amber-500); color: var(--amber-400); background: transparent; cursor: pointer; padding: 8px;">[+] Add Another Time Row</button>
       </div>
 
       <div style="margin-bottom: 10px;">
