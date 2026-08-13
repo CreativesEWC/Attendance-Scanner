@@ -990,22 +990,46 @@
   const tkReasonHint = document.getElementById('tkReasonHint');
   let maxChars = 350;
 
-  // Render Overtime Row with Date & Reason included
+  // Render Overtime Row with Stacked Layout (Date/Reason top, Times/Hrs bottom)
   function renderOtRow() {
     const row = document.createElement('div');
     row.className = 'tk-ot-row';
-    row.style.display = 'flex';
-    row.style.gap = '6px';
-    row.style.marginBottom = '8px';
+    row.style.background = 'var(--navy-800)';
+    row.style.border = '1px solid var(--line)';
+    row.style.borderRadius = '8px';
+    row.style.padding = '12px';
+    row.style.marginBottom = '10px';
+    row.style.position = 'relative';
 
     row.innerHTML = `
-      <div style="flex:1; max-width:110px;"><input type="date" class="tk-ot-date" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px 6px; font-size:12px;" /></div>
-      <div style="flex:2;"><input type="text" class="tk-ot-reason" placeholder="Reason (max 100)" maxlength="100" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px 6px; font-size:12px;" /></div>
-      <div style="flex:1; max-width:80px;"><input type="time" class="tk-ot-tf" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px 6px; font-size:12px;" /></div>
-      <div style="flex:1; max-width:80px;"><input type="time" class="tk-ot-tt" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px 6px; font-size:12px;" /></div>
-      <div style="flex:1; max-width:60px;"><input type="number" class="tk-ot-th" placeholder="Hrs" style="width:100%; background:var(--navy-800); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px 6px; font-size:12px;" /></div>
-      <div style="display:flex; align-items:center;">
-        <button class="rm-ot-row" style="padding:0; width:24px; height:24px; background:transparent; border:none; color:var(--coral-500); font-size:22px; cursor:pointer;" title="Remove row">&times;</button>
+      <button class="rm-ot-row" style="position:absolute; top:4px; right:8px; background:transparent; border:none; color:var(--coral-500); font-size:20px; font-weight:bold; cursor:pointer; padding:0;" title="Remove row">&times;</button>
+      
+      <!-- Top Row: Date & Reason -->
+      <div style="display:flex; gap:8px; margin-bottom: 10px; padding-right: 20px;">
+        <div style="flex:1;">
+          <label style="font-size:9px; color:#7488b6; text-transform:uppercase;">Date</label>
+          <input type="date" class="tk-ot-date" style="width:100%; background:var(--navy-900); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px; font-size:12px;" />
+        </div>
+        <div style="flex:2;">
+          <label style="font-size:9px; color:#7488b6; text-transform:uppercase;">Reason</label>
+          <input type="text" class="tk-ot-reason" placeholder="Reason (max 100)" maxlength="100" style="width:100%; background:var(--navy-900); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px; font-size:12px;" />
+        </div>
+      </div>
+
+      <!-- Bottom Row: Times & Hours -->
+      <div style="display:flex; gap:8px;">
+        <div style="flex:1;">
+          <label style="font-size:9px; color:#7488b6; text-transform:uppercase;">Time (From)</label>
+          <input type="time" class="tk-ot-tf" style="width:100%; background:var(--navy-900); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px; font-size:12px;" />
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:9px; color:#7488b6; text-transform:uppercase;">Time (To)</label>
+          <input type="time" class="tk-ot-tt" style="width:100%; background:var(--navy-900); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px; font-size:12px;" />
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:9px; color:#7488b6; text-transform:uppercase;">Total Hrs</label>
+          <input type="number" class="tk-ot-th" placeholder="Hrs" style="width:100%; background:var(--navy-900); border:1px solid var(--line); color:var(--paper); border-radius:6px; padding:8px; font-size:12px;" />
+        </div>
       </div>
     `;
     
@@ -1260,17 +1284,12 @@
         </div>
       </div>
 
-      <!-- Overtime Specific: Multi-row with Date, Reason, Times, Hrs -->
+  <!-- Overtime Specific: Multi-row with Date, Reason, Times, Hrs -->
       <div id="tkOvertimeContainer" style="display:none; margin-bottom: 10px;">
-        <div style="display:flex; gap:6px; margin-bottom: 4px; padding-right: 24px;">
-          <label style="flex:1; max-width:110px; font-size:10px; color:#7488b6; text-transform:uppercase;">Date</label>
-          <label style="flex:2; font-size:10px; color:#7488b6; text-transform:uppercase;">Reason</label>
-          <label style="flex:1; max-width:80px; font-size:10px; color:#7488b6; text-transform:uppercase;">Time In</label>
-          <label style="flex:1; max-width:80px; font-size:10px; color:#7488b6; text-transform:uppercase;">Time Out</label>
-          <label style="flex:1; max-width:60px; font-size:10px; color:#7488b6; text-transform:uppercase;">Hrs</label>
+        <div id="tkOvertimeRows">
+          <!-- The new stacked rows will appear here -->
         </div>
-        <div id="tkOvertimeRows"></div>
-        <button class="btn2" id="addOtRowBtn" style="width:100%; margin-top:4px; border: 1px dashed var(--amber-500); color: var(--amber-400); background: transparent; cursor: pointer; padding: 8px;">[+] Add Another Row</button>
+        <button class="btn2" id="addOtRowBtn" style="width:100%; margin-top:8px; border: 1px dashed var(--amber-500); color: var(--amber-400); background: transparent; cursor: pointer; padding: 8px;">[+] Add Another Row</button>
       </div>
 
       <div id="tkReasonGroup" style="margin-bottom: 10px;">
