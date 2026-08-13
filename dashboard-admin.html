@@ -1187,18 +1187,29 @@ await supabaseClient.from('notifications').insert([{
       .update(updateData)
       .eq('id', ticketId);
       
-    if(error){ alert('Could not update ticket: ' + error.message); return; };
+    if (error) { 
+      alert('Could not update ticket: ' + error.message); 
+      return; 
+    }
+    
     await loadTickets();
+  }; // <--- Make sure this matches how the function started!
+
+  // ---- Safely wrap the tickets filter ----
+  const ticketsFilter = document.getElementById('ticketsFilter');
+  if (ticketsFilter) {
+    ticketsFilter.addEventListener('change', loadTickets);
   }
 
-  document.getElementById('ticketsFilter').addEventListener('change', loadTickets);
-
   // ---- Announcements ----
-  async function loadBrandsIntoAnnForm(){
+  async function loadBrandsIntoAnnForm() {
     const sel = document.getElementById('annBrand');
-    allBrands.forEach(b=>{
+    if (!sel) return; // Safety check in case the element isn't loaded yet
+    
+    allBrands.forEach(b => {
       const opt = document.createElement('option');
-      opt.value = b.id; opt.textContent = b.name;
+      opt.value = b.id; 
+      opt.textContent = b.name;
       sel.appendChild(opt);
     });
   }
