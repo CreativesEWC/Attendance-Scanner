@@ -597,8 +597,12 @@ aside.sidebar.collapsed ~ main.main-content {
 
     <!-- 4. NOTIFICATIONS TAB PANEL -->
     <div id="tab-notifications" class="tab-panel" style="display:none;">
-      <h2>Notifications</h2>
-      <div id="fullNotificationsList"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--amber-400);">All Notifications</h2>
+      </div>
+      <section class="panel">
+        <div id="fullNotificationsList"><div class="empty-note">Loading notifications…</div></div>
+      </section>
     </div>
 
     <!-- 5. SUBMISSION FORMS TAB PANEL -->
@@ -859,23 +863,27 @@ aside.sidebar.collapsed ~ main.main-content {
 
   // Fetch Notifications
   async function loadNotifications() {
-    if (!emp || !emp.id) return; // Ensure user is logged in
+    if (!emp || !emp.id) return; 
     
     const { data, error } = await supabaseClient
       .from('notifications')
       .select('*')
       .eq('user_id', emp.id)
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(30);
+
+    const fullListEl = document.getElementById('fullNotificationsList');
 
     if (error) {
       console.error("Error loading notifications:", error);
+      navBellList.innerHTML = '<div class="nav-bell-empty">Error loading notifications.</div>';
+      if(fullListEl) fullListEl.innerHTML = '<div class="empty-note">Error loading notifications.</div>';
       return;
     }
 
     const unreadCount = data.filter(n => !n.is_read).length;
 
-    // Update Badge
+    // Update Bell Badge
     if (unreadCount > 0) {
       navBellBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
       navBellBadge.style.display = 'flex';
@@ -883,35 +891,30 @@ aside.sidebar.collapsed ~ main.main-content {
       navBellBadge.style.display = 'none';
     }
 
-    // Populate List
-    if (data.length === 0) {
-      navBellList.innerHTML = '<div class="nav-bell-empty">You have no new notifications.</div>';
+    // Populate Lists safely
+    if (!data || data.length === 0) {
+      navBellList.innerHTML = '<div class="nav-bell-empty" style="padding: 16px; text-align: center; color: #7488b6; font-size: 12px;">You have no new notifications.</div>';
+      if(fullListEl) fullListEl.innerHTML = '<div class="empty-note">You have no notifications.</div>';
       return;
     }
 
-    navBellList.innerHTML = data.map(n => `
-      <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-link="${n.link || ''}">
-        <div class="nav-bell-message">${escapeHtml(n.message)}</div>
-        <div class="nav-bell-time">${new Date(n.created_at).toLocaleString()}</div>
+    const notifHTML = data.map(n => `
+      <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-link="${n.link || ''}" style="border-bottom: 1px solid var(--line); padding: 12px; cursor: pointer;">
+        <div class="nav-bell-message" style="color: ${n.is_read ? '#9fb0d6' : 'var(--amber-400)'};">${escapeHtml(n.message)}</div>
+        <div class="nav-bell-time" style="font-size: 10px; color: #7488b6; margin-top: 4px;">${new Date(n.created_at).toLocaleString()}</div>
       </div>
     `).join('');
 
-    // Handle clicks to open forms or mark as read
+    navBellList.innerHTML = notifHTML;
+    if(fullListEl) fullListEl.innerHTML = notifHTML;
+
+    // Handle clicks to mark as read
     document.querySelectorAll('.nav-bell-item').forEach(item => {
       item.addEventListener('click', async () => {
         const notifId = item.getAttribute('data-id');
-        const ticketId = item.getAttribute('data-link');
-
         if (item.classList.contains('unread')) {
           await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
-          item.classList.remove('unread');
-          loadNotifications(); 
-        }
-
-        // If notification is tied to a ticket, open the document viewer modal!
-        if (ticketId && typeof openEmployeeTicketDocument === 'function') {
-          navBellDropdown.classList.remove('show');
-          openEmployeeTicketDocument(ticketId);
+          loadNotifications(); // Reload to clear the badge
         }
       });
     });
@@ -1076,8 +1079,9 @@ aside.sidebar.collapsed ~ main.main-content {
     const textEl = document.getElementById('commentReplyText');
     const comment = textEl.value.trim();
     
-    if (!comment) return; // Prevent blank comments
+    if (!comment) return; 
     
+    // 1. Insert the comment
     const { error } = await supabaseClient
       .from('announcement_comments')
       .insert({
@@ -1091,8 +1095,23 @@ aside.sidebar.collapsed ~ main.main-content {
       return;
     }
     
-    textEl.value = ''; // Clear the text box
-    loadComments(postId); // Refresh the feed to show the new comment instantly
+    textEl.value = ''; 
+    loadComments(postId); 
+
+    // 2. Notify Admins/Presidents that someone commented
+    const { data: admins } = await supabaseClient
+      .from('employees')
+      .select('id')
+      .in('role', ['admin', 'president']);
+      
+    if (admins && admins.length > 0) {
+      const notifs = admins.map(admin => ({
+        user_id: admin.id,
+        message: `${display || emp.name} commented on an announcement.`,
+        link: postId
+      }));
+      await supabaseClient.from('notifications').insert(notifs);
+    }
   };
 
   window.closeAnnouncementModal = function() {
