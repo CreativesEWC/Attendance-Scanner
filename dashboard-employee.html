@@ -869,10 +869,11 @@ aside.sidebar.collapsed ~ main.main-content {
     if (!emp || !emp.id) return; 
     
     const { data, error } = await supabaseClient
-      .from('forms') // Change 'tickets' to 'forms' or your actual table name
+      .from('notifications')
       .select('*')
       .eq('employee_id', emp.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(30);
 
     const fullListEl = document.getElementById('fullNotificationsList');
 
@@ -882,9 +883,10 @@ aside.sidebar.collapsed ~ main.main-content {
       if(fullListEl) fullListEl.innerHTML = '<div class="empty-note">Error loading notifications.</div>';
       return;
     }
-    
-    // Load Employee Submissions / Tickets
-  aasync function loadSubmissions() {
+  } // <-- Properly closes loadNotifications
+
+  // Load Employee Submissions / Tickets
+  async function loadSubmissions() {
     if (!emp || !emp.id) return;
     const tableBody = document.getElementById('ticketsTable');
     if (!tableBody) return;
@@ -892,7 +894,7 @@ aside.sidebar.collapsed ~ main.main-content {
     const { data, error } = await supabaseClient
       .from('tickets')
       .select('*')
-      .eq('employee_id', emp.id) // Filters strictly for the logged-in employee
+      .eq('employee_id', emp.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -930,7 +932,7 @@ aside.sidebar.collapsed ~ main.main-content {
     }).join('');
   }
 
-    // Open and display the employee's submitted form details
+  // Open and display the employee's submitted form details
   async function openEmployeeTicketDocument(ticketId) {
     const { data: ticket, error } = await supabaseClient
       .from('tickets')
