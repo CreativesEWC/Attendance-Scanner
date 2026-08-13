@@ -951,43 +951,43 @@ aside.sidebar.collapsed ~ main.main-content {
     navBellList.innerHTML = notifHTML;
     if(fullListEl) fullListEl.innerHTML = notifHTML;
 
-    // Handle clicks to mark as read and open the correct modal
+   // Handle clicks to mark as read and open the correct modal
     document.querySelectorAll('.nav-bell-item').forEach(item => {
       item.addEventListener('click', async () => {
         const notifId = item.getAttribute('data-id');
         const linkId = item.getAttribute('data-link');
-        const type = item.getAttribute('data-type');
         
         // 1. Mark as read
         if (item.classList.contains('unread')) {
           await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
           item.classList.remove('unread');
           item.style.background = 'transparent';
-          item.querySelector('div[style*="border-radius: 50%; background: var(--amber-400)"]').style.display = 'none'; // Hide the dot
+          const dot = item.querySelector('div[style*="border-radius: 50%; background: var(--amber-400)"]');
+          if (dot) dot.style.display = 'none'; // Hide the amber dot
           loadNotifications(); // Reload to clear the badge count
         }
         
         if (!linkId) return;
 
-        // 2. Open the correct view based on the notification type
-        if (type === 'Announcement Comment') {
-          // Fetch the announcement data so we can open it directly
-          const { data: post } = await supabaseClient.from('announcements').select('*, brands(name)').eq('id', linkId).single();
-          if (post) {
-            const brandLabel = post.brands ? post.brands.name : 'Company-wide';
-            const postedDate = new Date(post.created_at).toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
-            
-            document.getElementById('modalAnnouncementTitle').textContent = post.title;
-            document.getElementById('modalAnnouncementDate').textContent = `${brandLabel} · Posted ${postedDate}`;
-            document.getElementById('modalAnnouncementBody').textContent = post.body;
-            document.getElementById('announcementModal').dataset.postId = post.id;
-            
-            loadComments(post.id); // Load the replies
-            document.getElementById('announcementModal').classList.add('open');
-          }
+        // 2. Open the correct view directly from the database
+        // First, check if the link belongs to an announcement
+        const { data: post } = await supabaseClient.from('announcements').select('*, brands(name)').eq('id', linkId).maybeSingle();
+        
+        if (post) {
+          // It's an announcement! Populate the comment modal and open it
+          const brandLabel = post.brands ? post.brands.name : 'Company-wide';
+          const postedDate = new Date(post.created_at).toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
+          
+          document.getElementById('modalAnnouncementTitle').textContent = post.title;
+          document.getElementById('modalAnnouncementDate').textContent = `${brandLabel} · Posted ${postedDate}`;
+          document.getElementById('modalAnnouncementBody').textContent = post.body;
+          document.getElementById('announcementModal').dataset.postId = post.id;
+          
+          loadComments(post.id); // Load the replies
+          document.getElementById('announcementModal').classList.add('open');
         } 
         else if (typeof openEmployeeTicketDocument === 'function') {
-          // If it's not a comment, assume it's a form/ticket and open the document viewer
+          // If it isn't an announcement, it must be a Form/Ticket submission
           openEmployeeTicketDocument(linkId);
         }
       });
