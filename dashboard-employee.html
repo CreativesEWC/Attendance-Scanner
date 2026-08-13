@@ -491,6 +491,8 @@ aside.sidebar.collapsed ~ main.main-content {
 
 <main class="main-content">
   <header class="top-header">
+    <!-- SWITCH TO ADMIN VIEW BUTTON (Only visible for Admin/Presidents) -->
+    <button id="switchViewBtn" class="btn2" style="display:none;">Switch to Admin View</button>
     <!-- NOTIFICATION BELL -->
     <div class="nav-bell-wrapper" id="navBellWrapper">
       <button class="nav-bell-btn" id="navBellBtn" aria-label="Notifications">
@@ -778,6 +780,15 @@ aside.sidebar.collapsed ~ main.main-content {
     return;
   }
 
+  // ---- Switch to Admin View Handling for Admins/Presidents ----
+  const switchViewBtn = document.getElementById('switchViewBtn');
+  if (switchViewBtn && (emp.role === 'admin' || emp.role === 'president')) {
+    switchViewBtn.style.display = 'inline-block';
+    switchViewBtn.addEventListener('click', () => {
+      window.location.href = 'dashboard-admin.html';
+    });
+  }
+  
     // ---- CONDITIONAL SCHEDULE REQUEST VISIBILITY ----
     const scheduleNavBtn = document.getElementById('scheduleNavBtn');
     if (emp && scheduleNavBtn) {
