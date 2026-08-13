@@ -889,7 +889,7 @@ aside.sidebar.collapsed ~ main.main-content {
     if (!tableBody) return;
 
     const { data, error } = await supabaseClient
-      .from('tickets')
+      .from('forms')
       .select('*')
       .eq('employee_id', emp.id)
       .order('created_at', { ascending: false });
@@ -1043,7 +1043,10 @@ aside.sidebar.collapsed ~ main.main-content {
   }
 
   // Trigger load when script runs
-  setTimeout(loadNotifications, 1000); // Slight delay to ensure 'emp' object is fully loaded
+  setTimeout(() => {
+  loadNotifications();
+  loadSubmissions();
+}, 1000);// Slight delay to ensure 'emp' object is fully loaded
   
   // ---- Ensure avatar_url is fresh (fixes blank avatar after refresh) ----
   const { data: freshAvatarData, error: avatarFetchError } = await supabaseClient
