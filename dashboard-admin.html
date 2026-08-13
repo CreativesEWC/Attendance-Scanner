@@ -1193,7 +1193,7 @@ await supabaseClient.from('notifications').insert([{
     }
     
     await loadTickets();
-  }; // <--- Make sure this matches how the function started!
+  }
 
   // ---- Safely wrap the tickets filter ----
   const ticketsFilter = document.getElementById('ticketsFilter');
