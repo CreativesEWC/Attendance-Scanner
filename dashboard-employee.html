@@ -513,13 +513,15 @@ aside.sidebar.collapsed ~ main.main-content {
     </div>
   </header>
 
-  <div class="brand">
-    <div class="brand-mark"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAIAAAAP3aGbAABpc0lEQVR42u39aZQl2XUehn57n4i48815qqy550ajuzERIECAxCQCFAFRgNgkKJqxRJEaLT1LT89ey/ayJNrLltd7eroMlW5JpipT4QBIgCYrCYJEgKJqpKYGKCBuqqrq7qGjKzcs68c0Scvf0jbmZlVmVV3TlvVp1v3VVj3rjnRpzznW/vswdSVTg4ODgcNbC7BQ4ODo6wHBwcHBwfOTg4ODg6psP/AHZ6W51Z00nTAAAAAElFTkSuQmCC" alt="EWC Corp. logo"></div>
-    <div>
-      <h1>My Attendance</h1>
-      <div class="sub">Easy Ways Connection Corp.</div>
-    </div>
+ <div class="brand" style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+  <div class="brand-mark" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">
+    <img src="easyway_icon.svg" alt="EWC Corp. logo" style="width: 100%; height: 100%; object-fit: contain;">
   </div>
+  <div>
+    <h1 style="margin: 0; font-size: 24px; line-height: 1.2;">My Attendance</h1>
+    <div class="sub" style="margin-top: 4px;">Easy Ways Connection Corp.</div>
+  </div>
+</div>
 
   <div id="loadingMsg" class="loading">Loading your attendance…</div>
 
@@ -1386,10 +1388,13 @@ if (digitalIdBtn) {
       </div>
     `;
     
-    row.querySelector('.rm-ot-row').addEventListener('click', (e) => {
-      e.preventDefault();
-      if (document.querySelectorAll('.tk-ot-row').length > 1) row.remove();
-    });
+    const rmBtn = row.querySelector('.rm-ot-row');
+if (rmBtn) {
+  rmBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (document.querySelectorAll('.tk-ot-row').length > 1) row.remove();
+  });
+}
     
     tkOvertimeRows.appendChild(row);
   }
