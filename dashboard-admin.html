@@ -200,7 +200,7 @@
       </div>
     </div>
   </header>
-  </main>
+  
 
   <!-- Your existing admin dashboard tabs / content panels start right below here -->
   
@@ -220,191 +220,201 @@
       <button id="signOutBtn">Sign Out</button>
     </div>
   </header>
-
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="roster">Roster</button>
-    <button class="tab-btn" data-tab="attendance">Attendance</button>
-    <button class="tab-btn" data-tab="tickets">Tickets <span class="badge-count" id="ticketsBadge" style="display:none;"></span></button>
-    <button class="tab-btn" data-tab="announcements">Announcements</button>
-    <button class="tab-btn" data-tab="schedule">Live Seller Schedule</button>
-  </nav>
-
+  
   <main>
+      <div id="content">
 
-    <section class="tab-panel active" id="tab-roster">
-      <section class="panel">
-        <h2>Employee Roster <span class="count" id="rosterCount">—</span></h2>
-        <div class="form-row">
-          <input type="text" id="rosterSearch" placeholder="Search by name or badge ID…" style="flex:1; min-width:180px;">
-        </div>
-        <div id="rosterLoading" class="loading-note">Loading roster…</div>
-        <table style="display:none;" id="rosterTable">
-          <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Role</th><th></th></tr></thead>
-          <tbody id="rosterTableBody"></tbody>
-        </table>
-      </section>
+  <!-- 1. HOME TAB -->
+  <div id="tab-home" class="tab-panel">
+    <!-- Admin Home contents (Stats, top-level overview cards go here) -->
+  </div>
 
-      <section class="panel">
-        <h2>Add Employee</h2>
-        <div class="form-row">
-          <input type="text" id="newBadgeId" placeholder="Badge ID (e.g. EW-0076-2024)" style="font-family:var(--font-mono);">
-          <input type="text" id="newName" placeholder="Full name" style="flex:1; min-width:160px;">
-          <select id="newPosition"><option value="">No position set</option></select>
-        </div>
-        <div class="form-row">
-          <select id="newBrand"><option value="">No brand assigned</option></select>
-          <select id="newRole">
-            <option value="employee">Employee</option>
-            <option value="kiosk">Kiosk</option>
-            <option value="admin">Admin</option>
-            <option value="president">President</option>
-          </select>
-          <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
-        </div>
-        <p class="loading-note" style="padding-top:0;">New employees can view their own record once their login is linked. Ask an admin to send them an invite from Supabase Auth, then their account will match automatically by email.</p>
-      </section>
-
-      <section class="panel">
-        <h2>Manage Positions <span class="count" id="positionsCount">—</span></h2>
-        <div class="form-row">
-          <input type="text" id="newPositionName" placeholder="New position name (e.g. Live Seller)" style="flex:1; min-width:200px;">
-          <button class="btn primary" id="addPositionBtn">Add Position</button>
-        </div>
-        <div id="positionsLoading" class="loading-note">Loading positions…</div>
-        <table style="display:none;" id="positionsTable">
-          <thead><tr><th>Position</th><th></th></tr></thead>
-          <tbody id="positionsTableBody"></tbody>
-        </table>
-      </section>
+  <!-- 2. ANNOUNCEMENTS TAB -->
+  <div id="tab-announcements" class="tab-panel" style="display:none;">
+    <section class="panel">
+      <h2>Post an Announcement</h2>
+      <div class="form-row">
+        <input type="text" id="annTitle" placeholder="Title" style="flex:1; min-width:180px;">
+        <select id="annBrand"><option value="">Company-wide</option></select>
+      </div>
+      <div class="form-row">
+        <textarea id="annBody" placeholder="Announcement text…"></textarea>
+      </div>
+      <div class="form-row">
+        <input type="date" id="annEventDate" title="Optional event date">
+        <input type="text" id="annLocation" placeholder="Optional location" style="flex:1; min-width:160px;">
+        <button class="btn primary" id="postAnnBtn">Post Announcement</button>
+      </div>
     </section>
 
-    <section class="tab-panel" id="tab-attendance">
-      <section class="panel">
-        <h2>Attendance Log <span class="count" id="attendanceCount">—</span></h2>
-        <div class="form-row">
-          <input type="date" id="attendanceDate">
-          <button class="btn" id="attendanceTodayBtn">Today</button>
-          <button class="btn" id="exportCsvBtn" style="margin-left:auto;">Export CSV</button>
-        </div>
-        <div id="attendanceLoading" class="loading-note">Loading attendance…</div>
-        <table style="display:none;" id="attendanceTable">
-          <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Time In</th><th>Time Out</th></tr></thead>
-          <tbody id="attendanceTableBody"></tbody>
-        </table>
-      </section>
+    <section class="panel">
+      <h2>Recent Announcements <span class="count" id="annCount">—</span></h2>
+      <div id="annLoading" class="loading-note">Loading announcements…</div>
+      <table style="display:none;" id="annTable">
+        <thead><tr><th>Title</th><th>Brand</th><th>Event</th><th>Posted</th><th></th></tr></thead>
+        <tbody id="annTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- 3. ROSTER [EMPLOYEES] TAB -->
+  <div id="tab-roster" class="tab-panel" style="display:none;">
+    <section class="panel">
+      <h2>Employee Roster <span class="count" id="rosterCount"></span></h2>
+      <div class="form-row">
+        <input type="text" id="rosterSearch" placeholder="Search by name or badge ID..." style="flex:1; min-width:180px;">
+      </div>
+      <div id="rosterLoading" class="loading-note">Loading roster...</div>
+      <table style="display:none;" id="rosterTable">
+        <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Role</th><th></th><th></th></tr></thead>
+        <tbody id="rosterTableBody"></tbody>
+      </table>
     </section>
 
-    <section class="tab-panel" id="tab-tickets">
-      <section class="panel">
-        <h2>Overall Tickets <span class="count" id="ticketsCount">—</span></h2>
-        
-        <!-- NEW TICKET TYPE NAVIGATION -->
-        <nav class="sub-tabs" id="ticketTypeNav">
-          <button class="sub-tab-btn active" data-type="all">All Types</button>
-          <button class="sub-tab-btn" data-type="leave">Leave</button>
-          <button class="sub-tab-btn" data-type="absence">Absence</button>
-          <button class="sub-tab-btn" data-type="undertime">Undertime</button>
-          <button class="sub-tab-btn" data-type="emergency_leave">Emergency Leave</button>
-          <button class="sub-tab-btn" data-type="overtime">Overtime</button>
-          <button class="sub-tab-btn" data-type="schedule_change">Change Schedule Request</button>
-        </nav>
-
-        <div class="form-row">
-          <select id="ticketsFilter">
-            <option value="pending">Pending only</option>
-            <option value="all">All statuses</option>
-          </select>
-        </div>
-        <div id="ticketsLoading" class="loading-note">Loading tickets…</div>
-        <table style="display:none;" id="ticketsTable">
-          <thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Reason</th><th>Status</th><th></th></tr></thead>
-          <tbody id="ticketsTableBody"></tbody>
-        </table>
-      </section>
+    <section class="panel">
+      <h2>Add Employee</h2>
+      <div class="form-row">
+        <input type="text" id="newBadgeId" placeholder="Badge ID (e.g. EW-0076-2024)" style="font-family:var(--font-mono);">
+        <input type="text" id="newName" placeholder="Full name" style="flex:1; min-width:160px;">
+        <select id="newPosition"><option value="">No position set</option></select>
+      </div>
+      <div class="form-row">
+        <select id="newBrand"><option value="">No brand assigned</option></select>
+        <select id="newRole">
+          <option value="employee">Employee</option>
+          <option value="kiosk">Kiosk</option>
+          <option value="admin">Admin</option>
+          <option value="president">President</option>
+        </select>
+        <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
+      </div>
+      <p class="loading-note" style="padding-top:0;">New employees can view their own record once their login is linked. Ask an admin to send them an invite from Supabase Auth, then their account will match automatically by email.</p>
     </section>
 
-    <section class="tab-panel" id="tab-announcements">
-      <section class="panel">
-        <h2>Post an Announcement</h2>
-        <div class="form-row">
-          <input type="text" id="annTitle" placeholder="Title" style="flex:1; min-width:180px;">
-          <select id="annBrand"><option value="">Company-wide</option></select>
-        </div>
-        <div class="form-row">
-          <textarea id="annBody" placeholder="Announcement text…"></textarea>
-        </div>
-        <div class="form-row">
-          <input type="date" id="annEventDate" title="Optional event date">
-          <input type="text" id="annLocation" placeholder="Optional location" style="flex:1; min-width:160px;">
-          <button class="btn primary" id="postAnnBtn">Post Announcement</button>
-        </div>
-      </section>
+    <section class="panel">
+      <h2>Manage Positions <span class="count" id="positionsCount">—</span></h2>
+      <div class="form-row">
+        <input type="text" id="newPositionName" placeholder="New position name (e.g. Live Seller)" style="flex:1; min-width:200px;">
+        <button class="btn primary" id="addPositionBtn">Add Position</button>
+      </div>
+      <div id="positionsLoading" class="loading-note">Loading positions…</div>
+      <table style="display:none;" id="positionsTable">
+        <thead><tr><th>Position</th><th></th></tr></thead>
+        <tbody id="positionsTableBody"></tbody>
+      </table>
+    </section>
+  </div>
 
-      <section class="panel">
-        <h2>Recent Announcements <span class="count" id="annCount">—</span></h2>
-        <div id="annLoading" class="loading-note">Loading announcements…</div>
-        <table style="display:none;" id="annTable">
-          <thead><tr><th>Title</th><th>Brand</th><th>Event</th><th>Posted</th><th></th></tr></thead>
-          <tbody id="annTableBody"></tbody>
-        </table>
-      </section>
+  <!-- 4. ATTENDANCE TAB -->
+  <div id="tab-attendance" class="tab-panel" style="display:none;">
+    <section class="panel">
+      <h2>Attendance Log <span class="count" id="attendanceCount">—</span></h2>
+      <div class="form-row">
+        <input type="date" id="attendanceDate">
+        <button class="btn" id="attendanceTodayBtn">Today</button>
+        <button class="btn" id="exportCsvBtn" style="margin-left:auto;">Export CSV</button>
+      </div>
+      <div id="attendanceLoading" class="loading-note">Loading attendance…</div>
+      <table style="display:none;" id="attendanceTable">
+        <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Time In</th><th>Time Out</th></tr></thead>
+        <tbody id="attendanceTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- 5. NOTIFICATIONS TAB -->
+  <div id="tab-notifications" class="tab-panel" style="display:none;">
+    <section class="panel">
+      <h2>Notifications</h2>
+      <div id="fullNotificationsList"></div>
+    </section>
+  </div>
+
+  <!-- 6. TICKETS TAB -->
+  <div id="tab-tickets" class="tab-panel" style="display:none;">
+    <section class="panel">
+      <h2>Overall Tickets <span class="count" id="ticketsCount">—</span></h2>
+      <nav class="sub-tabs" id="ticketTypeNav">
+        <button class="sub-tab-btn active" data-type="all">All Types</button>
+        <button class="sub-tab-btn" data-type="leave">Leave</button>
+        <button class="sub-tab-btn" data-type="absence">Absence</button>
+        <button class="sub-tab-btn" data-type="undertime">Undertime</button>
+        <button class="sub-tab-btn" data-type="emergency_leave">Emergency Leave</button>
+        <button class="sub-tab-btn" data-type="overtime">Overtime</button>
+        <button class="sub-tab-btn" data-type="schedule_change">Change Schedule Request</button>
+      </nav>
+      <div class="form-row">
+        <select id="ticketsFilter">
+          <option value="pending">Pending only</option>
+          <option value="all">All statuses</option>
+        </select>
+      </div>
+      <div id="ticketsLoading" class="loading-note">Loading tickets…</div>
+      <table style="display:none;" id="ticketsTable">
+        <thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+        <tbody id="ticketsTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- 7. LIVE SELLER SCHEDULE TAB -->
+  <div id="tab-schedule" class="tab-panel" style="display:none;">
+    <section class="panel">
+      <h2>Assign Schedule</h2>
+      <div class="form-row">
+        <select id="schEmployee" style="flex:1; min-width:200px;"><option value="">Loading live sellers…</option></select>
+        <select id="schStatus">
+          <option value="scheduled">Scheduled (live day)</option>
+          <option value="day_off">Day Off</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <input type="date" id="schDateFrom" title="From date">
+        <input type="date" id="schDateTo" title="To date (leave same as From for a single day)">
+      </div>
+      <div class="form-row" id="schWeekdayRow">
+        <label style="font-family:var(--font-mono); font-size:11px; color:#7488b6; display:flex; align-items:center; margin-right:4px;">Apply to:</label>
+        <label class="wd-check"><input type="checkbox" value="1" checked> Mon</label>
+        <label class="wd-check"><input type="checkbox" value="2" checked> Tue</label>
+        <label class="wd-check"><input type="checkbox" value="3" checked> Wed</label>
+        <label class="wd-check"><input type="checkbox" value="4" checked> Thu</label>
+        <label class="wd-check"><input type="checkbox" value="5" checked> Fri</label>
+        <label class="wd-check"><input type="checkbox" value="6" checked> Sat</label>
+        <label class="wd-check"><input type="checkbox" value="0" checked> Sun</label>
+      </div>
+      <div class="form-row" id="schLiveDetailsRow">
+        <select id="schBrand"><option value="">Select brand…</option></select>
+        <select id="schPlatform"><option value="">Select platform…</option></select>
+      </div>
+      <div class="form-row" id="schShiftRow">
+        <input type="time" id="schShiftStart" title="Shift start">
+        <input type="time" id="schShiftEnd" title="Shift end">
+      </div>
+      <div class="form-row">
+        <textarea id="schNotes" placeholder="Optional note (shown to the employee)…"></textarea>
+      </div>
+      <div class="form-row">
+        <button class="btn primary" id="schSubmitBtn">Save Schedule</button>
+      </div>
+      <p class="loading-note" style="padding-top:0;">Saving posts one row per matching date and automatically notifies the employee on their dashboard — no extra step needed.</p>
     </section>
 
-    <section class="tab-panel" id="tab-schedule">
-      <section class="panel">
-        <h2>Assign Schedule</h2>
-        <div class="form-row">
-          <select id="schEmployee" style="flex:1; min-width:200px;"><option value="">Loading live sellers…</option></select>
-          <select id="schStatus">
-            <option value="scheduled">Scheduled (live day)</option>
-            <option value="day_off">Day Off</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <input type="date" id="schDateFrom" title="From date">
-          <input type="date" id="schDateTo" title="To date (leave same as From for a single day)">
-        </div>
-        <div class="form-row" id="schWeekdayRow">
-          <label style="font-family:var(--font-mono); font-size:11px; color:#7488b6; display:flex; align-items:center; margin-right:4px;">Apply to:</label>
-          <label class="wd-check"><input type="checkbox" value="1" checked> Mon</label>
-          <label class="wd-check"><input type="checkbox" value="2" checked> Tue</label>
-          <label class="wd-check"><input type="checkbox" value="3" checked> Wed</label>
-          <label class="wd-check"><input type="checkbox" value="4" checked> Thu</label>
-          <label class="wd-check"><input type="checkbox" value="5" checked> Fri</label>
-          <label class="wd-check"><input type="checkbox" value="6" checked> Sat</label>
-          <label class="wd-check"><input type="checkbox" value="0" checked> Sun</label>
-        </div>
-        <div class="form-row" id="schLiveDetailsRow">
-          <select id="schBrand"><option value="">Select brand…</option></select>
-          <select id="schPlatform"><option value="">Select platform…</option></select>
-        </div>
-        <div class="form-row" id="schShiftRow">
-          <input type="time" id="schShiftStart" title="Shift start">
-          <input type="time" id="schShiftEnd" title="Shift end">
-        </div>
-        <div class="form-row">
-          <textarea id="schNotes" placeholder="Optional note (shown to the employee)…"></textarea>
-        </div>
-        <div class="form-row">
-          <button class="btn primary" id="schSubmitBtn">Save Schedule</button>
-        </div>
-        <p class="loading-note" style="padding-top:0;">Saving posts one row per matching date and automatically notifies the employee on their dashboard — no extra step needed.</p>
-      </section>
-
-      <section class="panel">
-        <h2>Upcoming Schedule <span class="count" id="schCount">—</span></h2>
-        <div class="form-row">
-          <select id="schFilterEmployee"><option value="">All live sellers</option></select>
-        </div>
-        <div id="schLoading" class="loading-note">Loading schedule…</div>
-        <table style="display:none;" id="schTable">
-          <thead><tr><th>Date</th><th>Employee</th><th>Status</th><th>Brand / Platform</th><th>Shift</th><th></th></tr></thead>
-          <tbody id="schTableBody"></tbody>
-        </table>
-      </section>
+    <section class="panel">
+      <h2>Upcoming Schedule <span class="count" id="schCount">—</span></h2>
+      <div class="form-row">
+        <select id="schFilterEmployee"><option value="">All live sellers</option></select>
+      </div>
+      <div id="schLoading" class="loading-note">Loading schedule…</div>
+      <table style="display:none;" id="schTable">
+        <thead><tr><th>Date</th><th>Employee</th><th>Status</th><th>Brand / Platform</th><th>Shift</th><th></th></tr></thead>
+        <tbody id="schTableBody"></tbody>
+      </table>
     </section>
+  </div>
 
-  </main>
+</div>
+
+</main> <!-- Make sure this closing main tag is here! -->
 
   <footer>Easy Ways Connection Corp. · Internal use only</footer>
 </div>
@@ -424,6 +434,37 @@
 <script src="supabase-config.js"></script>
 <script>
 (async function(){
+
+    // ---- TAB NAVIGATION SYSTEM (ADMIN) ----
+    const navButtons = document.querySelectorAll('.sidebar-nav button[data-tab]');
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+
+        // Update active button styles
+        navButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Hide all tab panels and show the selected one
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+          panel.style.display = 'none';
+        });
+        
+        const activePanel = document.getElementById(`tab-${targetTab}`);
+        if (activePanel) {
+          activePanel.style.display = 'block';
+        }
+      });
+    });
+
+    // ---- ADMIN SIDEBAR TOGGLE ----
+    const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+    const appSidebar = document.getElementById('appSidebar');
+    if (sidebarToggleBtn && appSidebar) {
+      sidebarToggleBtn.addEventListener('click', () => {
+        appSidebar.classList.toggle('collapsed');
+      });
+    }
 
   // ---- Auth guard: must be logged in as admin or president ----
   const emp = await getMyEmployeeRecord();
@@ -1084,7 +1125,7 @@ await supabaseClient.from('notifications').insert([{
       
     if(error){ alert('Could not update ticket: ' + error.message); return; }
     await loadTickets();
-  }
+  };
 
   document.getElementById('ticketsFilter').addEventListener('change', loadTickets);
 
