@@ -905,38 +905,35 @@ aside.sidebar.collapsed ~ main.main-content {
 
     // Build the Facebook-style HTML
     const notifHTML = data.map(n => {
-      let subject = "System Notification";
-      let initials = "🔔"; // Default icon
+      let title = n.title || "Notification";
+      let displayAvatar = `<div style="width: 44px; height: 44px; border-radius: 50%; background: var(--navy-600); color: var(--amber-400); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; flex-shrink: 0; border: 1px solid var(--line);">🔔</div>`;
       
-      const msg = (n.message || '').toLowerCase();
-      // Dynamically detect the type of notification
-      if (msg.includes('overtime')) {
-        subject = "Overtime Approved";
-        initials = "⏱️";
-      } else if (msg.includes('comment')) {
-        subject = "Announcement Comment";
-        initials = n.message.charAt(0).toUpperCase(); // Grabs the first letter of the commenter's name
-      } else if (msg.includes('approved')) {
-        subject = "Form Approved";
-        initials = "✅";
-      } else if (msg.includes('rejected')) {
-        subject = "Form Rejected";
-        initials = "❌";
+      const msg = n.message || '';
+      const msgLower = msg.toLowerCase();
+      
+      if (msgLower.includes('announcement')) {
+        title = n.title || "New Announcement";
+        displayAvatar = `<div style="width: 44px; height: 44px; border-radius: 50%; background: var(--navy-600); color: var(--amber-400); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; border: 1px solid var(--line);">📢</div>`;
+      } else if (msgLower.includes('comment')) {
+        title = "Announcement Comment";
+        displayAvatar = `<div style="width: 44px; height: 44px; border-radius: 50%; background: var(--navy-600); color: var(--amber-400); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; flex-shrink: 0; border: 1px solid var(--line);">💬</div>`;
+      }
+
+      if (n.avatar_url) {
+        displayAvatar = `<img src="${n.avatar_url}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--line);">`;
       }
 
       return `
-      <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-link="${n.link || ''}" data-type="${subject}" style="display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; transition: background 0.2s; background: ${n.is_read ? 'transparent' : 'rgba(232,161,58,0.08)'};">
+      <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-link="${n.link || ''}" style="display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; transition: background 0.2s; background: ${n.is_read ? 'transparent' : 'rgba(232,161,58,0.08)'};">
         
-        <!-- Avatar / Icon -->
-        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--navy-600); color: var(--amber-400); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; flex-shrink: 0; border: 1px solid var(--line);">
-          ${initials}
-        </div>
+        <!-- Profile Photo / Avatar -->
+        ${displayAvatar}
         
         <!-- Content -->
         <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
           <div style="font-size: 13px; color: var(--paper); line-height: 1.4;">
-            <strong style="color: var(--amber-400);">Subject: ${subject}</strong><br>
-            ${escapeHtml(n.message)}
+            <strong style="color: var(--amber-400);">${escapeHtml(title)}</strong><br>
+            ${escapeHtml(msg)}
           </div>
           <div style="font-size: 11px; color: #4fb286; font-weight: 600;">Click here to view</div>
           <div style="font-size: 10px; color: #7488b6; margin-top: 2px;">${new Date(n.created_at).toLocaleString()}</div>
