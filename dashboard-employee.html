@@ -550,19 +550,49 @@ aside.sidebar.collapsed ~ main.main-content {
         </button>
       </div>
 
+      <div class="sch-card" id="schCard" style="display:none;">
+        <h2>Your Schedule for the Week</h2>
+        <div class="today-line" id="schTodayLine">—</div>
+        <div class="hint">Tap to see your full week</div>
+      </div>
+
       <!-- Your existing metrics, attendance table, and announcements cards go here -->
     </div>
 
     <!-- 2. ANNOUNCEMENTS TAB PANEL -->
     <div id="tab-announcements" class="tab-panel" style="display:none;">
-      <h2>Announcements</h2>
-      <div id="announcementListContainer"></div>
+      <section class="panel">
+        <h2>Announcements</h2>
+        <div id="announcementsList"><div class="empty-note">Loading announcements…</div></div>
+      </section>
     </div>
 
     <!-- 3. ATTENDANCE TAB PANEL -->
     <div id="tab-attendance" class="tab-panel" style="display:none;">
-      <h2>Attendance History</h2>
-      <!-- Your full attendance logs container -->
+      
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="num" id="statThisMonth">0</div>
+          <div class="label">Days This Month</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" id="statOnTime">0</div>
+          <div class="label">Completed Days</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" id="statPending">0</div>
+          <div class="label">Missing Time Out</div>
+        </div>
+      </div>
+
+      <section class="panel">
+        <h2>Recent Attendance</h2>
+        <table>
+          <thead><tr><th>Date</th><th>Time In</th><th>Time Out</th><th>Status</th></tr></thead>
+          <tbody id="attendanceTable"><tr class="empty-row"><td colspan="4">No attendance records yet</td></tr></tbody>
+        </table>
+      </section>
+
     </div>
 
     <!-- 4. NOTIFICATIONS TAB PANEL -->
@@ -573,53 +603,55 @@ aside.sidebar.collapsed ~ main.main-content {
 
     <!-- 5. SUBMISSION FORMS TAB PANEL -->
     <div id="tab-submissions" class="tab-panel" style="display:none;">
-      <h2>Submission Forms</h2>
-      <!-- Your ticket creation form (Leave, Absence, Emergency Leave, Undertime, Overtime, and conditional Change Schedule Request) -->
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--amber-400);">My Requests</h2>
+        <!-- We reuse your existing ticketBtn ID so the modal opens automatically! -->
+        <button id="ticketBtn" class="btn2 primary">Submit New Form</button>
+      </div>
+
+      <section class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Date Filed</th>
+              <th>Type</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="ticketsTable">
+            <tr class="empty-row"><td colspan="3">Loading submissions...</td></tr>
+          </tbody>
+        </table>
+      </section>
+
     </div>
 
     <!-- 6. ACCOUNT TAB PANEL -->
     <div id="tab-account" class="tab-panel" style="display:none;">
-      <h2>Account Settings</h2>
-      <!-- Account details -->
+      
+      <section class="panel" style="margin-bottom: 20px;">
+        <h2>Personal Information</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;">
+          <div><span style="color: #7488b6; font-size: 10px; text-transform: uppercase; display:block;">Full Name</span><strong id="accName">—</strong></div>
+          <div><span style="color: #7488b6; font-size: 10px; text-transform: uppercase; display:block;">Employee ID</span><strong id="accBadge">—</strong></div>
+          <div><span style="color: #7488b6; font-size: 10px; text-transform: uppercase; display:block;">Position</span><strong id="accPosition">—</strong></div>
+          <div><span style="color: #7488b6; font-size: 10px; text-transform: uppercase; display:block;">Phone / Viber</span><strong id="accPhone">—</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Emergency Contact</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;">
+          <div><span style="color: #7488b6; font-size: 10px; text-transform: uppercase; display:block;">Contact Name</span><strong id="accEmergName">—</strong></div>
+          <div><span style="color: #7488b6; font-size: 10px; text-transform: uppercase; display:block;">Phone Number</span><strong id="accEmergPhone">—</strong></div>
+          <div style="grid-column: span 2;"><span style="color: #7488b6; font-size: 10px; text-transform: uppercase; display:block;">Address</span><strong id="accEmergAddress">—</strong></div>
+        </div>
+      </section>
+
     </div>
 
   </div>
-
-  <!-- Your statistics and attendance sections follow right here -->
-
-    <div class="sch-card" id="schCard" style="display:none;">
-      <h2>Your Schedule for the Week</h2>
-      <div class="today-line" id="schTodayLine">—</div>
-      <div class="hint">Tap to see your full week</div>
-    </div>
-
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="num" id="statThisMonth">0</div>
-        <div class="label">Days This Month</div>
-      </div>
-      <div class="stat-box">
-        <div class="num" id="statOnTime">0</div>
-        <div class="label">Completed Days</div>
-      </div>
-      <div class="stat-box">
-        <div class="num" id="statPending">0</div>
-        <div class="label">Missing Time Out</div>
-      </div>
-    </div>
-
-    <section class="panel">
-      <h2>Recent Attendance</h2>
-      <table>
-        <thead><tr><th>Date</th><th>Time In</th><th>Time Out</th><th>Status</th></tr></thead>
-        <tbody id="attendanceTable"><tr class="empty-row"><td colspan="4">No attendance records yet</td></tr></tbody>
-      </table>
-    </section>
-
-    <section class="panel">
-      <h2>Announcements</h2>
-      <div id="announcementsList"><div class="empty-note">Loading announcements…</div></div>
-    </section>
 
   </div>
 
@@ -971,17 +1003,90 @@ aside.sidebar.collapsed ~ main.main-content {
       card.addEventListener('click', () => {
         const post = posts.find(p => p.id === card.dataset.id);
         if (!post) return;
+        
         const brandLabel = post.brands ? post.brands.name : 'Company-wide';
         const postedDate = new Date(post.created_at).toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
-        document.getElementById('announceModalTitle').textContent = post.title;
-        document.getElementById('announceModalMeta').textContent = `${brandLabel} · Posted ${postedDate}`;
-        document.getElementById('announceModalBody').textContent = post.body;
-        document.getElementById('announceModal').classList.add('open');
+        
+        // Send data to the NEW modal with the comment feed
+        document.getElementById('modalAnnouncementTitle').textContent = post.title;
+        document.getElementById('modalAnnouncementDate').textContent = `${brandLabel} · Posted ${postedDate}`;
+        document.getElementById('modalAnnouncementBody').textContent = post.body;
+        
+        // Store the post ID on the modal so we know where to save new comments
+        document.getElementById('announcementModal').dataset.postId = post.id;
+        
+        // Fetch and display existing comments
+        loadComments(post.id);
+        
+        document.getElementById('announcementModal').classList.add('open');
       });
     });
   }
   loadAnnouncements();
- 
+ // ==========================================================
+  // ANNOUNCEMENT COMMENTS SYSTEM
+  // ==========================================================
+  
+  async function loadComments(postId) {
+    const feed = document.getElementById('commentFeed');
+    feed.innerHTML = '<div style="color:#7488b6; font-size:12px; font-style:italic;">Loading comments...</div>';
+    
+    // Fetch comments linked to this announcement ID
+    const { data: comments, error } = await supabaseClient
+      .from('announcement_comments')
+      .select('*, employees(name)')
+      .eq('announcement_id', postId)
+      .order('created_at', { ascending: true });
+      
+    if (error) {
+      feed.innerHTML = '<div style="color:var(--coral-500); font-size:12px;">Failed to load comments.</div>';
+      console.error(error);
+      return;
+    }
+    
+    if (!comments || comments.length === 0) {
+      feed.innerHTML = '<div style="color:#7488b6; font-size:12px; font-style:italic;">No comments yet. Be the first to reply!</div>';
+      return;
+    }
+    
+    // Display the comments in the feed
+    feed.innerHTML = comments.map(c => `
+      <div style="background: var(--navy-800); padding: 12px; border-radius: 8px; border: 1px solid var(--line);">
+        <div style="font-size: 11px; font-weight: bold; color: var(--amber-400); margin-bottom: 6px;">${c.employees ? c.employees.name : 'Unknown User'}</div>
+        <div style="font-size: 13px; color: var(--paper); line-height: 1.4;">${escapeHtml(c.comment)}</div>
+      </div>
+    `).join('');
+  }
+
+  // Attach to the global window so your HTML onclick="postComment()" works
+  window.postComment = async function() {
+    const modal = document.getElementById('announcementModal');
+    const postId = modal.dataset.postId;
+    const textEl = document.getElementById('commentReplyText');
+    const comment = textEl.value.trim();
+    
+    if (!comment) return; // Prevent blank comments
+    
+    const { error } = await supabaseClient
+      .from('announcement_comments')
+      .insert({
+        announcement_id: postId,
+        employee_id: emp.id,
+        comment: comment
+      });
+      
+    if (error) {
+      alert('Could not post comment: ' + error.message);
+      return;
+    }
+    
+    textEl.value = ''; // Clear the text box
+    loadComments(postId); // Refresh the feed to show the new comment instantly
+  };
+
+  window.closeAnnouncementModal = function() {
+    document.getElementById('announcementModal').classList.remove('open');
+  };
   document.getElementById('announceModalCloseBtn').addEventListener('click', ()=>{
     document.getElementById('announceModal').classList.remove('open');
   });
@@ -990,6 +1095,16 @@ aside.sidebar.collapsed ~ main.main-content {
   document.getElementById('empName').textContent = display || emp.name;
   document.getElementById('empPositionBrand').textContent = emp.positions ? emp.positions.name : 'No position set';
   document.getElementById('empBadgeId').textContent = emp.badge_id || 'No badge ID on file';
+
+  // ---- Fill in Account Settings Tab ----
+  document.getElementById('accName').textContent = display || emp.name;
+  document.getElementById('accBadge').textContent = emp.badge_id || 'No badge ID on file';
+  document.getElementById('accPosition').textContent = emp.positions ? emp.positions.name : 'No position set';
+  document.getElementById('accPhone').textContent = emp.phone || 'Not on file';
+
+  document.getElementById('accEmergName').textContent = emp.emergency_contact_name || 'Not on file';
+  document.getElementById('accEmergPhone').textContent = emp.emergency_contact_phone || 'Not on file';
+  document.getElementById('accEmergAddress').textContent = emp.emergency_contact_address || 'Not on file';
 
   // ---- Profile photo ----
   function renderAvatar(url){
