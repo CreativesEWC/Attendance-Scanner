@@ -965,138 +965,6 @@
     await loadWeekSchedule();
   }
 
-  // ---- Sign out ----
-  document.getElementById('signOutBtn').addEventListener('click', async ()=>{
-    await supabaseClient.auth.signOut();
-    window.location.href = 'login.html';
-  });
-
-})();
-
-  // --- UNIFIED TICKETING SYSTEM JS ---
-
-  const tkType = document.getElementById('tkType');
-  const tkDynamicFields = document.getElementById('tkDynamicFields');
-  const tkSubjectGroup = document.getElementById('tkSubjectGroup');
-  const tkDateToGroup = document.getElementById('tkDateToGroup');
-  const tkTimeGroup = document.getElementById('tkTimeGroup');
-  const tkReason = document.getElementById('tkReason');
-  const tkReasonHint = document.getElementById('tkReasonHint');
-  let maxChars = 350;
-
-  // Open the modal from the header button
-  document.getElementById('ticketBtn').addEventListener('click', () => {
-    tkType.value = '';
-    tkDynamicFields.style.display = 'none';
-    document.getElementById('tkSubject').value = '';
-    document.getElementById('tkDateFrom').value = '';
-    document.getElementById('tkDateTo').value = '';
-    document.getElementById('tkTimeFrom').value = '';
-    document.getElementById('tkTimeTo').value = '';
-    document.getElementById('tkHours').value = '';
-    tkReason.value = '';
-    document.getElementById('submitTicketModal').classList.add('open');
-  });
-
-  // Close modal
-  document.getElementById('tkCancelBtn').addEventListener('click', () => {
-    document.getElementById('submitTicketModal').classList.remove('open');
-  });
-
-  // Handle dynamic form changes based on dropdown selection
-  tkType.addEventListener('change', () => {
-    const type = tkType.value;
-    if (!type) {
-      tkDynamicFields.style.display = 'none';
-      return;
-    }
-    tkDynamicFields.style.display = 'block';
-    
-    // Reset displays
-    tkSubjectGroup.style.display = 'none';
-    tkDateToGroup.style.display = 'block';
-    tkTimeGroup.style.display = 'none';
-    maxChars = 350;
-    tkReasonHint.textContent = `Max ${maxChars} characters`;
-
-    if (type === 'overtime') {
-      tkTimeGroup.style.display = 'flex';
-      tkDateToGroup.style.display = 'none'; // OT is usually for a single day
-      maxChars = 100;
-      tkReasonHint.textContent = `Max ${maxChars} characters`;
-    } 
-    else if (type === 'schedule_change') {
-      tkSubjectGroup.style.display = 'block';
-      tkDateToGroup.style.display = 'none'; 
-      maxChars = 250;
-      tkReasonHint.textContent = `Max ${maxChars} characters`;
-    }
-  });
-
-  // Enforce character limits
-  tkReason.addEventListener('input', () => {
-    if (tkReason.value.length > maxChars) {
-      tkReason.value = tkReason.value.substring(0, maxChars);
-    }
-    tkReasonHint.textContent = `${tkReason.value.length} / ${maxChars} characters`;
-  });
-
-  // Handle Submission to Database
-  document.getElementById('tkSubmitBtn').addEventListener('click', async () => {
-    const type = tkType.value;
-    if (!type) { alert('Please select a request type.'); return; }
-    
-    const date_from = document.getElementById('tkDateFrom').value;
-    const date_to = document.getElementById('tkDateTo').value || date_from;
-    const reason = tkReason.value.trim();
-    
-    if (!date_from) { alert('Please provide a date.'); return; }
-    if (!reason) { alert('Please provide a reason.'); return; }
-
-    const payload = {
-      employee_id: emp.id,
-      ticket_type: type,
-      date_from: date_from,
-      reason: reason,
-      status: 'pending'
-    };
-
-    if (type === 'leave' || type === 'absence' || type === 'emergency_leave' || type === 'undertime') {
-      payload.date_to = date_to;
-    } 
-    else if (type === 'overtime') {
-      const tFrom = document.getElementById('tkTimeFrom').value;
-      const tTo = document.getElementById('tkTimeTo').value;
-      const hrs = document.getElementById('tkHours').value;
-      if (!tFrom || !tTo || !hrs) { alert('Please fill in the Time From, Time To, and Total Hours.'); return; }
-      payload.time_from = tFrom;
-      payload.time_to = tTo;
-      payload.hours = hrs;
-    } 
-    else if (type === 'schedule_change') {
-      const subj = document.getElementById('tkSubject').value.trim();
-      if (!subj) { alert('Please provide a subject.'); return; }
-      payload.subject = subj;
-    }
-
-    const btn = document.getElementById('tkSubmitBtn');
-    btn.disabled = true;
-    btn.textContent = 'Submitting...';
-
-    const { error } = await supabaseClient.from('tickets').insert([payload]);
-
-    btn.disabled = false;
-    btn.textContent = 'Submit Request';
-
-    if (error) {
-      alert('Could not submit request: ' + error.message);
-      return;
-    }
-
-    document.getElementById('submitTicketModal').classList.remove('open');
-    alert('Your request has been submitted successfully and is pending Admin approval.');
-  });
-
 // --- PROFILE IMAGE UPLOAD JS (EMPLOYEE SIDE) ---
 
 const avatarInput = document.querySelector('.avatar-edit input');
@@ -1153,7 +1021,191 @@ if (avatarInput) {
     }
   });
 }
-  
+  // ---- Sign out ----
+  document.getElementById('signOutBtn').addEventListener('click', async ()=>{
+    await supabaseClient.auth.signOut();
+    window.location.href = 'login.html';
+  });
+
+  // ==========================================================
+  // UNIFIED TICKET SUBMISSION JS
+  // ==========================================================
+
+  const tkType = document.getElementById('tkType');
+  const tkDynamicFields = document.getElementById('tkDynamicFields');
+  const tkSubjectGroup = document.getElementById('tkSubjectGroup');
+  const tkDateToGroup = document.getElementById('tkDateToGroup');
+  const tkTimeGroup = document.getElementById('tkTimeGroup');
+  const tkReason = document.getElementById('tkReason');
+  const tkReasonHint = document.getElementById('tkReasonHint');
+  let maxChars = 350;
+
+  // 1. Open the modal from the header button
+  document.getElementById('ticketBtn').addEventListener('click', () => {
+    tkType.value = '';
+    tkDynamicFields.style.display = 'none';
+    document.getElementById('tkSubject').value = '';
+    document.getElementById('tkDateFrom').value = '';
+    document.getElementById('tkDateTo').value = '';
+    document.getElementById('tkTimeFrom').value = '';
+    document.getElementById('tkTimeTo').value = '';
+    document.getElementById('tkHours').value = '';
+    tkReason.value = '';
+    document.getElementById('submitTicketModal').classList.add('open');
+  });
+
+  // 2. Close modal
+  document.getElementById('tkCancelBtn').addEventListener('click', () => {
+    document.getElementById('submitTicketModal').classList.remove('open');
+  });
+
+  // 3. Handle dynamic form changes based on dropdown selection
+  tkType.addEventListener('change', () => {
+    const type = tkType.value;
+    if (!type) {
+      tkDynamicFields.style.display = 'none';
+      return;
+    }
+    tkDynamicFields.style.display = 'block';
+    
+    // Reset displays
+    tkSubjectGroup.style.display = 'none';
+    tkDateToGroup.style.display = 'block';
+    tkTimeGroup.style.display = 'none';
+    maxChars = 350;
+    tkReasonHint.textContent = `Max ${maxChars} characters`;
+
+    if (type === 'overtime') {
+      tkTimeGroup.style.display = 'flex';
+      tkDateToGroup.style.display = 'none'; // OT is usually for a single day
+      maxChars = 100;
+      tkReasonHint.textContent = `Max ${maxChars} characters`;
+    } 
+    else if (type === 'schedule_change') {
+      tkSubjectGroup.style.display = 'block';
+      tkDateToGroup.style.display = 'none'; 
+      maxChars = 250;
+      tkReasonHint.textContent = `Max ${maxChars} characters`;
+    }
+  });
+
+  // 4. Enforce character limits
+  tkReason.addEventListener('input', () => {
+    if (tkReason.value.length > maxChars) {
+      tkReason.value = tkReason.value.substring(0, maxChars);
+    }
+    tkReasonHint.textContent = `${tkReason.value.length} / ${maxChars} characters`;
+  });
+
+  // 5. Handle Submission to Database
+  document.getElementById('tkSubmitBtn').addEventListener('click', async () => {
+    const type = tkType.value;
+    if (!type) { alert('Please select a request type.'); return; }
+    
+    const date_from = document.getElementById('tkDateFrom').value;
+    const date_to = document.getElementById('tkDateTo').value || date_from;
+    const reason = tkReason.value.trim();
+    
+    if (!date_from) { alert('Please provide a date.'); return; }
+    if (!reason) { alert('Please provide a reason.'); return; }
+
+    const payload = {
+      employee_id: emp.id,
+      ticket_type: type,
+      date_from: date_from,
+      reason: reason,
+      status: 'pending'
+    };
+
+    if (type === 'leave' || type === 'absence' || type === 'emergency_leave' || type === 'undertime') {
+      payload.date_to = date_to;
+    } 
+    else if (type === 'overtime') {
+      const tFrom = document.getElementById('tkTimeFrom').value;
+      const tTo = document.getElementById('tkTimeTo').value;
+      const hrs = document.getElementById('tkHours').value;
+      if (!tFrom || !tTo || !hrs) { alert('Please fill in the Time From, Time To, and Total Hours.'); return; }
+      payload.time_from = tFrom;
+      payload.time_to = tTo;
+      payload.hours = hrs;
+    } 
+    else if (type === 'schedule_change') {
+      const subj = document.getElementById('tkSubject').value.trim();
+      if (!subj) { alert('Please provide a subject.'); return; }
+      payload.subject = subj;
+    }
+
+    const btn = document.getElementById('tkSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    const { error } = await supabaseClient.from('tickets').insert([payload]);
+
+    btn.disabled = false;
+    btn.textContent = 'Submit Request';
+
+    if (error) {
+      alert('Could not submit request: ' + error.message);
+      return;
+    }
+
+    document.getElementById('submitTicketModal').classList.remove('open');
+    alert('Your request has been submitted successfully and is pending Admin approval.');
+  });
+
+  // --- PROFILE IMAGE UPLOAD JS ---
+  const avatarInput = document.querySelector('.avatar-edit input');
+
+  if (avatarInput) {
+    avatarInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const fileName = `public/${emp.id}_${Date.now()}_${file.name}`;
+
+      try {
+        const { data: uploadData, error: uploadError } = await supabaseClient.storage
+          .from('employee_images')
+          .upload(fileName, file, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabaseClient.storage
+          .from('employee_images')
+          .getPublicUrl(fileName);
+
+        const imageUrl = publicUrlData.publicUrl;
+
+        const { error: dbError } = await supabaseClient
+          .from('employees')
+          .update({ profile_image: imageUrl })
+          .eq('id', emp.id); 
+
+        if (dbError) throw dbError;
+
+        const dashAvatar = document.querySelector('.avatar-img');
+        if(dashAvatar) {
+            dashAvatar.src = imageUrl;
+            dashAvatar.style.display = 'block';
+        }
+        
+        const idPhoto = document.querySelector('.profile-photo');
+        if (idPhoto) {
+           idPhoto.src = imageUrl;
+           idPhoto.style.display = 'block';
+        }
+
+        alert("Profile photo updated successfully!");
+
+      } catch (err) {
+        console.error("Error updating image:", err);
+        alert("Failed to upload image. " + err.message);
+      }
+    });
+  }
+
+// THIS BRACKET CLOSES THE ASYNC FUNCTION PROPERLY
+})(); 
 </script>
 
 <!-- Dynamic Ticket Submission Modal -->
