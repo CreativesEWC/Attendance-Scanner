@@ -880,7 +880,42 @@ aside.sidebar.collapsed ~ main.main-content {
       if(fullListEl) fullListEl.innerHTML = '<div class="empty-note">Error loading notifications.</div>';
       return;
     }
+    
+    // Load Employee Submissions / Tickets
+  async function loadSubmissions() {
+    if (!emp || !emp.id) return;
 
+    const tableBody = document.getElementById('ticketsTable');
+    if (!tableBody) return;
+
+    const { data, error } = await supabaseClient
+      .from('tickets')
+      .select('*')
+      .eq('employee_id', emp.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error("Error loading submissions:", error);
+      tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#e06c75;">Error loading submissions.</td></tr>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#7488b6;">No submissions found.</td></tr>`;
+      return;
+    }
+
+    tableBody.innerHTML = data.map(sub => `
+      <tr>
+        <td>${new Date(sub.created_at).toLocaleString()}</td>
+        <td style="text-transform: capitalize;">${sub.ticket_type || sub.type || 'Request'}</td>
+        <td><span class="badge ${sub.status}">${sub.status}</span></td>
+      </tr>
+    `).join('');
+  }
+
+
+    
     const unreadCount = data.filter(n => !n.is_read).length;
 
     // Update Bell Badge
