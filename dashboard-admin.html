@@ -615,7 +615,11 @@ aside.sidebar.collapsed ~ main.main-content {
     });
   });
 
-  // ---- Auth guard & View Mode Handling ----
+  // ---- Auth guard: safe variable check ----
+  const emp = await getMyEmployeeRecord();
+  if (!emp) { window.location.href = 'login.html'; return; }
+
+  // If they are not admin/president, route to their role home
   if (emp.role !== 'admin' && emp.role !== 'president') { 
     routeToRoleHome(emp); 
     return; 
