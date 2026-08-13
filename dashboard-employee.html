@@ -1030,7 +1030,7 @@ aside.sidebar.collapsed ~ main.main-content {
   }
 
   // Open and display the employee's submitted form details
-  async function openEmployeeTicketDocument(ticketId) {
+  window.openEmployeeTicketDocument = async function(ticketId) {
     const { data: ticket, error } = await supabaseClient
       .from('tickets')
       .select('*')
@@ -1043,7 +1043,7 @@ aside.sidebar.collapsed ~ main.main-content {
     }
 
     alert(`Viewing Request: ${ticket.ticket_type.toUpperCase()}\nStatus: ${ticket.status.toUpperCase()}\nDates: ${ticket.date_from || 'N/A'}\nReason: ${ticket.reason || 'N/A'}`);
-  }
+  };
 
   // Trigger load when script runs
   setTimeout(() => {
