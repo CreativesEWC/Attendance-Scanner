@@ -882,12 +882,6 @@ aside.sidebar.collapsed ~ main.main-content {
       if(fullListEl) fullListEl.innerHTML = '<div class="empty-note">Error loading notifications.</div>';
       return;
     }
-
-    // Trigger load when script runs
-  setTimeout(() => {
-    loadNotifications();
-    loadSubmissions(); // Runs cleanly on page load!
-  }, 1000);
     
     // Load Employee Submissions / Tickets
   async function loadSubmissions() {
@@ -935,6 +929,13 @@ aside.sidebar.collapsed ~ main.main-content {
       `;
     }).join('');
   }
+
+    // Trigger load when script runs
+  setTimeout(() => {
+    loadNotifications();
+    loadSubmissions(); // Runs cleanly on page load!
+  }, 1000);
+    
     const unreadCount = data.filter(n => !n.is_read).length;
 
     // Update Bell Badge
