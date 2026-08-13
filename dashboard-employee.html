@@ -908,7 +908,7 @@ aside.sidebar.collapsed ~ main.main-content {
       let subject = "System Notification";
       let initials = "🔔"; // Default icon
       
-      const msg = n.message.toLowerCase();
+      const msg = (n.message || '').toLowerCase();
       // Dynamically detect the type of notification
       if (msg.includes('overtime')) {
         subject = "Overtime Approved";
