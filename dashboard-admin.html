@@ -260,6 +260,44 @@ aside.sidebar.collapsed ~ main.main-content {
           </select>
           <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
         </div>
+        <p class="loading-note" style="padding-top:0;">New employees can view their own record once their login is linked. Ask an admin to send them an invite from Supabase Auth, then their account will match automatically by email.</p>
+      </div>
+
+      <!-- SUB-PANEL: Manage Positions -->
+      <div id="manage-positions" class="roster-sub-panel" style="display:none;">
+        <h2>Manage Positions <span class="count" id="positionsCount">—</span></h2>
+        <div class="form-row">
+          <input type="text" id="newPositionName" placeholder="New position name (e.g. Live Seller)" style="flex:1; min-width:200px;">
+          <button class="btn primary" id="addPositionBtn">Add Position</button>
+        </div>
+        <div id="positionsLoading" class="loading-note">Loading positions…</div>
+        <table style="display:none;" id="positionsTable">
+          <thead><tr><th>Position</th><th></th></tr></thead>
+          <tbody id="positionsTableBody"></tbody>
+        </table>
+      </div>
+
+    </section>
+  </div>
+
+      <!-- SUB-PANEL: Add Employee -->
+      <div id="add-employee" class="roster-sub-panel" style="display:none;">
+        <h2>Add Employee</h2>
+        <div class="form-row">
+          <input type="text" id="newBadgeId" placeholder="Badge ID (e.g. EW-0076-2024)" style="font-family:var(--font-mono);">
+          <input type="text" id="newName" placeholder="Full name" style="flex:1; min-width:160px;">
+          <select id="newPosition"><option value="">No position set</option></select>
+        </div>
+        <div class="form-row">
+          <select id="newBrand"><option value="">No brand assigned</option></select>
+          <select id="newRole">
+            <option value="employee">Employee</option>
+            <option value="kiosk">Kiosk</option>
+            <option value="admin">Admin</option>
+            <option value="president">President</option>
+          </select>
+          <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
+        </div>
       </div>
 
       <!-- SUB-PANEL: Manage Positions -->
@@ -391,48 +429,62 @@ aside.sidebar.collapsed ~ main.main-content {
   <!-- 3. ROSTER [EMPLOYEES] TAB -->
   <div id="tab-roster" class="tab-panel" style="display:none;">
     <section class="panel">
-      <h2>Employee Roster <span class="count" id="rosterCount"></span></h2>
-      <div class="form-row">
-        <input type="text" id="rosterSearch" placeholder="Search by name or badge ID..." style="flex:1; min-width:180px;">
-      </div>
-      <div id="rosterLoading" class="loading-note">Loading roster...</div>
-      <table style="display:none;" id="rosterTable">
-        <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Role</th><th></th><th></th></tr></thead>
-        <tbody id="rosterTableBody"></tbody>
-      </table>
-    </section>
+      
+      <!-- NEW ROSTER SUB-NAVIGATION -->
+      <nav class="sub-tabs" id="rosterSubNav">
+        <button class="sub-tab-btn active" data-target="view-roster">Employee Roster</button>
+        <button class="sub-tab-btn" data-target="add-employee">Add Employee</button>
+        <button class="sub-tab-btn" data-target="manage-positions">Manage Positions</button>
+      </nav>
 
-    <section class="panel">
-      <h2>Add Employee</h2>
-      <div class="form-row">
-        <input type="text" id="newBadgeId" placeholder="Badge ID (e.g. EW-0076-2024)" style="font-family:var(--font-mono);">
-        <input type="text" id="newName" placeholder="Full name" style="flex:1; min-width:160px;">
-        <select id="newPosition"><option value="">No position set</option></select>
+      <!-- SUB-PANEL: View Roster -->
+      <div id="view-roster" class="roster-sub-panel">
+        <h2>Employee Roster <span class="count" id="rosterCount"></span></h2>
+        <div class="form-row">
+          <input type="text" id="rosterSearch" placeholder="Search by name or badge ID..." style="flex:1; min-width:180px;">
+        </div>
+        <div id="rosterLoading" class="loading-note">Loading roster...</div>
+        <table style="display:none;" id="rosterTable">
+          <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Role</th><th></th><th></th></tr></thead>
+          <tbody id="rosterTableBody"></tbody>
+        </table>
       </div>
-      <div class="form-row">
-        <select id="newBrand"><option value="">No brand assigned</option></select>
-        <select id="newRole">
-          <option value="employee">Employee</option>
-          <option value="kiosk">Kiosk</option>
-          <option value="admin">Admin</option>
-          <option value="president">President</option>
-        </select>
-        <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
-      </div>
-      <p class="loading-note" style="padding-top:0;">New employees can view their own record once their login is linked. Ask an admin to send them an invite from Supabase Auth, then their account will match automatically by email.</p>
-    </section>
 
-    <section class="panel">
-      <h2>Manage Positions <span class="count" id="positionsCount">—</span></h2>
-      <div class="form-row">
-        <input type="text" id="newPositionName" placeholder="New position name (e.g. Live Seller)" style="flex:1; min-width:200px;">
-        <button class="btn primary" id="addPositionBtn">Add Position</button>
+      <!-- SUB-PANEL: Add Employee -->
+      <div id="add-employee" class="roster-sub-panel" style="display:none;">
+        <h2>Add Employee</h2>
+        <div class="form-row">
+          <input type="text" id="newBadgeId" placeholder="Badge ID (e.g. EW-0076-2024)" style="font-family:var(--font-mono);">
+          <input type="text" id="newName" placeholder="Full name" style="flex:1; min-width:160px;">
+          <select id="newPosition"><option value="">No position set</option></select>
+        </div>
+        <div class="form-row">
+          <select id="newBrand"><option value="">No brand assigned</option></select>
+          <select id="newRole">
+            <option value="employee">Employee</option>
+            <option value="kiosk">Kiosk</option>
+            <option value="admin">Admin</option>
+            <option value="president">President</option>
+          </select>
+          <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
+        </div>
+        <p class="loading-note" style="padding-top:0;">New employees can view their own record once their login is linked. Ask an admin to send them an invite from Supabase Auth, then their account will match automatically by email.</p>
       </div>
-      <div id="positionsLoading" class="loading-note">Loading positions…</div>
-      <table style="display:none;" id="positionsTable">
-        <thead><tr><th>Position</th><th></th></tr></thead>
-        <tbody id="positionsTableBody"></tbody>
-      </table>
+
+      <!-- SUB-PANEL: Manage Positions -->
+      <div id="manage-positions" class="roster-sub-panel" style="display:none;">
+        <h2>Manage Positions <span class="count" id="positionsCount">—</span></h2>
+        <div class="form-row">
+          <input type="text" id="newPositionName" placeholder="New position name (e.g. Live Seller)" style="flex:1; min-width:200px;">
+          <button class="btn primary" id="addPositionBtn">Add Position</button>
+        </div>
+        <div id="positionsLoading" class="loading-note">Loading positions…</div>
+        <table style="display:none;" id="positionsTable">
+          <thead><tr><th>Position</th><th></th></tr></thead>
+          <tbody id="positionsTableBody"></tbody>
+        </table>
+      </div>
+
     </section>
   </div>
 
