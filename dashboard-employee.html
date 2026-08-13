@@ -898,6 +898,11 @@ aside.sidebar.collapsed ~ main.main-content {
       return;
     }
 
+    // Helper to safely format text
+    const escapeHtml = (str) => {
+      return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    };
+
     const notifHTML = data.map(n => `
       <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-link="${n.link || ''}" style="border-bottom: 1px solid var(--line); padding: 12px; cursor: pointer;">
         <div class="nav-bell-message" style="color: ${n.is_read ? '#9fb0d6' : 'var(--amber-400)'};">${escapeHtml(n.message)}</div>
