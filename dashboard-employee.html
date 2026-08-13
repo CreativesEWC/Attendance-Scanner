@@ -1399,8 +1399,9 @@ if (rmBtn) {
     tkOvertimeRows.appendChild(row);
   }
 
-  // 1. Open the modal
-  document.getElementById('ticketBtn').addEventListener('click', () => {
+  const ticketBtn = document.getElementById('ticketBtn');
+if (ticketBtn) {
+  ticketBtn.addEventListener('click', () => {
     tkType.value = '';
     tkDynamicFields.style.display = 'none';
     document.getElementById('tkSubject').value = '';
@@ -1411,7 +1412,7 @@ if (rmBtn) {
     tkReason.value = '';
     document.getElementById('submitTicketModal').classList.add('open');
   });
-
+}
   // 2. Close modal
   document.getElementById('tkCancelBtn').addEventListener('click', () => {
     document.getElementById('submitTicketModal').classList.remove('open');
