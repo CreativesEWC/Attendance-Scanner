@@ -639,20 +639,28 @@
     }
 
     navBellList.innerHTML = data.map(n => `
-      <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}">
+      <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-link="${n.link || ''}">
         <div class="nav-bell-message">${escapeHtml(n.message)}</div>
         <div class="nav-bell-time">${new Date(n.created_at).toLocaleString()}</div>
       </div>
     `).join('');
 
-    // Add click listeners to mark individual items as read
+    // Handle clicks to open forms or mark as read
     document.querySelectorAll('.nav-bell-item').forEach(item => {
       item.addEventListener('click', async () => {
         const notifId = item.getAttribute('data-id');
+        const ticketId = item.getAttribute('data-link');
+
         if (item.classList.contains('unread')) {
           await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
           item.classList.remove('unread');
-          loadNotifications(); // Refresh badge count
+          loadNotifications(); 
+        }
+
+        // If notification is tied to a ticket, open the document viewer modal!
+        if (ticketId && typeof openEmployeeTicketDocument === 'function') {
+          navBellDropdown.classList.remove('show');
+          openEmployeeTicketDocument(ticketId);
         }
       });
     });
