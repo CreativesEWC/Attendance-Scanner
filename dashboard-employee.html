@@ -917,11 +917,14 @@
     idBackVisible = true;
   }
 
-  document.getElementById('digitalIdBtn').addEventListener('click', () => {
+  const digitalIdBtn = document.getElementById('digitalIdBtn');
+if (digitalIdBtn) {
+  digitalIdBtn.addEventListener('click', () => {
     populateDigitalId();
     showIdFront();
     document.getElementById('digitalIdModal').classList.add('open');
   });
+}
   document.getElementById('idToggleBtn').addEventListener('click', () => {
     if(idBackVisible) showIdFront(); else showIdBack();
   });
