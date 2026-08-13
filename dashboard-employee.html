@@ -745,13 +745,6 @@ aside.sidebar.collapsed ~ main.main-content {
       appSidebar.classList.toggle('collapsed');
     });
   }
-  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-    const appSidebar = document.getElementById('appSidebar');
-    if (sidebarToggleBtn && appSidebar) {
-      sidebarToggleBtn.addEventListener('click', () => {
-        appSidebar.classList.toggle('collapsed');
-      });
-    }
 
     // ---- TAB NAVIGATION SYSTEM ----
     const navButtons = document.querySelectorAll('.sidebar-nav button[data-tab]');
