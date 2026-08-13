@@ -866,11 +866,10 @@ aside.sidebar.collapsed ~ main.main-content {
     if (!emp || !emp.id) return; 
     
     const { data, error } = await supabaseClient
-      .from('notifications')
+      .from('forms') // Change 'tickets' to 'forms' or your actual table name
       .select('*')
       .eq('employee_id', emp.id)
-      .order('created_at', { ascending: false })
-      .limit(30);
+      .order('created_at', { ascending: false });
 
     const fullListEl = document.getElementById('fullNotificationsList');
 
