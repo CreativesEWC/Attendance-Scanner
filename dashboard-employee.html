@@ -884,7 +884,7 @@ aside.sidebar.collapsed ~ main.main-content {
     }
     
     // Load Employee Submissions / Tickets
-  async function loadSubmissions() {
+  aasync function loadSubmissions() {
     if (!emp || !emp.id) return;
     const tableBody = document.getElementById('ticketsTable');
     if (!tableBody) return;
@@ -892,7 +892,7 @@ aside.sidebar.collapsed ~ main.main-content {
     const { data, error } = await supabaseClient
       .from('tickets')
       .select('*')
-      .eq('employee_id', emp.id)
+      .eq('employee_id', emp.id) // Filters strictly for the logged-in employee
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -928,6 +928,22 @@ aside.sidebar.collapsed ~ main.main-content {
         </tr>
       `;
     }).join('');
+  }
+
+    // Open and display the employee's submitted form details
+  async function openEmployeeTicketDocument(ticketId) {
+    const { data: ticket, error } = await supabaseClient
+      .from('tickets')
+      .select('*')
+      .eq('id', ticketId)
+      .single();
+
+    if (error || !ticket) {
+      alert('Could not load ticket details.');
+      return;
+    }
+
+    alert(`Viewing Request: ${ticket.ticket_type.toUpperCase()}\nStatus: ${ticket.status.toUpperCase()}\nDates: ${ticket.date_from || 'N/A'}\nReason: ${ticket.reason || 'N/A'}`);
   }
 
     // Trigger load when script runs
