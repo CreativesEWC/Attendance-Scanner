@@ -964,63 +964,7 @@
 
     await loadWeekSchedule();
   }
-
-// --- PROFILE IMAGE UPLOAD JS (EMPLOYEE SIDE) ---
-
-const avatarInput = document.querySelector('.avatar-edit input');
-
-if (avatarInput) {
-  avatarInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Create a unique file name using the employee's ID and current time
-    const fileName = `public/${emp.id}_${Date.now()}_${file.name}`;
-
-    try {
-      // A. Upload to Supabase Storage (Your bucket must be named 'employee_images')
-      const { data: uploadData, error: uploadError } = await supabaseClient.storage
-        .from('employee_images')
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // B. Get the public URL of the uploaded image
-      const { data: publicUrlData } = supabaseClient.storage
-        .from('employee_images')
-        .getPublicUrl(fileName);
-
-      const imageUrl = publicUrlData.publicUrl;
-
-      // C. Update the Employee's Database row
-      const { error: dbError } = await supabaseClient
-        .from('employees')
-        .update({ profile_image: imageUrl })
-        .eq('id', emp.id); 
-
-      if (dbError) throw dbError;
-
-      // D. Update UI for the dashboard avatar and the ID card
-      const dashAvatar = document.querySelector('.avatar-img');
-      if(dashAvatar) {
-          dashAvatar.src = imageUrl;
-          dashAvatar.style.display = 'block';
-      }
-      
-      const idPhoto = document.querySelector('.profile-photo');
-      if (idPhoto) {
-         idPhoto.src = imageUrl;
-         idPhoto.style.display = 'block';
-      }
-
-      alert("Profile photo updated successfully!");
-
-    } catch (err) {
-      console.error("Error updating image:", err);
-      alert("Failed to upload image. " + err.message);
-    }
-  });
-}
+  
   // ---- Sign out ----
   document.getElementById('signOutBtn').addEventListener('click', async ()=>{
     await supabaseClient.auth.signOut();
