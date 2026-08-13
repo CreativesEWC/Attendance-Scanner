@@ -1002,6 +1002,11 @@
       admin_notes: admin_notes 
     };
 
+await supabaseClient.from('notifications').insert([{
+  user_id: ticketOwnerId, // The ID of the employee receiving the alert
+  message: "Your Overtime request has been approved."
+}]);
+    
     if (approverName) {
       updateData.approver_name = approverName;
     }
