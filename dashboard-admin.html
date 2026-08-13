@@ -134,17 +134,37 @@
 
   /* ---- SIDEBAR LAYOUT STYLES ---- */
   body { display: flex; min-height: 100vh; margin: 0; background: var(--navy-950); color: var(--paper); font-family: var(--font-body); }
-  aside.sidebar { width: 260px; background: var(--navy-900); border-right: 1px solid var(--line); display: flex; flex-direction: column; justify-content: space-between; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; }
-  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); }
+  aside.sidebar { 
+    width: 260px; 
+    background: var(--navy-900); 
+    border-right: 1px solid var(--line); 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    position: fixed; 
+    top: 0; 
+    bottom: 0; 
+    left: 0; 
+    z-index: 100; 
+  }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
   .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
   .sidebar-sub { font-size: 11px; color: #7488b6; font-family: var(--font-mono); margin-top: 4px; }
   
-  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
-  .sidebar-nav button { background: transparent; border: none; color: #7488b6; text-align: left; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); cursor: pointer; width: 100%; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+  /* THIS IS THE CRITICAL FIX: Add overflow-y and flex-grow so it scrolls inside the sidebar instead of overflowing */
+  .sidebar-nav { 
+    padding: 10px 0; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; 
+    overflow-y: auto; 
+    flex-grow: 1; 
+  }
+  .sidebar-nav button { background: transparent; border: none; color: #7488b6; text-align: left; padding: 10px 20px; font-size: 12px; font-family: var(--font-mono); cursor: pointer; width: 100%; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
   .sidebar-nav button:hover { color: var(--paper); background: var(--navy-800); }
   .sidebar-nav button.active { color: var(--amber-500); background: var(--navy-800); border-left: 4px solid var(--amber-500); font-weight: bold; }
   
-  .sidebar-footer { padding: 20px; border-top: 1px solid var(--line); }
+  .sidebar-footer { padding: 15px 20px; border-top: 1px solid var(--line); flex-shrink: 0; background: var(--navy-900); }
   
   /* Main Content Wrapper Offset */
   main.main-content { margin-left: 260px; flex: 1; padding: 30px; overflow-y: auto; }
@@ -408,7 +428,6 @@ aside.sidebar.collapsed ~ main.main-content {
     </div>
     <div class="right">
       <div class="clock" id="liveClock">—</div>
-      <button id="signOutBtn">Sign Out</button>
     </div>
   </header>
   
@@ -708,9 +727,16 @@ aside.sidebar.collapsed ~ main.main-content {
     });
   });
 
-  // ---- Auth guard: must be logged in as admin or president ----
+  // ---- Auth guard: must be logged in as admin or president (except specific names) ----
   const emp = await getMyEmployeeRecord();
   if (!emp) { window.location.href = 'login.html'; return; }
+  
+  // Specific check to route Eden Rose and Catherine to the employee dashboard layout
+  if (emp.name === 'Eden Rose R. De Leon' || emp.name === 'Catherine R. Cay') {
+    window.location.href = 'dashboard-employee.html'; // Adjust to your employee dashboard file name if different
+    return;
+  }
+
   if (emp.role !== 'admin' && emp.role !== 'president') { routeToRoleHome(emp); return; }
 
   document.getElementById('authGate').style.display = 'none';
