@@ -804,217 +804,190 @@
   });
 
   function openTicketDocument(ticketId) {
-    const t = window.currentTicketsData.find(x => x.id === ticketId);
-    if(!t) return;
+  const t = window.currentTicketsData.find(x => x.id === ticketId);
+  if (!t) return;
 
-    const container = document.getElementById('ticketDocContainer');
-    const actionBar = document.getElementById('ticketDocActionBar');
-    
-    const empName = t.employees ? escapeHtml(t.employees.name) : 'Unknown';
-    const empId = t.employees ? escapeHtml(t.employees.badge_id) : '—';
-    const dept = t.employees && t.employees.positions ? escapeHtml(t.employees.positions.name) : '—';
-    const dateSubmitted = new Date(t.created_at).toLocaleString();
-    
-    const approvedByText = t.status === 'approved' ? (t.approver_name || 'Admin') : (t.status === 'rejected' ? 'REJECTED' : '');
-    
-    if (['leave', 'absence', 'undertime', 'emergency_leave'].includes(t.ticket_type)) {
-      container.innerHTML = `
-        <div class="doc-header">
-          <h3 class="doc-title">Leave Form</h3>
-          <div style="font-family: var(--font-mono); font-size: 11px; margin-top: 4px;">(${TICKET_TYPE_LABELS[t.ticket_type]})</div>
-        </div>
-        <div class="doc-row">
-          <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
-          <div class="doc-col"><span class="doc-label">Employee ID</span><span class="doc-value">${empId}</span></div>
-        </div>
-        <div class="doc-row">
-          <div class="doc-col" style="flex:1;"><span class="doc-label">Address</span><span class="doc-value">${escapeHtml(t.address || '—')}</span></div>
-        </div>
-        <div class="doc-row">
-          <div class="doc-col"><span class="doc-label">When</span><span class="doc-value">${t.date_from} until ${t.date_to || t.date_from}</span></div>
-          <div class="doc-col"><span class="doc-label">Submitted</span><span class="doc-value">${dateSubmitted}</span></div>
-        </div>
-        <div class="doc-label" style="margin-top: 20px;">Reason (Max 350 chars):</div>
-        <div class="doc-reason-box">${escapeHtml(t.reason)}</div>
-        
-        <div class="doc-signatures">
-          <div class="doc-sig-block">
-            <div class="doc-sig-line">${empName}</div>
-            <div class="doc-label">Employee eSignature</div>
-          </div>
-          <div class="doc-sig-block">
-            <div class="doc-sig-line">${approvedByText}</div>
-            <div class="doc-label">Approved By</div>
-          </div>
-        </div>
-      `;
-    } 
-    // Group 2: Overtime Form
-    else if (t.ticket_type === 'overtime') {
-      // Split the saved arrays back into lists
-      const dArr = t.date_from ? t.date_from.split('||') : [];
-      const rArr = t.reason ? t.reason.split('||') : [];
-      const tfArr = t.time_from ? t.time_from.split('||') : [];
-      const ttArr = t.time_to ? t.time_to.split('||') : [];
-      const hArr = t.hours ? t.hours.split('||') : [];
+  const container = document.getElementById('ticketDocContainer');
+  const actionBar = document.getElementById('ticketDocActionBar');
+
+  const empName = t.employees ? escapeHtml(t.employees.name) : 'Unknown';
+  const empId = t.employees ? escapeHtml(t.employees.badge_id) : '—';
+  const dept = t.employees && t.employees.positions ? escapeHtml(t.employees.positions.name) : '—';
+  const dateSubmitted = new Date(t.created_at).toLocaleString();
+
+  const approvedByText = t.status === 'approved' 
+    ? (t.approver_name || 'Admin') 
+    : (t.status === 'rejected' ? 'REJECTED' : '');
+
+  // Group 1: Leave / Absence Forms
+  if (['leave', 'absence', 'undertime', 'emergency_leave'].includes(t.ticket_type)) {
+    container.innerHTML = `
+      <div class="doc-header">
+        <h3 class="doc-title">Leave Form</h3>
+        <div style="font-family: var(--font-mono); font-size: 11px; margin-top: 4px;">(${TICKET_TYPE_LABELS[t.ticket_type]})</div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
+        <div class="doc-col"><span class="doc-label">Employee ID</span><span class="doc-value">${empId}</span></div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-col" style="flex:1;"><span class="doc-label">Address</span><span class="doc-value">${escapeHtml(t.address || '—')}</span></div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-col"><span class="doc-label">When</span><span class="doc-value">${t.date_from} until ${t.date_to || t.date_from}</span></div>
+        <div class="doc-col"><span class="doc-label">Submitted</span><span class="doc-value">${dateSubmitted}</span></div>
+      </div>
+      <div class="doc-label" style="margin-top: 20px;">Reason (Max 350 chars):</div>
+      <div class="doc-reason-box">${escapeHtml(t.reason)}</div>
       
-      let trs = '';
-      // Always generate exactly 10 rows on the paper template
-      for(let i = 0; i < 10; i++) {
-        if (i < dArr.length) {
-          trs += `<tr>
-            <td>${escapeHtml(dArr[i])}</td>
-            <td>${escapeHtml(rArr[i]).substring(0, 100)}</td>
-            <td>${escapeHtml(tfArr[i])} - ${escapeHtml(ttArr[i])}</td>
-            <td>${escapeHtml(hArr[i])}</td>
-          </tr>`;
-        } else {
-          trs += `<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>`;
-        }
+      <div class="doc-signatures">
+        <div class="doc-sig-block">
+          <div class="doc-sig-line">${empName}</div>
+          <div class="doc-label">Employee eSignature</div>
+        </div>
+        <div class="doc-sig-block">
+          <div class="doc-sig-line">${approvedByText}</div>
+          <div class="doc-label">Approved By</div>
+        </div>
+      </div>
+    `;
+  } 
+  // Group 2: Overtime Form
+  else if (t.ticket_type === 'overtime') {
+    const dArr = t.date_from ? t.date_from.split('||') : [];
+    const rArr = t.reason ? t.reason.split('||') : [];
+    const tfArr = t.time_from ? t.time_from.split('||') : [];
+    const ttArr = t.time_to ? t.time_to.split('||') : [];
+    const hArr = t.hours ? t.hours.split('||') : [];
+
+    let trs = '';
+    // Always generate exactly 10 rows on the paper template
+    for (let i = 0; i < 10; i++) {
+      if (i < dArr.length) {
+        trs += `<tr>
+          <td>${escapeHtml(dArr[i])}</td>
+          <td>${escapeHtml(rArr[i]).substring(0, 100)}</td>
+          <td>${escapeHtml(tfArr[i])} - ${escapeHtml(ttArr[i])}</td>
+          <td>${escapeHtml(hArr[i])}</td>
+        </tr>`;
+      } else {
+        trs += `<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>`;
       }
-
-      container.innerHTML = `
-        <div class="doc-header">
-          <h3 class="doc-title">Request for Overtime</h3>
-        </div>
-        <div class="doc-row">
-          <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
-          <div class="doc-col"><span class="doc-label">Date Submitted</span><span class="doc-value">${new Date(t.created_at).toLocaleDateString()}</span></div>
-        </div>
-        <div class="doc-row">
-          <div class="doc-col"><span class="doc-label">Department</span><span class="doc-value">${dept}</span></div>
-          <div class="doc-col"><span class="doc-label">Employee ID No.</span><span class="doc-value">${empId}</span></div>
-        </div>
-        
-        <table class="doc-table">
-          <thead>
-            <tr><th width="15%">Date</th><th width="45%">Reason</th><th width="25%">Time (From - To)</th><th width="15%">No. of Hours</th></tr>
-          </thead>
-          <tbody>${trs}</tbody>
-        </table>
-        
-        <div class="doc-signatures">
-          <div class="doc-sig-block">
-            <div class="doc-sig-line">${empName}</div>
-            <div class="doc-label">Employee eSignature</div>
-          </div>
-          <div class="doc-sig-block">
-            <div class="doc-sig-line">${approvedByText}</div>
-            <div class="doc-label">Approved By</div>
-          </div>
-        </div>
-      `;
     }
 
-      container.innerHTML = `
-        <div class="doc-header">
-          <h3 class="doc-title">Request for Overtime</h3>
+    container.innerHTML = `
+      <div class="doc-header">
+        <h3 class="doc-title">Request for Overtime</h3>
+      </div>
+      <div class="doc-row">
+        <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
+        <div class="doc-col"><span class="doc-label">Date Submitted</span><span class="doc-value">${new Date(t.created_at).toLocaleDateString()}</span></div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-col"><span class="doc-label">Department</span><span class="doc-value">${dept}</span></div>
+        <div class="doc-col"><span class="doc-label">Employee ID No.</span><span class="doc-value">${empId}</span></div>
+      </div>
+      
+      <table class="doc-table">
+        <thead>
+          <tr><th width="15%">Date</th><th width="45%">Reason</th><th width="25%">Time (From - To)</th><th width="15%">No. of Hours</th></tr>
+        </thead>
+        <tbody>${trs}</tbody>
+      </table>
+      
+      <div class="doc-signatures">
+        <div class="doc-sig-block">
+          <div class="doc-sig-line">${empName}</div>
+          <div class="doc-label">Employee eSignature</div>
         </div>
-        <div class="doc-row">
-          <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
-          <div class="doc-col"><span class="doc-label">Date</span><span class="doc-value">${new Date(t.created_at).toLocaleDateString()}</span></div>
+        <div class="doc-sig-block">
+          <div class="doc-sig-line">${approvedByText}</div>
+          <div class="doc-label">Approved By</div>
         </div>
-        <div class="doc-row">
-          <div class="doc-col"><span class="doc-label">Department</span><span class="doc-value">${dept}</span></div>
-          <div class="doc-col"><span class="doc-label">Employee ID No.</span><span class="doc-value">${empId}</span></div>
+      </div>
+    `;
+  } 
+  // Group 3: Schedule Change Form
+  else if (t.ticket_type === 'schedule_change') {
+    container.innerHTML = `
+      <div class="doc-header">
+        <h3 class="doc-title">Change Schedule Request</h3>
+      </div>
+      <div class="doc-row">
+        <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
+        <div class="doc-col"><span class="doc-label">Employee ID No.</span><span class="doc-value">${empId}</span></div>
+      </div>
+      <div class="doc-row">
+        <div class="doc-col" style="flex:1;"><span class="doc-label">Subject</span><span class="doc-value">${escapeHtml(t.subject || 'Schedule Modification')}</span></div>
+      </div>
+      <div class="doc-label" style="margin-top: 20px;">Reason (Max 250 chars):</div>
+      <div class="doc-reason-box">${escapeHtml(t.reason)}</div>
+      
+      <div class="doc-signatures">
+        <div class="doc-sig-block">
+          <div class="doc-sig-line">${empName}</div>
+          <div class="doc-label">Employee eSignature</div>
         </div>
-        
-        <table class="doc-table">
-          <thead>
-            <tr><th width="15%">Date</th><th width="45%">Reason</th><th width="25%">Time (From - To)</th><th width="15%">No. of Hours</th></tr>
-          </thead>
-          <tbody>${trs}</tbody>
-        </table>
-        
-        <div class="doc-signatures">
-          <div class="doc-sig-block">
-            <div class="doc-sig-line">${empName}</div>
-            <div class="doc-label">Employee eSignature</div>
-          </div>
-          <div class="doc-sig-block">
-            <div class="doc-sig-line">${approvedByText}</div>
-            <div class="doc-label">Approved By</div>
-          </div>
+        <div class="doc-sig-block">
+          <div class="doc-sig-line">${approvedByText}</div>
+          <div class="doc-label">Approved By</div>
         </div>
-      `;
-    }
-    else if (t.ticket_type === 'schedule_change') {
-      container.innerHTML = `
-        <div class="doc-header">
-          <h3 class="doc-title">Change Schedule Request</h3>
-        </div>
-        <div class="doc-row">
-          <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
-          <div class="doc-col"><span class="doc-label">Employee ID No.</span><span class="doc-value">${empId}</span></div>
-        </div>
-        <div class="doc-row">
-          <div class="doc-col" style="flex:1;"><span class="doc-label">Subject</span><span class="doc-value">${escapeHtml(t.subject || 'Schedule Modification')}</span></div>
-        </div>
-        <div class="doc-label" style="margin-top: 20px;">Reason (Max 250 chars):</div>
-        <div class="doc-reason-box">${escapeHtml(t.reason)}</div>
-        
-        <div class="doc-signatures">
-          <div class="doc-sig-block">
-            <div class="doc-sig-line"></div>
-          </div>
-          <div class="doc-sig-block">
-            <div class="doc-sig-line">${approvedByText}</div>
-            <div class="doc-label">Approved By</div>
-          </div>
-        </div>
-      `;
-    }
+      </div>
+    `;
+  }
 
-    const statusColor = t.status === 'pending' ? 'var(--amber-500)' : (t.status === 'approved' ? 'var(--mint-700)' : 'var(--coral-500)');
-    
-    if (t.status === 'pending') {
-      actionBar.innerHTML = `
-        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: bold; color: ${statusColor}; align-self: center;">
-          STATUS: PENDING
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <select id="docApproverSelect" style="padding: 7px 10px; border-radius: 6px; border: 1px solid #ccc; font-family: var(--font-body); font-size: 13px; outline: none;">
-            <option value="">Select Approver...</option>
-            <option value="Ms. Eden Rose">Ms. Eden Rose</option>
-            <option value="Ms. Catherine">Ms. Catherine</option>
-            <option value="Mr. Ming">Mr. Ming</option>
-          </select>
-          <button class="btn2 success" id="docApproveBtn">✔️ Approve</button>
-          <button class="btn2 danger" id="docRejectBtn">✖️ Reject</button>
-          <button class="btn2" id="docCloseBtn">Close</button>
-        </div>
-      `;
+  // Handle Action Bar & Status Display
+  const statusColor = t.status === 'pending' ? 'var(--amber-500)' : (t.status === 'approved' ? 'var(--mint-700)' : 'var(--coral-500)');
 
-      document.getElementById('docApproveBtn').onclick = () => { 
-        const approverName = document.getElementById('docApproverSelect').value;
-        if (!approverName) {
-          alert('Please select an approver from the dropdown before approving.');
-          return;
-        }
-        reviewTicket(t.id, 'approved', approverName); 
-        document.getElementById('ticketViewModal').classList.remove('open'); 
-      };
-      document.getElementById('docRejectBtn').onclick = () => { 
-        reviewTicket(t.id, 'rejected'); 
-        document.getElementById('ticketViewModal').classList.remove('open'); 
-      };
-    } else {
-      actionBar.innerHTML = `
-        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: bold; color: ${statusColor}; align-self: center;">
-          STATUS: ${t.status.toUpperCase()}
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn2" id="docCloseBtn">Close Document</button>
-        </div>
-      `;
-    }
+  if (t.status === 'pending') {
+    actionBar.innerHTML = `
+      <div style="font-family: var(--font-mono); font-size: 12px; font-weight: bold; color: ${statusColor}; align-self: center;">
+        STATUS: PENDING
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <select id="docApproverSelect" style="padding: 7px 10px; border-radius: 6px; border: 1px solid #ccc; font-family: var(--font-body); font-size: 13px; outline: none;">
+          <option value="">Select Approver...</option>
+          <option value="Ms. Eden Rose">Ms. Eden Rose</option>
+          <option value="Ms. Catherine">Ms. Catherine</option>
+          <option value="Mr. Ming">Mr. Ming</option>
+        </select>
+        <button class="btn2 success" id="docApproveBtn">✔️ Approve</button>
+        <button class="btn2 danger" id="docRejectBtn">✖️ Reject</button>
+        <button class="btn2" id="docCloseBtn">Close</button>
+      </div>
+    `;
 
-    document.getElementById('docCloseBtn').onclick = () => {
-      document.getElementById('ticketViewModal').classList.remove('open');
+    document.getElementById('docApproveBtn').onclick = () => { 
+      const approverName = document.getElementById('docApproverSelect').value;
+      if (!approverName) {
+        alert('Please select an approver from the dropdown before approving.');
+        return;
+      }
+      reviewTicket(t.id, 'approved', approverName); 
+      document.getElementById('ticketViewModal').classList.remove('open'); 
     };
 
-    document.getElementById('ticketViewModal').classList.add('open');
+    document.getElementById('docRejectBtn').onclick = () => { 
+      reviewTicket(t.id, 'rejected'); 
+      document.getElementById('ticketViewModal').classList.remove('open'); 
+    };
+  } else {
+    actionBar.innerHTML = `
+      <div style="font-family: var(--font-mono); font-size: 12px; font-weight: bold; color: ${statusColor}; align-self: center;">
+        STATUS: ${t.status.toUpperCase()}
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn2" id="docCloseBtn">Close Document</button>
+      </div>
+    `;
   }
+
+  document.getElementById('docCloseBtn').onclick = () => {
+    document.getElementById('ticketViewModal').classList.remove('open');
+  };
+
+  document.getElementById('ticketViewModal').classList.add('open');
+}
 
   async function reviewTicket(ticketId, status, approverName = null){
     let admin_notes = null;
