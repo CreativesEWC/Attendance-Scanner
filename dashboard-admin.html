@@ -1187,9 +1187,9 @@ await supabaseClient.from('notifications').insert([{
       .update(updateData)
       .eq('id', ticketId);
       
-    if(error){ alert('Could not update ticket: ' + error.message); return; }
+    if(error){ alert('Could not update ticket: ' + error.message); return; };
     await loadTickets();
-  };
+  }
 
   document.getElementById('ticketsFilter').addEventListener('change', loadTickets);
 
