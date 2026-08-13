@@ -149,7 +149,35 @@
   /* Main Content Wrapper Offset */
   main.main-content { margin-left: 260px; flex: 1; padding: 30px; overflow-y: auto; }
   header.top-header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 30px; gap: 15px; }
-
+  
+/* ---- COLLAPSIBLE ICON-ONLY SIDEBAR STYLES ---- */
+aside.sidebar {
+  width: 260px;
+  transition: width 0.3s ease;
+}
+aside.sidebar.collapsed {
+  width: 72px;
+}
+aside.sidebar.collapsed .sidebar-brand,
+aside.sidebar.collapsed .sidebar-sub,
+aside.sidebar.collapsed nav.sidebar-nav button span,
+aside.sidebar.collapsed .sidebar-footer button {
+  display: none;
+}
+aside.sidebar.collapsed nav.sidebar-nav button {
+  justify-content: center;
+  padding: 12px;
+}
+aside.sidebar.collapsed nav.sidebar-nav button svg {
+  margin-right: 0;
+}
+main.main-content {
+  margin-left: 260px;
+  transition: margin-left 0.3s ease;
+}
+aside.sidebar.collapsed ~ main.main-content {
+  margin-left: 72px;
+}
 
   
 </style>
@@ -163,14 +191,50 @@
       <div class="sidebar-sub">Admin Dashboard</div>
     </div>
     <nav class="sidebar-nav">
-      <button data-tab="home" class="active">Home</button>
-      <button data-tab="announcements">Announcements</button>
-      <button data-tab="roster">Roster [Employees]</button>
-      <button data-tab="attendance">Attendance</button>
-      <button data-tab="notifications">Notifications</button>
-      <button data-tab="tickets">Tickets</button>
-      <button data-tab="liveseller">Live Seller Schedule</button>
-    </nav>
+  
+  <!-- HOME -->
+  <button data-tab="home" class="active">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <span>Home</span>
+  </button>
+
+  <!-- ANNOUNCEMENTS -->
+  <button data-tab="announcements">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <span>Announcements</span>
+  </button>
+  
+  <!-- ROSTER / ACCOUNT -->
+  <button data-tab="roster">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    <span>Roster [Employees]</span>
+  </button>
+
+  <!-- ATTENDANCE -->
+  <button data-tab="attendance">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+    <span>Attendance</span>
+  </button>
+
+  <!-- NOTIFICATIONS (Matches your Top Nav Bell) -->
+  <button data-tab="notifications">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+    <span>Notifications</span>
+  </button>
+
+  <!-- TICKETS / SUBMISSION FORMS -->
+  <button data-tab="tickets">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+    <span>Tickets</span>
+  </button>
+
+  <!-- LIVE SELLER SCHEDULE -->
+  <button data-tab="liveseller">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+    <span>Live Seller Schedule</span>
+  </button>
+
+</nav>
   </div>
   <div class="sidebar-footer">
     <button class="btn2 danger" id="signOutBtn" style="width:100%;">Sign Out</button>
