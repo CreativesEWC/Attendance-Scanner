@@ -1031,31 +1031,42 @@ aside.sidebar.collapsed ~ main.main-content {
     const feed = document.getElementById('commentFeed');
     feed.innerHTML = '<div style="color:#7488b6; font-size:12px; font-style:italic;">Loading comments...</div>';
     
-    // Fetch comments linked to this announcement ID
-    const { data: comments, error } = await supabaseClient
-      .from('announcement_comments')
-      .select('*, employees(name)')
-      .eq('announcement_id', postId)
-      .order('created_at', { ascending: true });
+    try {
+      // Fetch comments linked to this announcement ID
+      const { data: comments, error } = await supabaseClient
+        .from('announcement_comments')
+        .select('*, employees(name)')
+        .eq('announcement_id', postId)
+        .order('created_at', { ascending: true });
+        
+      if (error) {
+        feed.innerHTML = '<div style="color:var(--coral-500); font-size:12px;">Failed to load comments.</div>';
+        console.error("Supabase Error:", error);
+        return;
+      }
       
-    if (error) {
-      feed.innerHTML = '<div style="color:var(--coral-500); font-size:12px;">Failed to load comments.</div>';
-      console.error(error);
-      return;
+      if (!comments || comments.length === 0) {
+        feed.innerHTML = '<div style="color:#7488b6; font-size:12px; font-style:italic;">No comments yet. Be the first to reply!</div>';
+        return;
+      }
+      
+      // Built-in safe HTML formatter so it never crashes
+      const safeHtml = (str) => {
+        return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      };
+      
+      // Display the comments in the feed
+      feed.innerHTML = comments.map(c => `
+        <div style="background: var(--navy-800); padding: 12px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 8px;">
+          <div style="font-size: 11px; font-weight: bold; color: var(--amber-400); margin-bottom: 6px;">${c.employees ? c.employees.name : 'Unknown User'}</div>
+          <div style="font-size: 13px; color: var(--paper); line-height: 1.4;">${safeHtml(c.comment)}</div>
+        </div>
+      `).join('');
+      
+    } catch (err) {
+      console.error("Javascript Error:", err);
+      feed.innerHTML = '<div style="color:var(--coral-500); font-size:12px;">Something went wrong formatting the comments.</div>';
     }
-    
-    if (!comments || comments.length === 0) {
-      feed.innerHTML = '<div style="color:#7488b6; font-size:12px; font-style:italic;">No comments yet. Be the first to reply!</div>';
-      return;
-    }
-    
-    // Display the comments in the feed
-    feed.innerHTML = comments.map(c => `
-      <div style="background: var(--navy-800); padding: 12px; border-radius: 8px; border: 1px solid var(--line);">
-        <div style="font-size: 11px; font-weight: bold; color: var(--amber-400); margin-bottom: 6px;">${c.employees ? c.employees.name : 'Unknown User'}</div>
-        <div style="font-size: 13px; color: var(--paper); line-height: 1.4;">${escapeHtml(c.comment)}</div>
-      </div>
-    `).join('');
   }
 
   // Attach to the global window so your HTML onclick="postComment()" works
