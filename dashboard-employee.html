@@ -1106,7 +1106,7 @@ aside.sidebar.collapsed ~ main.main-content {
       
     if (admins && admins.length > 0) {
       const notifs = admins.map(admin => ({
-        user_id: admin.id,
+        employee_id: admin.id, // <--- CHANGE THIS LINE
         message: `${display || emp.name} commented on an announcement.`,
         link: postId
       }));
