@@ -772,8 +772,13 @@ aside.sidebar.collapsed ~ main.main-content {
         }
       });
     });
+  
+    // ---- Auth guard ----
+    const emp = await getMyEmployeeRecord();
+    if (!emp) { window.location.href = 'login.html'; return; }
+    if (emp.role !== 'employee') { routeToRoleHome(emp); return; }
 
-// ---- CONDITIONAL SCHEDULE REQUEST VISIBILITY ----
+    // ---- CONDITIONAL SCHEDULE REQUEST VISIBILITY ----
     const scheduleNavBtn = document.getElementById('scheduleNavBtn');
     if (emp && scheduleNavBtn) {
       const positionName = emp.position || (emp.positions && emp.positions.name) || '';
@@ -783,11 +788,6 @@ aside.sidebar.collapsed ~ main.main-content {
         scheduleNavBtn.style.display = 'none';
       }
     }
-  
-    // ---- Auth guard ----
-    const emp = await getMyEmployeeRecord();
-  if (!emp) { window.location.href = 'login.html'; return; }
-  if (emp.role !== 'employee') { routeToRoleHome(emp); return; }
 
 // ==========================================================
   // NOTIFICATION SYSTEM
