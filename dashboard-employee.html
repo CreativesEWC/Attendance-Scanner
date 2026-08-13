@@ -1031,48 +1031,49 @@ aside.sidebar.collapsed ~ main.main-content {
 
   // Open and display the employee's submitted form details beautifully
   window.openEmployeeTicketDocument = async function(ticketId) {
+    // 1. Reverted back to the safe, simple query that we know works!
     const { data: ticket, error } = await supabaseClient
       .from('tickets')
-      .select('*, employees(name, badge_id)') // Fetch employee data too
+      .select('*') 
       .eq('id', ticketId)
       .single();
 
     if (error || !ticket) {
+      console.error("Error fetching ticket:", error);
       alert('Could not load ticket details.');
       return;
     }
 
-    // Format Header Type
+    // 2. Format Header Type
     const rawType = ticket.ticket_type || 'request';
     const formatType = rawType.replace('_', ' ').toUpperCase();
     document.getElementById('docDocTitle').textContent = `${formatType} FORM`;
     document.getElementById('docDocSub').textContent = `(${formatType.toLowerCase()})`;
 
-    // Populate Employee Name & ID (using the joined employee data)
-    const empName = ticket.employees ? ticket.employees.name : (emp.name || 'Unknown User');
-    const empBadge = ticket.employees ? ticket.employees.badge_id : (emp.badge_id || '—');
+    // 3. Use the global 'emp' object since they are viewing their own tickets!
+    const empName = emp.name || 'Unknown User';
+    const empBadge = emp.badge_id || '—';
     document.getElementById('docEmpName').textContent = empName;
     document.getElementById('docEmpId').textContent = empBadge;
 
-    // Populate Dates
+    // 4. Populate Dates
     let dateStr = ticket.date_from || '—';
     if (ticket.date_to && ticket.date_to !== ticket.date_from) {
       dateStr = `${ticket.date_from} until ${ticket.date_to}`;
     }
-    // Handle specific undertime formatting if needed
     if (rawType === 'undertime' && ticket.time_from) {
       dateStr += ` (${ticket.time_from} - ${ticket.time_to})`;
     }
     document.getElementById('docDates').textContent = dateStr;
 
-    // Populate Timestamp & Reason
+    // 5. Populate Timestamp & Reason
     document.getElementById('docSubmitted').textContent = new Date(ticket.created_at).toLocaleString();
     document.getElementById('docReason').textContent = ticket.reason || 'No reason provided.';
 
-    // Generate Signature (uses cursive font in CSS)
+    // 6. Generate Signature
     document.getElementById('docSignature').textContent = empName;
 
-    // Update Status Color & Approval Signature
+    // 7. Update Status Color & Approval Signature
     const status = ticket.status || 'pending';
     const statusEl = document.getElementById('docStatus');
     const approvedByEl = document.getElementById('docApprovedBy');
@@ -1080,17 +1081,17 @@ aside.sidebar.collapsed ~ main.main-content {
     statusEl.textContent = `STATUS: ${status.toUpperCase()}`;
     
     if (status === 'approved') {
-      statusEl.style.color = '#4fb286'; // Mint green
-      approvedByEl.style.display = 'block'; // Show manager signature
+      statusEl.style.color = '#4fb286'; 
+      approvedByEl.style.display = 'block'; 
     } else if (status === 'rejected') {
-      statusEl.style.color = '#d9614f'; // Coral red
+      statusEl.style.color = '#d9614f'; 
       approvedByEl.style.display = 'none';
     } else {
-      statusEl.style.color = '#e8a13a'; // Amber yellow
+      statusEl.style.color = '#e8a13a'; 
       approvedByEl.style.display = 'none';
     }
 
-    // Finally, open the beautiful modal!
+    // 8. Open the beautiful modal!
     document.getElementById('ticketDocumentModal').classList.add('open');
   };
 
