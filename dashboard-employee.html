@@ -903,17 +903,16 @@ aside.sidebar.collapsed ~ main.main-content {
 
     if (error) {
       console.error("Error loading submissions:", error);
-      tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#e06c75;">Error loading submissions.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#e06c75;">Error loading submissions.</td></tr>`;
       return;
     }
 
     if (!data || data.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#7488b6;">No submissions found.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#7488b6;">No submissions found.</td></tr>`;
       return;
     }
 
     tableBody.innerHTML = data.map(sub => {
-      // Format dates cleanly (handling single dates or ranges)
       let dateDisplay = sub.date_from || '—';
       if (sub.date_to && sub.date_to !== sub.date_from) {
         dateDisplay = `${sub.date_from} → ${sub.date_to}`;
@@ -936,7 +935,6 @@ aside.sidebar.collapsed ~ main.main-content {
       `;
     }).join('');
   }
-
     const unreadCount = data.filter(n => !n.is_read).length;
 
     // Update Bell Badge
