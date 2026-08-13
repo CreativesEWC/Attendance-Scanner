@@ -377,25 +377,111 @@
   /* Main Content Wrapper Offset */
   main.main-content { margin-left: 260px; flex: 1; padding: 30px; overflow-y: auto; }
   header.top-header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 30px; gap: 15px; }
+/* ---- COLLAPSIBLE ICON-ONLY SIDEBAR STYLES ---- */
+aside.sidebar {
+  width: 260px;
+  transition: width 0.3s ease;
+}
+aside.sidebar.collapsed {
+  width: 72px;
+}
+aside.sidebar.collapsed .sidebar-brand,
+aside.sidebar.collapsed .sidebar-sub,
+aside.sidebar.collapsed nav.sidebar-nav button span,
+aside.sidebar.collapsed .sidebar-footer button {
+  display: none;
+}
+aside.sidebar.collapsed nav.sidebar-nav button {
+  justify-content: center;
+  padding: 12px;
+}
+aside.sidebar.collapsed nav.sidebar-nav button svg {
+  margin-right: 0;
+}
+main.main-content {
+  margin-left: 260px;
+  transition: margin-left 0.3s ease;
+}
+aside.sidebar.collapsed ~ main.main-content {
+  margin-left: 72px;
+}
+
+/* ---- PROFILE CARD & DIGITAL ID ICON BUTTON ---- */
+.profile-card {
+  position: relative; /* Establishes positioning container */
+}
+.profile-card-digital-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: var(--navy-800, #1b2a4a);
+  border: 1px solid var(--line, #2a3b5c);
+  color: var(--amber-500, #f5a623);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.profile-card-digital-btn:hover {
+  background: var(--navy-700, #243559);
+  transform: scale(1.05);
+} 
+  
+  <!-- Digital ID Icon Button positioned on the bottom right corner -->
+  <button class="profile-card-digital-btn" id="digitalIdBtn" title="View Digital ID">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 11h2"/><path d="M16 15h2"/><circle cx="9" cy="12" r="3"/></svg>
+  </button>
+</div>
   
 </style>
 </head>
 <body>
 
-<aside class="sidebar">
+<aside class="sidebar" id="appSidebar">
   <div>
-    <div class="sidebar-header">
-      <h1 class="sidebar-brand">EWC Portal</h1>
-      <div class="sidebar-sub" id="empRoleSubtitle">Employee Dashboard</div>
+    <div class="sidebar-header" style="display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <h1 class="sidebar-brand">EWC Portal</h1>
+        <div class="sidebar-sub" id="empRoleSubtitle">Employee Dashboard</div>
+      </div>
+      <!-- Sidebar Collapse Icon Toggle Button -->
+      <button id="sidebarToggleBtn" class="btn-icon" title="Toggle Sidebar" style="background:transparent; border:none; color:inherit; cursor:pointer; padding:6px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
     </div>
     <nav class="sidebar-nav">
-      <button data-tab="home" class="active">Home</button>
-      <button data-tab="announcements">Announcements</button>
-      <button data-tab="attendance">Attendance</button>
-      <button data-tab="notifications">Notifications</button>
-      <button data-tab="schedule" id="scheduleNavBtn" style="display:none;">Schedule</button>
-      <button data-tab="submissions">Submission Forms</button>
-      <button data-tab="account">Account</button>
+      <button data-tab="home" class="active">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>Home</span>
+      </button>
+      <button data-tab="announcements">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
+        <span>Announcements</span>
+      </button>
+      <button data-tab="attendance">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Attendance</span>
+      </button>
+      <button data-tab="notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
+        <span>Notifications</span>
+      </button>
+      <button data-tab="schedule" id="scheduleNavBtn" style="display:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Schedule</span>
+      </button>
+      <button data-tab="submissions">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>Submission Forms</span>
+      </button>
+      <button data-tab="account">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Account</span>
+      </button>
     </nav>
   </div>
   <div class="sidebar-footer">
@@ -439,20 +525,27 @@
 
   <div id="content" style="display:none;">
 
-    <div class="profile-card">
-      <div class="avatar-wrap">
-        <div class="avatar" id="avatarInitials">?</div>
-        <img class="avatar-img" id="avatarImg" alt="Profile photo">
-        <label class="avatar-edit" for="avatarInput" title="Change photo">✎
-          <input type="file" id="avatarInput" accept="image/*">
-        </label>
-      </div>
-      <div>
-        <div class="name" id="empName">—</div>
-        <div class="meta" id="empPositionBrand">—</div>
-        <div class="badge-id" id="empBadgeId">—</div>
-      </div>
+  <div class="profile-card">
+    <div class="avatar-wrap">
+      <div class="avatar" id="avatarInitials">?</div>
+      <img class="avatar-img" id="avatarImg" alt="Profile photo">
+      <label class="avatar-edit" for="avatarInput" title="Change photo">✎
+        <input type="file" id="avatarInput" accept="image/*">
+      </label>
     </div>
+    <div>
+      <div class="name" id="empName">—</div>
+      <div class="meta" id="empPositionBrand">—</div>
+      <div class="badge-id" id="empBadgeId">—</div>
+    </div>
+    
+    <!-- Digital ID Icon Button embedded in the profile card's bottom right corner -->
+    <button class="profile-card-digital-btn" id="digitalIdBtn" title="View Digital ID">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 11h2"/><path d="M16 15h2"/><circle cx="9" cy="12" r="3"/></svg>
+    </button>
+  </div>
+
+  <!-- Your statistics and attendance sections follow right here -->
 
     <div class="sch-card" id="schCard" style="display:none;">
       <h2>Your Schedule for the Week</h2>
@@ -609,6 +702,14 @@
 <script>
 (async function(){
 
+  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+  const appSidebar = document.getElementById('appSidebar');
+  if (sidebarToggleBtn && appSidebar) {
+    sidebarToggleBtn.addEventListener('click', () => {
+      appSidebar.classList.toggle('collapsed');
+    });
+  }
+  
   // ---- Auth guard ----
   const emp = await getMyEmployeeRecord();
   if (!emp) { window.location.href = 'login.html'; return; }
