@@ -126,6 +126,12 @@
   #ticketViewModal .btn2.primary { background: var(--navy-900); color: var(--paper); }
   #ticketViewModal .btn2.danger { background: var(--coral-500); color: var(--paper); border: none; }
   #ticketViewModal .btn2.success { background: var(--mint-700); color: var(--paper); border: none; }
+
+  /* ---- Sub-Navigation Tabs ---- */
+  nav.sub-tabs { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; padding-bottom:4px; }
+  nav.sub-tabs button { background:var(--navy-800); border:1px solid var(--line); color:#7488b6; font-family:var(--font-mono); font-size:11px; border-radius:20px; padding:6px 12px; cursor:pointer; white-space:nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
+  nav.sub-tabs button.active { background:var(--amber-500); color:var(--navy-950); border-color:var(--amber-500); font-weight:700; }
+  
 </style>
 </head>
 <body>
@@ -222,7 +228,19 @@
 
     <section class="tab-panel" id="tab-tickets">
       <section class="panel">
-        <h2>Leave / Absence Tickets <span class="count" id="ticketsCount">—</span></h2>
+        <h2>Overall Tickets <span class="count" id="ticketsCount">—</span></h2>
+        
+        <!-- NEW TICKET TYPE NAVIGATION -->
+        <nav class="sub-tabs" id="ticketTypeNav">
+          <button class="sub-tab-btn active" data-type="all">All Types</button>
+          <button class="sub-tab-btn" data-type="leave">Leave</button>
+          <button class="sub-tab-btn" data-type="absence">Absence</button>
+          <button class="sub-tab-btn" data-type="undertime">Undertime</button>
+          <button class="sub-tab-btn" data-type="emergency_leave">Emergency Leave</button>
+          <button class="sub-tab-btn" data-type="overtime">Overtime</button>
+          <button class="sub-tab-btn" data-type="schedule_change">Change Schedule Request</button>
+        </nav>
+
         <div class="form-row">
           <select id="ticketsFilter">
             <option value="pending">Pending only</option>
@@ -713,7 +731,9 @@
   };
 
   async function loadTickets(){
-    const filter = document.getElementById('ticketsFilter').value;
+    const statusFilter = document.getElementById('ticketsFilter').value;
+    const typeFilter = document.querySelector('#ticketTypeNav .active').dataset.type;
+
     document.getElementById('ticketsLoading').style.display = 'block';
     document.getElementById('ticketsLoading').className = 'loading-note';
     document.getElementById('ticketsLoading').textContent = 'Loading tickets…';
@@ -723,7 +743,10 @@
       .from('tickets')
       .select('*, employees!employee_id(name, badge_id, positions(name))')
       .order('created_at', { ascending: false });
-    if(filter === 'pending') query = query.eq('status', 'pending');
+    
+    // Apply Filters
+    if(statusFilter === 'pending') query = query.eq('status', 'pending');
+    if(typeFilter !== 'all') query = query.eq('ticket_type', typeFilter);
 
     const { data, error } = await query;
     document.getElementById('ticketsLoading').style.display = 'none';
@@ -771,6 +794,15 @@
     });
   }
 
+  // Add click listeners to the new navigation tabs
+  document.querySelectorAll('#ticketTypeNav .sub-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#ticketTypeNav .sub-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadTickets(); // Reload table with new filter
+    });
+  });
+
   function openTicketDocument(ticketId) {
     const t = window.currentTicketsData.find(x => x.id === ticketId);
     if(!t) return;
@@ -817,16 +849,62 @@
         </div>
       `;
     } 
+    // Group 2: Overtime Form
     else if (t.ticket_type === 'overtime') {
-      let trs = `<tr>
-        <td>${t.date_from || ''}</td>
-        <td>${escapeHtml(t.reason || '').substring(0, 100)}</td>
-        <td>${t.time_from || ''} - ${t.time_to || ''}</td>
-        <td>${t.hours || ''}</td>
-      </tr>`;
-      for(let i = 1; i < 10; i++) {
-        trs += `<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>`;
+      // Split the saved arrays back into lists
+      const dArr = t.date_from ? t.date_from.split('||') : [];
+      const rArr = t.reason ? t.reason.split('||') : [];
+      const tfArr = t.time_from ? t.time_from.split('||') : [];
+      const ttArr = t.time_to ? t.time_to.split('||') : [];
+      const hArr = t.hours ? t.hours.split('||') : [];
+      
+      let trs = '';
+      // Always generate exactly 10 rows on the paper template
+      for(let i = 0; i < 10; i++) {
+        if (i < dArr.length) {
+          trs += `<tr>
+            <td>${escapeHtml(dArr[i])}</td>
+            <td>${escapeHtml(rArr[i]).substring(0, 100)}</td>
+            <td>${escapeHtml(tfArr[i])} - ${escapeHtml(ttArr[i])}</td>
+            <td>${escapeHtml(hArr[i])}</td>
+          </tr>`;
+        } else {
+          trs += `<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>`;
+        }
       }
+
+      container.innerHTML = `
+        <div class="doc-header">
+          <h3 class="doc-title">Request for Overtime</h3>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
+          <div class="doc-col"><span class="doc-label">Date Submitted</span><span class="doc-value">${new Date(t.created_at).toLocaleDateString()}</span></div>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col"><span class="doc-label">Department</span><span class="doc-value">${dept}</span></div>
+          <div class="doc-col"><span class="doc-label">Employee ID No.</span><span class="doc-value">${empId}</span></div>
+        </div>
+        
+        <table class="doc-table">
+          <thead>
+            <tr><th width="15%">Date</th><th width="45%">Reason</th><th width="25%">Time (From - To)</th><th width="15%">No. of Hours</th></tr>
+          </thead>
+          <tbody>${trs}</tbody>
+        </table>
+        
+        <div class="doc-signatures">
+          <div class="doc-sig-block">
+            <div class="doc-sig-line">${empName}</div>
+            <div class="doc-label">Employee eSignature</div>
+          </div>
+          <div class="doc-sig-block">
+            <div class="doc-sig-line">${approvedByText}</div>
+            <div class="doc-label">Approved By</div>
+          </div>
+        </div>
+      `;
+    }
 
       container.innerHTML = `
         <div class="doc-header">
