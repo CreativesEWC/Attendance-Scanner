@@ -1029,11 +1029,11 @@ aside.sidebar.collapsed ~ main.main-content {
     }).join('');
   }
 
-  // Open and display the employee's submitted form details
+  // Open and display the employee's submitted form details beautifully
   window.openEmployeeTicketDocument = async function(ticketId) {
     const { data: ticket, error } = await supabaseClient
       .from('tickets')
-      .select('*')
+      .select('*, employees(name, badge_id)') // Fetch employee data too
       .eq('id', ticketId)
       .single();
 
@@ -1042,7 +1042,56 @@ aside.sidebar.collapsed ~ main.main-content {
       return;
     }
 
-    alert(`Viewing Request: ${ticket.ticket_type.toUpperCase()}\nStatus: ${ticket.status.toUpperCase()}\nDates: ${ticket.date_from || 'N/A'}\nReason: ${ticket.reason || 'N/A'}`);
+    // Format Header Type
+    const rawType = ticket.ticket_type || 'request';
+    const formatType = rawType.replace('_', ' ').toUpperCase();
+    document.getElementById('docDocTitle').textContent = `${formatType} FORM`;
+    document.getElementById('docDocSub').textContent = `(${formatType.toLowerCase()})`;
+
+    // Populate Employee Name & ID (using the joined employee data)
+    const empName = ticket.employees ? ticket.employees.name : (emp.name || 'Unknown User');
+    const empBadge = ticket.employees ? ticket.employees.badge_id : (emp.badge_id || '—');
+    document.getElementById('docEmpName').textContent = empName;
+    document.getElementById('docEmpId').textContent = empBadge;
+
+    // Populate Dates
+    let dateStr = ticket.date_from || '—';
+    if (ticket.date_to && ticket.date_to !== ticket.date_from) {
+      dateStr = `${ticket.date_from} until ${ticket.date_to}`;
+    }
+    // Handle specific undertime formatting if needed
+    if (rawType === 'undertime' && ticket.time_from) {
+      dateStr += ` (${ticket.time_from} - ${ticket.time_to})`;
+    }
+    document.getElementById('docDates').textContent = dateStr;
+
+    // Populate Timestamp & Reason
+    document.getElementById('docSubmitted').textContent = new Date(ticket.created_at).toLocaleString();
+    document.getElementById('docReason').textContent = ticket.reason || 'No reason provided.';
+
+    // Generate Signature (uses cursive font in CSS)
+    document.getElementById('docSignature').textContent = empName;
+
+    // Update Status Color & Approval Signature
+    const status = ticket.status || 'pending';
+    const statusEl = document.getElementById('docStatus');
+    const approvedByEl = document.getElementById('docApprovedBy');
+    
+    statusEl.textContent = `STATUS: ${status.toUpperCase()}`;
+    
+    if (status === 'approved') {
+      statusEl.style.color = '#4fb286'; // Mint green
+      approvedByEl.style.display = 'block'; // Show manager signature
+    } else if (status === 'rejected') {
+      statusEl.style.color = '#d9614f'; // Coral red
+      approvedByEl.style.display = 'none';
+    } else {
+      statusEl.style.color = '#e8a13a'; // Amber yellow
+      approvedByEl.style.display = 'none';
+    }
+
+    // Finally, open the beautiful modal!
+    document.getElementById('ticketDocumentModal').classList.add('open');
   };
 
   // Trigger load when script runs
@@ -1976,6 +2025,68 @@ if (ticketBtn) {
         <button class="btn2" onclick="closeAnnouncementModal()">Close</button>
         <button class="btn2 primary" onclick="postComment()">Post Reply</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Beautiful Paper Document Viewer Modal -->
+<div class="modal-overlay" id="ticketDocumentModal">
+  <div class="modal-box" style="background: #fdfaf2; color: #1a1e29; max-width: 650px; border-radius: 12px; padding: 40px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    
+    <!-- Header -->
+    <div style="text-align: center; border-bottom: 2px solid #1a1e29; padding-bottom: 15px; margin-bottom: 25px;">
+      <h2 id="docDocTitle" style="font-family: Georgia, serif; font-size: 26px; font-weight: 800; letter-spacing: 2px; margin: 0; color: #1a1e29; text-transform: uppercase;">LEAVE FORM</h2>
+      <div id="docDocSub" style="font-family: monospace; font-size: 12px; margin-top: 5px; color: #555;">(Leave)</div>
+    </div>
+
+    <!-- Grid Info -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; font-family: monospace; font-size: 12px;">
+      <div>
+        <div style="color: #666; font-size: 10px; margin-bottom: 4px; letter-spacing: 1px;">NAME</div>
+        <div id="docEmpName" style="font-size: 14px; font-family: sans-serif; border-bottom: 1px solid #ccc; padding-bottom: 4px; font-weight: 600;">—</div>
+      </div>
+      <div>
+        <div style="color: #666; font-size: 10px; margin-bottom: 4px; letter-spacing: 1px;">EMPLOYEE ID</div>
+        <div id="docEmpId" style="font-size: 14px; font-family: sans-serif; border-bottom: 1px solid #ccc; padding-bottom: 4px; font-weight: 600;">—</div>
+      </div>
+      <div style="grid-column: span 2;">
+        <div style="color: #666; font-size: 10px; margin-bottom: 4px; letter-spacing: 1px;">ADDRESS</div>
+        <div style="font-size: 14px; font-family: sans-serif; border-bottom: 1px solid #ccc; padding-bottom: 4px;">—</div>
+      </div>
+      <div>
+        <div style="color: #666; font-size: 10px; margin-bottom: 4px; letter-spacing: 1px;">WHEN</div>
+        <div id="docDates" style="font-size: 14px; font-family: sans-serif; border-bottom: 1px solid #ccc; padding-bottom: 4px; font-weight: 600;">—</div>
+      </div>
+      <div>
+        <div style="color: #666; font-size: 10px; margin-bottom: 4px; letter-spacing: 1px;">SUBMITTED</div>
+        <div id="docSubmitted" style="font-size: 14px; font-family: sans-serif; border-bottom: 1px solid #ccc; padding-bottom: 4px; font-weight: 600;">—</div>
+      </div>
+    </div>
+
+    <!-- Reason Box -->
+    <div style="margin-bottom: 40px;">
+      <div style="color: #666; font-family: monospace; font-size: 10px; margin-bottom: 8px; letter-spacing: 1px;">REASON (MAX 350 CHARS):</div>
+      <div id="docReason" style="background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 15px; font-family: sans-serif; font-size: 13px; min-height: 80px; white-space: pre-wrap; color: #333;">—</div>
+    </div>
+
+    <!-- Signatures -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px; text-align: center;">
+      <div>
+        <div id="docSignature" style="font-family: 'Brush Script MT', 'Dancing Script', cursive; font-size: 28px; border-bottom: 1px solid #1a1e29; padding-bottom: 5px; color: #1a1e29; min-height: 35px;">—</div>
+        <div style="font-family: monospace; font-size: 9px; color: #666; margin-top: 5px; letter-spacing: 1px;">EMPLOYEE ESIGNATURE</div>
+      </div>
+      <div>
+        <div style="border-bottom: 1px solid #1a1e29; padding-bottom: 5px; min-height: 35px; display:flex; align-items:flex-end; justify-content:center;">
+          <span id="docApprovedBy" style="font-family: 'Brush Script MT', 'Dancing Script', cursive; font-size: 28px; color: #1a1e29; display:none;">Management</span>
+        </div>
+        <div style="font-family: monospace; font-size: 9px; color: #666; margin-top: 5px; letter-spacing: 1px;">APPROVED BY</div>
+      </div>
+    </div>
+
+    <!-- Footer Status -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
+      <div id="docStatus" style="font-family: monospace; font-weight: bold; font-size: 13px; color: #e8a13a;">STATUS: PENDING</div>
+      <button class="btn2" onclick="document.getElementById('ticketDocumentModal').classList.remove('open')" style="color: #333; border-color: #ccc;">Close Form</button>
     </div>
   </div>
 </div>
