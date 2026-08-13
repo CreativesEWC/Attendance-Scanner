@@ -770,8 +770,13 @@ aside.sidebar.collapsed ~ main.main-content {
   
     // ---- Auth guard ----
     const emp = await getMyEmployeeRecord();
-    if (!emp) { window.location.href = 'login.html'; return; }
-    if (emp.role !== 'employee') { routeToRoleHome(emp); return; }
+  if (!emp) { window.location.href = 'login.html'; return; }
+
+  // Allow standard employees OR Eden Rose and Catherine to view this dashboard layout
+  if (emp.role !== 'employee' && emp.name !== 'Eden Rose R. De Leon' && emp.name !== 'Catherine R. Cay') {
+    window.location.href = 'dashboard-admin.html';
+    return;
+  }
 
     // ---- CONDITIONAL SCHEDULE REQUEST VISIBILITY ----
     const scheduleNavBtn = document.getElementById('scheduleNavBtn');
