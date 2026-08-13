@@ -265,99 +265,11 @@ aside.sidebar.collapsed ~ main.main-content {
 
   <!-- LIVE SELLER SCHEDULE -->
   <button data-tab="schedule">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+    <svg width="20" height="20" ...></svg>
     <span>Live Seller Schedule</span>
   </button>
 
-</nav>
-
-      <!-- SUB-PANEL: View Roster -->
-      <div id="view-roster" class="roster-sub-panel">
-        <h2>Employee Roster <span class="count" id="rosterCount"></span></h2>
-        <div class="form-row">
-          <input type="text" id="rosterSearch" placeholder="Search by name or badge ID..." style="flex:1; min-width:180px;">
-        </div>
-        <div id="rosterLoading" class="loading-note">Loading roster...</div>
-        <table style="display:none;" id="rosterTable">
-          <thead><tr><th>Badge ID</th><th>Name</th><th>Position</th><th>Role</th><th></th><th></th></tr></thead>
-          <tbody id="rosterTableBody"></tbody>
-        </table>
-      </div>
-
-      <!-- SUB-PANEL: Add Employee -->
-      <div id="add-employee" class="roster-sub-panel" style="display:none;">
-        <h2>Add Employee</h2>
-        <div class="form-row">
-          <input type="text" id="newBadgeId" placeholder="Badge ID (e.g. EW-0076-2024)" style="font-family:var(--font-mono);">
-          <input type="text" id="newName" placeholder="Full name" style="flex:1; min-width:160px;">
-          <select id="newPosition"><option value="">No position set</option></select>
-        </div>
-        <div class="form-row">
-          <select id="newBrand"><option value="">No brand assigned</option></select>
-          <select id="newRole">
-            <option value="employee">Employee</option>
-            <option value="kiosk">Kiosk</option>
-            <option value="admin">Admin</option>
-            <option value="president">President</option>
-          </select>
-          <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
-        </div>
-        <p class="loading-note" style="padding-top:0;">New employees can view their own record once their login is linked. Ask an admin to send them an invite from Supabase Auth, then their account will match automatically by email.</p>
-      </div>
-
-      <!-- SUB-PANEL: Manage Positions -->
-      <div id="manage-positions" class="roster-sub-panel" style="display:none;">
-        <h2>Manage Positions <span class="count" id="positionsCount">—</span></h2>
-        <div class="form-row">
-          <input type="text" id="newPositionName" placeholder="New position name (e.g. Live Seller)" style="flex:1; min-width:200px;">
-          <button class="btn primary" id="addPositionBtn">Add Position</button>
-        </div>
-        <div id="positionsLoading" class="loading-note">Loading positions…</div>
-        <table style="display:none;" id="positionsTable">
-          <thead><tr><th>Position</th><th></th></tr></thead>
-          <tbody id="positionsTableBody"></tbody>
-        </table>
-      </div>
-
-    </section>
-  </div>
-
-      <!-- SUB-PANEL: Add Employee -->
-      <div id="add-employee" class="roster-sub-panel" style="display:none;">
-        <h2>Add Employee</h2>
-        <div class="form-row">
-          <input type="text" id="newBadgeId" placeholder="Badge ID (e.g. EW-0076-2024)" style="font-family:var(--font-mono);">
-          <input type="text" id="newName" placeholder="Full name" style="flex:1; min-width:160px;">
-          <select id="newPosition"><option value="">No position set</option></select>
-        </div>
-        <div class="form-row">
-          <select id="newBrand"><option value="">No brand assigned</option></select>
-          <select id="newRole">
-            <option value="employee">Employee</option>
-            <option value="kiosk">Kiosk</option>
-            <option value="admin">Admin</option>
-            <option value="president">President</option>
-          </select>
-          <button class="btn primary" id="addEmployeeBtn">Add Employee</button>
-        </div>
-      </div>
-
-      <!-- SUB-PANEL: Manage Positions -->
-      <div id="manage-positions" class="roster-sub-panel" style="display:none;">
-        <h2>Manage Positions <span class="count" id="positionsCount">—</span></h2>
-        <div class="form-row">
-          <input type="text" id="newPositionName" placeholder="New position name (e.g. Live Seller)" style="flex:1; min-width:200px;">
-          <button class="btn primary" id="addPositionBtn">Add Position</button>
-        </div>
-        <div id="positionsLoading" class="loading-note">Loading positions…</div>
-        <table style="display:none;" id="positionsTable">
-          <thead><tr><th>Position</th><th></th></tr></thead>
-          <tbody id="positionsTableBody"></tbody>
-        </table>
-      </div>
-
-    </section>
-  </div>
+</nav> <!-- Nav closes here -->
   <!-- ATTENDANCE -->
   <button data-tab="attendance">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -689,7 +601,7 @@ aside.sidebar.collapsed ~ main.main-content {
 
     // ---- ADMIN SIDEBAR TOGGLE ----
     const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-    const appSidebar = document.getElementById('appSidebar');
+    const appSidebar = document.querySelector('aside.sidebar');
     if (sidebarToggleBtn && appSidebar) {
       sidebarToggleBtn.addEventListener('click', () => {
         appSidebar.classList.toggle('collapsed');
