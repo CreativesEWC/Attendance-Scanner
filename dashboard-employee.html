@@ -861,14 +861,14 @@ aside.sidebar.collapsed ~ main.main-content {
     }
   });
 
-  // Fetch Notifications
+  /// Fetch Notifications
   async function loadNotifications() {
     if (!emp || !emp.id) return; 
     
     const { data, error } = await supabaseClient
       .from('notifications')
       .select('*')
-      .eq('user_id', emp.id)
+      .eq('employee_id', emp.id) // <--- CHANGE THIS LINE
       .order('created_at', { ascending: false })
       .limit(30);
 
