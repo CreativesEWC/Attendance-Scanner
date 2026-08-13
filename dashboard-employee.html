@@ -861,14 +861,14 @@ aside.sidebar.collapsed ~ main.main-content {
     }
   });
 
-  /// Fetch Notifications
+  // Fetch Notifications
   async function loadNotifications() {
     if (!emp || !emp.id) return; 
     
     const { data, error } = await supabaseClient
       .from('notifications')
       .select('*')
-      .eq('employee_id', emp.id) // <--- CHANGE THIS LINE
+      .eq('employee_id', emp.id)
       .order('created_at', { ascending: false })
       .limit(30);
 
@@ -903,23 +903,92 @@ aside.sidebar.collapsed ~ main.main-content {
       return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     };
 
-    const notifHTML = data.map(n => `
-      <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-link="${n.link || ''}" style="border-bottom: 1px solid var(--line); padding: 12px; cursor: pointer;">
-        <div class="nav-bell-message" style="color: ${n.is_read ? '#9fb0d6' : 'var(--amber-400)'};">${escapeHtml(n.message)}</div>
-        <div class="nav-bell-time" style="font-size: 10px; color: #7488b6; margin-top: 4px;">${new Date(n.created_at).toLocaleString()}</div>
+    // Build the Facebook-style HTML
+    const notifHTML = data.map(n => {
+      let subject = "System Notification";
+      let initials = "🔔"; // Default icon
+      
+      const msg = n.message.toLowerCase();
+      // Dynamically detect the type of notification
+      if (msg.includes('overtime')) {
+        subject = "Overtime Approved";
+        initials = "⏱️";
+      } else if (msg.includes('comment')) {
+        subject = "Announcement Comment";
+        initials = n.message.charAt(0).toUpperCase(); // Grabs the first letter of the commenter's name
+      } else if (msg.includes('approved')) {
+        subject = "Form Approved";
+        initials = "✅";
+      } else if (msg.includes('rejected')) {
+        subject = "Form Rejected";
+        initials = "❌";
+      }
+
+      return `
+      <div class="nav-bell-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}" data-link="${n.link || ''}" data-type="${subject}" style="display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; transition: background 0.2s; background: ${n.is_read ? 'transparent' : 'rgba(232,161,58,0.08)'};">
+        
+        <!-- Avatar / Icon -->
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--navy-600); color: var(--amber-400); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; flex-shrink: 0; border: 1px solid var(--line);">
+          ${initials}
+        </div>
+        
+        <!-- Content -->
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <div style="font-size: 13px; color: var(--paper); line-height: 1.4;">
+            <strong style="color: var(--amber-400);">Subject: ${subject}</strong><br>
+            ${escapeHtml(n.message)}
+          </div>
+          <div style="font-size: 11px; color: #4fb286; font-weight: 600;">Click here to view</div>
+          <div style="font-size: 10px; color: #7488b6; margin-top: 2px;">${new Date(n.created_at).toLocaleString()}</div>
+        </div>
+
+        <!-- Unread Dot -->
+        ${!n.is_read ? '<div style="width: 10px; height: 10px; border-radius: 50%; background: var(--amber-400); flex-shrink: 0;"></div>' : '<div style="width: 10px; height: 10px; flex-shrink: 0;"></div>'}
       </div>
-    `).join('');
+      `;
+    }).join('');
 
     navBellList.innerHTML = notifHTML;
     if(fullListEl) fullListEl.innerHTML = notifHTML;
 
-    // Handle clicks to mark as read
+    // Handle clicks to mark as read and open the correct modal
     document.querySelectorAll('.nav-bell-item').forEach(item => {
       item.addEventListener('click', async () => {
         const notifId = item.getAttribute('data-id');
+        const linkId = item.getAttribute('data-link');
+        const type = item.getAttribute('data-type');
+        
+        // 1. Mark as read
         if (item.classList.contains('unread')) {
           await supabaseClient.from('notifications').update({ is_read: true }).eq('id', notifId);
-          loadNotifications(); // Reload to clear the badge
+          item.classList.remove('unread');
+          item.style.background = 'transparent';
+          item.querySelector('div[style*="border-radius: 50%; background: var(--amber-400)"]').style.display = 'none'; // Hide the dot
+          loadNotifications(); // Reload to clear the badge count
+        }
+        
+        if (!linkId) return;
+
+        // 2. Open the correct view based on the notification type
+        if (type === 'Announcement Comment') {
+          // Fetch the announcement data so we can open it directly
+          const { data: post } = await supabaseClient.from('announcements').select('*, brands(name)').eq('id', linkId).single();
+          if (post) {
+            const brandLabel = post.brands ? post.brands.name : 'Company-wide';
+            const postedDate = new Date(post.created_at).toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
+            
+            document.getElementById('modalAnnouncementTitle').textContent = post.title;
+            document.getElementById('modalAnnouncementDate').textContent = `${brandLabel} · Posted ${postedDate}`;
+            document.getElementById('modalAnnouncementBody').textContent = post.body;
+            document.getElementById('announcementModal').dataset.postId = post.id;
+            
+            loadComments(post.id); // Load the replies
+            document.getElementById('announcementModal').classList.add('open');
+          }
+        } 
+        else if (typeof openEmployeeTicketDocument === 'function') {
+          // If it's not a comment, assume it's a form/ticket and open the document viewer
+          openEmployeeTicketDocument(linkId);
         }
       });
     });
@@ -929,12 +998,12 @@ aside.sidebar.collapsed ~ main.main-content {
   if (navBellMarkRead) {
     navBellMarkRead.addEventListener('click', async (e) => {
       e.stopPropagation();
-      if (!emp || !emp.id) return;
+      if (!emp || !emp.id) return; 
       
       const { error } = await supabaseClient
         .from('notifications')
         .update({ is_read: true })
-        .eq('user_id', emp.id)
+        .eq('employee_id', emp.id) // <--- Fixed this to employee_id
         .eq('is_read', false);
         
       if (!error) loadNotifications();
