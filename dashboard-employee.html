@@ -889,7 +889,7 @@ aside.sidebar.collapsed ~ main.main-content {
     if (!tableBody) return;
 
     const { data, error } = await supabaseClient
-      .from('forms')
+      .from('tickets')
       .select('*')
       .eq('employee_id', emp.id)
       .order('created_at', { ascending: false });
@@ -914,8 +914,6 @@ aside.sidebar.collapsed ~ main.main-content {
     `).join('');
   }
 
-
-    
     const unreadCount = data.filter(n => !n.is_read).length;
 
     // Update Bell Badge
@@ -1043,10 +1041,10 @@ aside.sidebar.collapsed ~ main.main-content {
   }
 
   // Trigger load when script runs
-  setTimeout(() => {
+setTimeout(() => {
   loadNotifications();
-  loadSubmissions();
-}, 1000);// Slight delay to ensure 'emp' object is fully loaded
+  loadSubmissions(); // <-- Add this here so submissions load automatically on page load!
+}, 1000);
   
   // ---- Ensure avatar_url is fresh (fixes blank avatar after refresh) ----
   const { data: freshAvatarData, error: avatarFetchError } = await supabaseClient
