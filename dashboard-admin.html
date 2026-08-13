@@ -617,10 +617,10 @@ aside.sidebar.collapsed ~ main.main-content {
   // ---- Auth guard: must be logged in as admin or president (except specific names) ----
   const emp = await getMyEmployeeRecord();
   if (!emp) { window.location.href = 'login.html'; return; }
-  
-  // Specific check to route Eden Rose and Catherine to the employee dashboard layout
-  if (emp.name === 'Eden Rose R. De Leon' || emp.name === 'Catherine R. Cay') {
-    window.location.href = 'dashboard-employee.html'; // Adjust to your employee dashboard file name if different
+
+  // Allow standard employees OR Eden Rose and Catherine to view this dashboard layout
+  if (emp.role !== 'employee' && emp.name !== 'Eden Rose R. De Leon' && emp.name !== 'Catherine R. Cay') {
+    window.location.href = 'dashboard-admin.html';
     return;
   }
 
