@@ -614,14 +614,14 @@ aside.sidebar.collapsed ~ main.main-content {
     });
   });
 
-  // ---- Auth guard: must be logged in as admin or president (except specific names) ----
+  // ---- Auth guard: allow admins/presidents or specific authorized names ----
   const emp = await getMyEmployeeRecord();
   if (!emp) { window.location.href = 'login.html'; return; }
-
-  // Allow standard employees OR Eden Rose and Catherine to view this dashboard layout
-  if (emp.role !== 'employee' && emp.name !== 'Eden Rose R. De Leon' && emp.name !== 'Catherine R. Cay') {
-    window.location.href = 'dashboard-admin.html';
-    return;
+  
+  // If they are an employee role (and not an admin/president), route to employee home
+  if (emp.role !== 'admin' && emp.role !== 'president') { 
+    routeToRoleHome(emp); 
+    return; 
   }
 
   if (emp.role !== 'admin' && emp.role !== 'president') { routeToRoleHome(emp); return; }
