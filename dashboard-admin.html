@@ -94,6 +94,34 @@
   .wd-check input{ accent-color:var(--amber-500); }
 
   footer{ text-align:center; padding:20px; font-family:var(--font-mono); font-size:11px; color:#4a5a85; }
+  /* ---- Ticket Form Document Styles ---- */
+  #ticketViewModal .modal-box { 
+    max-width: 700px; 
+    background: var(--paper); 
+    color: var(--navy-950); 
+    font-family: var(--font-body);
+  }
+  .doc-header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid var(--navy-900); padding-bottom: 12px; }
+  .doc-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; text-transform: uppercase; margin: 0; }
+  .doc-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; }
+  .doc-col { display: flex; flex-direction: column; gap: 4px; }
+  .doc-label { font-family: var(--font-mono); font-size: 10px; color: var(--navy-700); text-transform: uppercase; letter-spacing: 0.05em; }
+  .doc-value { font-weight: 600; border-bottom: 1px solid #ccc; padding-bottom: 2px; min-width: 150px; }
+  
+  .doc-reason-box { background: #fff; border: 1px solid #ccc; padding: 12px; border-radius: 6px; min-height: 80px; font-size: 13px; margin-top: 16px; margin-bottom: 30px; }
+  
+  .doc-table { width: 100%; border-collapse: collapse; margin-top: 16px; margin-bottom: 30px; background: #fff; }
+  .doc-table th, .doc-table td { border: 1px solid #ccc; padding: 8px; font-size: 12px; text-align: left; }
+  .doc-table th { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; background: var(--navy-100); color: var(--navy-900); }
+  
+  .doc-signatures { display: flex; justify-content: space-between; margin-top: 40px; }
+  .doc-sig-block { width: 45%; text-align: center; }
+  .doc-sig-line { border-bottom: 1px solid var(--navy-900); height: 30px; margin-bottom: 6px; font-family: 'Brush Script MT', cursive; font-size: 20px; display: flex; align-items: flex-end; justify-content: center;}
+  
+  #ticketViewModal .btn2 { color: var(--navy-900); border-color: var(--navy-900); }
+  #ticketViewModal .btn2.primary { background: var(--navy-900); color: var(--paper); }
+  #ticketViewModal .btn2.danger { background: var(--coral-500); color: var(--paper); border: none; }
+  #ticketViewModal .btn2.success { background: var(--mint-700); color: var(--paper); border: none; }
 </style>
 </head>
 <body>
@@ -291,6 +319,18 @@
   <footer>Easy Ways Connection Corp. · Internal use only</footer>
 </div>
 
+  <div class="modal-overlay" id="ticketViewModal">
+  <div class="modal-box">
+    <div id="ticketDocContainer">
+      <!-- The specific form layout gets injected here by JS -->
+    </div>
+    
+    <div class="modal-actions" id="ticketDocActionBar" style="margin-top: 24px; justify-content: space-between; border-top: 1px solid #ccc; padding-top: 16px;">
+      <!-- JavaScript will inject the dropdown and buttons here based on ticket status -->
+    </div>
+  </div>
+</div>
+  
 <script src="supabase-config.js"></script>
 <script>
 (async function(){
@@ -665,7 +705,7 @@
 
   const TICKET_TYPE_LABELS = {
     absence: 'Absence', emergency_leave: 'Emergency Leave', leave: 'Leave',
-    undertime: 'Undertime', other: 'Other'
+    undertime: 'Undertime', overtime: 'Overtime', schedule_change: 'Schedule Change Request', other: 'Other'
   };
 
   async function loadTickets(){
@@ -677,7 +717,7 @@
 
     let query = supabaseClient
       .from('tickets')
-      .select('*, employees!employee_id(name, badge_id)')
+      .select('*, employees!employee_id(name, badge_id, positions(name))')
       .order('created_at', { ascending: false });
     if(filter === 'pending') query = query.eq('status', 'pending');
 
@@ -691,6 +731,8 @@
     }
 
     const rows = data || [];
+    window.currentTicketsData = rows; // Store globally for the modal
+
     document.getElementById('ticketsTable').style.display = 'table';
     document.getElementById('ticketsCount').textContent = rows.length + (rows.length === 1 ? ' ticket' : ' tickets');
 
@@ -706,43 +748,214 @@
     }
     tbody.innerHTML = rows.map(t => {
       const dates = t.date_to && t.date_to !== t.date_from ? `${t.date_from} → ${t.date_to}` : t.date_from;
-      const actions = t.status === 'pending'
-        ? `<button class="btn success" data-approve="${t.id}">Approve</button>
-           <button class="btn danger" data-reject="${t.id}">Reject</button>`
-        : `<span style="color:#5c6d99; font-family:var(--font-mono); font-size:11px;">reviewed</span>`;
       return `
         <tr>
           <td>${escapeHtml(t.employees ? t.employees.name : '—')}</td>
           <td>${TICKET_TYPE_LABELS[t.ticket_type] || escapeHtml(t.ticket_type)}</td>
           <td class="mono">${escapeHtml(dates)}</td>
-          <td>${escapeHtml(t.reason)}</td>
+          <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(t.reason)}</td>
           <td><span class="pill ${t.status}">${t.status}</span></td>
-          <td class="row-actions">${actions}</td>
+          <td class="row-actions">
+            <button class="btn primary" data-viewticket="${t.id}">View Form</button>
+          </td>
         </tr>
       `;
     }).join('');
 
-    tbody.querySelectorAll('[data-approve]').forEach(btn=>{
-      btn.addEventListener('click', ()=> reviewTicket(btn.dataset.approve, 'approved'));
-    });
-    tbody.querySelectorAll('[data-reject]').forEach(btn=>{
-      btn.addEventListener('click', ()=> reviewTicket(btn.dataset.reject, 'rejected'));
+    tbody.querySelectorAll('[data-viewticket]').forEach(btn=>{
+      btn.addEventListener('click', ()=> openTicketDocument(btn.dataset.viewticket));
     });
   }
 
-  // Updating status here fires trg_notify_ticket_review in the DB, which
-  // automatically drops a notification into the employee's inbox — no
-  // extra call needed from this page.
-  async function reviewTicket(ticketId, status){
+  function openTicketDocument(ticketId) {
+    const t = window.currentTicketsData.find(x => x.id === ticketId);
+    if(!t) return;
+
+    const container = document.getElementById('ticketDocContainer');
+    const actionBar = document.getElementById('ticketDocActionBar');
+    
+    const empName = t.employees ? escapeHtml(t.employees.name) : 'Unknown';
+    const empId = t.employees ? escapeHtml(t.employees.badge_id) : '—';
+    const dept = t.employees && t.employees.positions ? escapeHtml(t.employees.positions.name) : '—';
+    const dateSubmitted = new Date(t.created_at).toLocaleString();
+    
+    const approvedByText = t.status === 'approved' ? (t.approver_name || 'Admin') : (t.status === 'rejected' ? 'REJECTED' : '');
+    
+    if (['leave', 'absence', 'undertime', 'emergency_leave'].includes(t.ticket_type)) {
+      container.innerHTML = `
+        <div class="doc-header">
+          <h3 class="doc-title">Leave Form</h3>
+          <div style="font-family: var(--font-mono); font-size: 11px; margin-top: 4px;">(${TICKET_TYPE_LABELS[t.ticket_type]})</div>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
+          <div class="doc-col"><span class="doc-label">Employee ID</span><span class="doc-value">${empId}</span></div>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col" style="flex:1;"><span class="doc-label">Address</span><span class="doc-value">${escapeHtml(t.address || '—')}</span></div>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col"><span class="doc-label">When</span><span class="doc-value">${t.date_from} until ${t.date_to || t.date_from}</span></div>
+          <div class="doc-col"><span class="doc-label">Submitted</span><span class="doc-value">${dateSubmitted}</span></div>
+        </div>
+        <div class="doc-label" style="margin-top: 20px;">Reason (Max 350 chars):</div>
+        <div class="doc-reason-box">${escapeHtml(t.reason)}</div>
+        
+        <div class="doc-signatures">
+          <div class="doc-sig-block">
+            <div class="doc-sig-line">${empName}</div>
+            <div class="doc-label">Employee eSignature</div>
+          </div>
+          <div class="doc-sig-block">
+            <div class="doc-sig-line">${approvedByText}</div>
+            <div class="doc-label">Approved By</div>
+          </div>
+        </div>
+      `;
+    } 
+    else if (t.ticket_type === 'overtime') {
+      let trs = `<tr>
+        <td>${t.date_from || ''}</td>
+        <td>${escapeHtml(t.reason || '').substring(0, 100)}</td>
+        <td>${t.time_from || ''} - ${t.time_to || ''}</td>
+        <td>${t.hours || ''}</td>
+      </tr>`;
+      for(let i = 1; i < 10; i++) {
+        trs += `<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>`;
+      }
+
+      container.innerHTML = `
+        <div class="doc-header">
+          <h3 class="doc-title">Request for Overtime</h3>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
+          <div class="doc-col"><span class="doc-label">Date</span><span class="doc-value">${new Date(t.created_at).toLocaleDateString()}</span></div>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col"><span class="doc-label">Department</span><span class="doc-value">${dept}</span></div>
+          <div class="doc-col"><span class="doc-label">Employee ID No.</span><span class="doc-value">${empId}</span></div>
+        </div>
+        
+        <table class="doc-table">
+          <thead>
+            <tr><th width="15%">Date</th><th width="45%">Reason</th><th width="25%">Time (From - To)</th><th width="15%">No. of Hours</th></tr>
+          </thead>
+          <tbody>${trs}</tbody>
+        </table>
+        
+        <div class="doc-signatures">
+          <div class="doc-sig-block">
+            <div class="doc-sig-line">${empName}</div>
+            <div class="doc-label">Employee eSignature</div>
+          </div>
+          <div class="doc-sig-block">
+            <div class="doc-sig-line">${approvedByText}</div>
+            <div class="doc-label">Approved By</div>
+          </div>
+        </div>
+      `;
+    }
+    else if (t.ticket_type === 'schedule_change') {
+      container.innerHTML = `
+        <div class="doc-header">
+          <h3 class="doc-title">Change Schedule Request</h3>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col"><span class="doc-label">Name</span><span class="doc-value">${empName}</span></div>
+          <div class="doc-col"><span class="doc-label">Employee ID No.</span><span class="doc-value">${empId}</span></div>
+        </div>
+        <div class="doc-row">
+          <div class="doc-col" style="flex:1;"><span class="doc-label">Subject</span><span class="doc-value">${escapeHtml(t.subject || 'Schedule Modification')}</span></div>
+        </div>
+        <div class="doc-label" style="margin-top: 20px;">Reason (Max 250 chars):</div>
+        <div class="doc-reason-box">${escapeHtml(t.reason)}</div>
+        
+        <div class="doc-signatures">
+          <div class="doc-sig-block">
+            <div class="doc-sig-line"></div>
+          </div>
+          <div class="doc-sig-block">
+            <div class="doc-sig-line">${approvedByText}</div>
+            <div class="doc-label">Approved By</div>
+          </div>
+        </div>
+      `;
+    }
+
+    const statusColor = t.status === 'pending' ? 'var(--amber-500)' : (t.status === 'approved' ? 'var(--mint-700)' : 'var(--coral-500)');
+    
+    if (t.status === 'pending') {
+      actionBar.innerHTML = `
+        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: bold; color: ${statusColor}; align-self: center;">
+          STATUS: PENDING
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <select id="docApproverSelect" style="padding: 7px 10px; border-radius: 6px; border: 1px solid #ccc; font-family: var(--font-body); font-size: 13px; outline: none;">
+            <option value="">Select Approver...</option>
+            <option value="Ms. Eden Rose">Ms. Eden Rose</option>
+            <option value="Ms. Catherine">Ms. Catherine</option>
+            <option value="Mr. Ming">Mr. Ming</option>
+          </select>
+          <button class="btn2 success" id="docApproveBtn">✔️ Approve</button>
+          <button class="btn2 danger" id="docRejectBtn">✖️ Reject</button>
+          <button class="btn2" id="docCloseBtn">Close</button>
+        </div>
+      `;
+
+      document.getElementById('docApproveBtn').onclick = () => { 
+        const approverName = document.getElementById('docApproverSelect').value;
+        if (!approverName) {
+          alert('Please select an approver from the dropdown before approving.');
+          return;
+        }
+        reviewTicket(t.id, 'approved', approverName); 
+        document.getElementById('ticketViewModal').classList.remove('open'); 
+      };
+      document.getElementById('docRejectBtn').onclick = () => { 
+        reviewTicket(t.id, 'rejected'); 
+        document.getElementById('ticketViewModal').classList.remove('open'); 
+      };
+    } else {
+      actionBar.innerHTML = `
+        <div style="font-family: var(--font-mono); font-size: 12px; font-weight: bold; color: ${statusColor}; align-self: center;">
+          STATUS: ${t.status.toUpperCase()}
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn2" id="docCloseBtn">Close Document</button>
+        </div>
+      `;
+    }
+
+    document.getElementById('docCloseBtn').onclick = () => {
+      document.getElementById('ticketViewModal').classList.remove('open');
+    };
+
+    document.getElementById('ticketViewModal').classList.add('open');
+  }
+
+  async function reviewTicket(ticketId, status, approverName = null){
     let admin_notes = null;
     if(status === 'rejected'){
       admin_notes = prompt('Optional note to include with the rejection (shown to the employee):') || null;
     }
-    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    const updateData = { 
+      status: status, 
+      reviewed_by: emp.id, 
+      reviewed_at: new Date().toISOString(), 
+      admin_notes: admin_notes 
+    };
+
+    if (approverName) {
+      updateData.approver_name = approverName;
+    }
+
     const { error } = await supabaseClient
       .from('tickets')
-      .update({ status, reviewed_by: emp.id, reviewed_at: new Date().toISOString(), admin_notes })
+      .update(updateData)
       .eq('id', ticketId);
+      
     if(error){ alert('Could not update ticket: ' + error.message); return; }
     await loadTickets();
   }
