@@ -94,6 +94,10 @@
   .wd-check input{ accent-color:var(--amber-500); }
 
   footer{ text-align:center; padding:20px; font-family:var(--font-mono); font-size:11px; color:#4a5a85; }
+  /* ---- Base Modal Styles ---- */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(5,8,18,.72); align-items:center; justify-content:center; padding:20px; z-index:50; }
+  .modal-overlay.open { display:flex; }
+  .modal-box { background:var(--navy-900); border:1px solid var(--line); border-radius:16px; padding:22px; width:100%; max-width:420px; max-height:88vh; overflow-y:auto; }
   /* ---- Ticket Form Document Styles ---- */
   #ticketViewModal .modal-box { 
     max-width: 700px; 
