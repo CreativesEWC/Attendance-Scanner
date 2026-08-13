@@ -1162,22 +1162,9 @@ aside.sidebar.collapsed ~ main.main-content {
   document.getElementById('ticketViewModal').classList.add('open');
 }
 
-  // Inside your reviewTicket(ticketId, status, approverName) function:
-const { data: targetTicket } = await supabaseClient.from('tickets').select('employee_id, ticket_type').eq('id', ticketId).single();
-
-if (targetTicket) {
-  await supabaseClient.from('notifications').insert([{
-    user_id: targetTicket.employee_id,
-    message: `Your ${targetTicket.ticket_type.replace('_', ' ')} request has been ${status} by ${approverName || 'Admin'}.`,
-    link: ticketId // Links directly to the ticket ID!
-  }]);
-}
-
-await supabaseClient.from('notifications').insert([{
-  user_id: ticketOwnerId, // The ID of the employee receiving the alert
-  message: "Your Overtime request has been approved."
-}]);
-    
+async function reviewTicket(ticketId, status, approverName) {
+    // 1. Update the ticket in the database
+    const updateData = { status: status };
     if (approverName) {
       updateData.approver_name = approverName;
     }
@@ -1191,10 +1178,28 @@ await supabaseClient.from('notifications').insert([{
       alert('Could not update ticket: ' + error.message); 
       return; 
     }
-    
-   await loadTickets();
-  } // <--- Make sure this bracket is here!
 
+    // 2. Send the notification to the employee
+    const { data: targetTicket } = await supabaseClient
+      .from('tickets')
+      .select('employee_id, ticket_type')
+      .eq('id', ticketId)
+      .single();
+
+    if (targetTicket) {
+      const readableType = targetTicket.ticket_type.replace('_', ' ');
+      const byWho = approverName ? ` by ${approverName}` : '';
+      
+      await supabaseClient.from('notifications').insert([{
+        user_id: targetTicket.employee_id,
+        message: `Your ${readableType} request has been ${status}${byWho}.`,
+        link: ticketId
+      }]);
+    }
+    
+    // 3. Reload the tickets table to show changes
+    await loadTickets();
+  }
   // ---- Safely wrap the tickets filter ----
   const ticketsFilter = document.getElementById('ticketsFilter');
   if (ticketsFilter) {
