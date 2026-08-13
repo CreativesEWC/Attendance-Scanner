@@ -1060,6 +1060,8 @@ aside.sidebar.collapsed ~ main.main-content {
           // If it isn't an announcement, it must be a Form/Ticket submission
           openEmployeeTicketDocument(linkId);
         }
+      }); // <-- ADD THIS TO CLOSE THE CLICK LISTENER
+    }); // <-- ADD THIS TO CLOSE THE FOREACH LOOP
 
   // Mark all as read
   if (navBellMarkRead) {
