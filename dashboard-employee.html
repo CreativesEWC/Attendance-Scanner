@@ -860,7 +860,7 @@ aside.sidebar.collapsed ~ main.main-content {
       navBellDropdown.classList.remove('show');
     }
   });
-
+  
   // Fetch Notifications
   async function loadNotifications() {
     if (!emp || !emp.id) return; 
@@ -884,7 +884,6 @@ aside.sidebar.collapsed ~ main.main-content {
     // Load Employee Submissions / Tickets
   async function loadSubmissions() {
     if (!emp || !emp.id) return;
-
     const tableBody = document.getElementById('ticketsTable');
     if (!tableBody) return;
 
@@ -914,6 +913,12 @@ aside.sidebar.collapsed ~ main.main-content {
     `).join('');
   }
 
+  // 2. Then trigger it afterwards
+  setTimeout(() => {
+    loadNotifications();
+    loadSubmissions();
+  }, 1000);
+    
     const unreadCount = data.filter(n => !n.is_read).length;
 
     // Update Bell Badge
@@ -1039,12 +1044,6 @@ aside.sidebar.collapsed ~ main.main-content {
       if (!error) loadNotifications();
     });
   }
-
-  // Trigger load when script runs
-setTimeout(() => {
-  loadNotifications();
-  loadSubmissions(); // <-- Add this here so submissions load automatically on page load!
-}, 1000);
   
   // ---- Ensure avatar_url is fresh (fixes blank avatar after refresh) ----
   const { data: freshAvatarData, error: avatarFetchError } = await supabaseClient
