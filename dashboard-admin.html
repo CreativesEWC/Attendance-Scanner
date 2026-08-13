@@ -1086,10 +1086,12 @@ aside.sidebar.collapsed ~ main.main-content {
     document.getElementById('ticketsTable').style.display = 'table';
     document.getElementById('ticketsCount').textContent = rows.length + (rows.length === 1 ? ' ticket' : ' tickets');
 
-    const pendingCount = rows.filter(r => r.status === 'pending').length;
+   const pendingCount = rows.filter(r => r.status === 'pending').length;
     const badge = document.getElementById('ticketsBadge');
-    if(pendingCount > 0){ badge.style.display = 'inline-block'; badge.textContent = pendingCount; }
-    else { badge.style.display = 'none'; }
+    if (badge) { // <--- Added this safety check!
+      if(pendingCount > 0){ badge.style.display = 'inline-block'; badge.textContent = pendingCount; }
+      else { badge.style.display = 'none'; }
+    }
 
     const tbody = document.getElementById('ticketsTableBody');
     if(rows.length === 0){
