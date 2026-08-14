@@ -312,11 +312,11 @@ aside.sidebar.collapsed ~ main.main-content {
     margin-left: 80px;
   }
 
-  /* Collapse Button Styling */
+  /* Collapse Button Styling (Plain Icon) */
   .collapse-btn {
     background: transparent;
+    border: none; /* Removed the border */
     color: #7488b6;
-    border-radius: 4px;
     cursor: pointer;
     padding: 6px;
     display: flex;
@@ -324,9 +324,9 @@ aside.sidebar.collapsed ~ main.main-content {
     justify-content: center;
     transition: all 0.2s ease;
   }
+  
   .collapse-btn:hover {
-    border-color: var(--amber-500);
-    color: var(--amber-500);
+    color: var(--amber-500); /* Only changes the icon color on hover now */
   }
   
 </style>
@@ -2062,7 +2062,7 @@ async function reviewTicket(ticketId, status, approverName) {
   function populateAccountDetails() {
     const avatar = emp.profile_image || 'https://via.placeholder.com/80';
     document.getElementById('sidebarAvatarImg').src = avatar;
-    document.getElementById('sidebarNameTxt').textContent = emp.name;
+    document.getElementById('sidebarNameTxt').textContent = emp.name.split(' ')[0];
     
     document.getElementById('acctAvatar').src = avatar;
     document.getElementById('acctName').textContent = emp.name;
