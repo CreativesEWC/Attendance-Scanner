@@ -863,6 +863,34 @@ aside.sidebar.collapsed ~ main.main-content {
     </div>
   </div>
 </div>
+
+<!-- ANNOUNCEMENT COMMENTS MODAL -->
+<div class="modal-overlay" id="commentsModal">
+  <div class="modal-box" style="max-width: 500px;">
+    
+    <!-- Hidden inputs for the JS engine -->
+    <input type="hidden" id="activeAnnId">
+    <input type="hidden" id="activeAnnPosterId">
+
+    <h2 style="font-family: var(--font-display); font-size: 18px; color: var(--amber-400); margin-top: 0; margin-bottom: 5px;" id="modalAnnTitle">Announcement Title</h2>
+    <div style="font-size: 11px; color: #7488b6; font-family: var(--font-mono); margin-bottom: 20px;" id="modalAnnMeta">Posted details</div>
+
+    <h3 style="font-family: var(--font-mono); font-size: 12px; color: var(--paper); text-transform: uppercase; margin-bottom: 10px;">Comments</h3>
+    
+    <!-- Where existing comments will load -->
+    <div id="commentsList" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+      <div class="loading-note">Loading comments...</div>
+    </div>
+
+    <!-- The Reply Box -->
+    <textarea id="replyInput" placeholder="Write a reply..." style="width: 100%; min-height: 80px; background: var(--navy-800); border: 1px solid var(--line); border-radius: 8px; color: var(--paper); padding: 12px; font-family: var(--font-body); font-size: 13px; margin-bottom: 15px; resize: vertical;"></textarea>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <button class="btn" id="closeCommentsBtn">Close</button>
+      <button class="btn primary" id="postReplyBtn">Post Reply</button>
+    </div>
+  </div>
+</div>
   
 <script src="supabase-config.js"></script>
 <script>
@@ -1686,10 +1714,14 @@ async function reviewTicket(ticketId, status, approverName) {
         <td><span style="color:#5c6d99;">${audText}</span></td>
         <td class="mono">${a.event_date ? escapeHtml(a.event_date) : '-'}</td>
         <td class="mono">${posterName} &bull; ${new Date(a.created_at).toLocaleDateString([], {month: 'short', day: 'numeric'})}</td>
-        <td><button class="btn danger" data-delann="${a.id}">Delete</button></td>
+        <td class="row-actions">
+    <button class="btn primary" data-viewcomments="${a.id}" data-poster="${a.posted_by}" data-title="${escapeHtml(a.title)}">💬 Comments</button>
+    <button class="btn danger" data-delann="${a.id}">Delete</button>
+  </td>
       </tr>
       `;
     }).join('');
+    
     tbody.querySelectorAll('[data-delann]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         if(!confirm('Delete this announcement?')) return;
@@ -1698,6 +1730,9 @@ async function reviewTicket(ticketId, status, approverName) {
         await loadAnnouncements();
       });
     });
+
+    // Add this right here!
+    attachCommentButtons(); 
   }
 
   document.getElementById('postAnnBtn').addEventListener('click', async ()=>{
@@ -1727,6 +1762,143 @@ async function reviewTicket(ticketId, status, approverName) {
     document.getElementById('annLocation').value = '';
     await loadAnnouncements();
   });
+
+  // --- ANNOUNCEMENT REPLIES & NOTIFICATIONS ---
+
+  // Note: Ensure your "Post Reply" button has id="postReplyBtn" 
+  // and your text area has id="replyInput" in your HTML.
+  const postReplyBtn = document.getElementById('postReplyBtn');
+
+  if (postReplyBtn) {
+    postReplyBtn.addEventListener('click', async () => {
+      const commentText = document.getElementById('replyInput').value.trim();
+      
+      // To save a comment, your code needs to know WHICH announcement is currently open.
+      // (Assuming you store the active announcement ID in a hidden input or data attribute)
+      const currentAnnId = document.getElementById('activeAnnId')?.value; 
+      
+      // We also need to know who posted it so we can notify them.
+      const originalPosterId = document.getElementById('activeAnnPosterId')?.value; 
+
+      if (!commentText) {
+        alert('Please write a reply first.');
+        return;
+      }
+
+      postReplyBtn.disabled = true;
+      postReplyBtn.textContent = 'Posting...';
+
+      // 1. Save the comment to the database
+      const { error: commentError } = await supabaseClient
+        .from('comments') // Make sure you have a 'comments' table in Supabase!
+        .insert({
+          announcement_id: currentAnnId,
+          user_id: emp.id, // The ID of the person currently logged in and typing
+          content: commentText
+        });
+
+      postReplyBtn.disabled = false;
+      postReplyBtn.textContent = 'Post Reply';
+
+      if (commentError) {
+        alert('Failed to post reply: ' + commentError.message);
+        return;
+      }
+
+      document.getElementById('replyInput').value = ''; // Clear the box
+
+      // 2. SEND THE NOTIFICATION!
+      // Check that we aren't notifying ourselves if we comment on our own post
+      if (originalPosterId && originalPosterId !== emp.id) {
+        
+        const { error: notifyError } = await supabaseClient
+          .from('notifications')
+          .insert({
+            user_id: originalPosterId, // Send ONLY to the person who posted the announcement
+            title: 'New Announcement Reply',
+            message: `${emp.name.split(' ')[0]} replied: "${commentText.substring(0, 30)}..."`,
+            type: 'comment',
+            read: false
+          });
+          
+          if (notifyError) console.error("Could not send notification:", notifyError);
+      }
+
+      // 3. Reload the comments UI so the new comment shows up immediately
+      loadComments(currentAnnId); 
+    });
+  }
+
+  // --- OPEN COMMENTS MODAL & LOAD COMMENTS ---
+  
+  // 1. Close button logic
+  const closeCommentsBtn = document.getElementById('closeCommentsBtn');
+  if (closeCommentsBtn) {
+    closeCommentsBtn.addEventListener('click', () => {
+      document.getElementById('commentsModal').classList.remove('open');
+    });
+  }
+
+  // 2. Open Modal Logic 
+  function attachCommentButtons() {
+    document.querySelectorAll('[data-viewcomments]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const annId = btn.getAttribute('data-viewcomments');
+        const posterId = btn.getAttribute('data-poster');
+        const title = btn.getAttribute('data-title');
+
+        // Set the hidden fields and title
+        document.getElementById('activeAnnId').value = annId;
+        document.getElementById('activeAnnPosterId').value = posterId;
+        document.getElementById('modalAnnTitle').textContent = title;
+        
+        // Open the modal
+        document.getElementById('commentsModal').classList.add('open');
+        
+        // Fetch the comments
+        loadComments(annId);
+      });
+    });
+  }
+
+  // 3. Fetch Comments from Database
+  window.loadComments = async function(annId) {
+    const listContainer = document.getElementById('commentsList');
+    listContainer.innerHTML = '<div class="loading-note">Loading comments...</div>';
+
+    // Fetch comments and join with the employee name
+    const { data, error } = await supabaseClient
+      .from('comments')
+      .select('*, employees(name)')
+      .eq('announcement_id', annId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      listContainer.innerHTML = `<div class="error-note">Failed to load comments: ${error.message}</div>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      listContainer.innerHTML = '<div style="color: #7488b6; font-size: 13px; font-style: italic;">No comments yet. Be the first to reply!</div>';
+      return;
+    }
+
+    // Draw the comments
+    listContainer.innerHTML = data.map(c => {
+      const authorName = c.employees ? c.employees.name.split(' ')[0] : 'Unknown User';
+      const dateStr = new Date(c.created_at).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
+      
+      return `
+        <div style="background: var(--navy-900); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <strong style="color: var(--amber-400); font-size: 13px;">${escapeHtml(authorName)}</strong>
+            <span style="color: #7488b6; font-size: 10px; font-family: var(--font-mono);">${dateStr}</span>
+          </div>
+          <div style="font-size: 13px; color: var(--paper); line-height: 1.4;">${escapeHtml(c.content)}</div>
+        </div>
+      `;
+    }).join('');
+  };
 
   // ---- Part 3 init ----
   await loadTickets();
