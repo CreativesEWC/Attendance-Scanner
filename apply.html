@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply — EWC Corp.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  /* Base styles matching the careers page */
+  :root { --navy-950:#0a0f1e; --navy-900:#0f1830; --amber-500:#e8a13a; --paper:#f3efe6; --line:#2a3a63; --font-display:'Rockwell',Georgia,serif; --font-body:-apple-system,BlinkMacSystemFont,sans-serif; --font-mono:'SFMono-Regular',Consolas,monospace; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); display: flex; }
+  
+  /* Sidebar */
+  aside.sidebar { width: 260px; background: var(--navy-950); border-right: 1px solid var(--line); display: flex; flex-direction: column; position: fixed; inset: 0 auto 0 0; z-index: 100; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); }
+  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; margin: 0; }
+  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; }
+  .sidebar-nav a { text-decoration: none; color: #7488b6; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+  .sidebar-nav a:hover { color: var(--paper); background: var(--navy-900); }
+  @media (max-width: 768px) { aside.sidebar { width: 72px; } aside.sidebar .sidebar-brand, aside.sidebar nav a span { display: none; } main.main-content { margin-left: 72px !important; padding: 30px 20px !important; } }
+
+  /* Main Form Area */
+  main.main-content { margin-left: 260px; flex: 1; padding: 60px 40px; max-width: 800px; }
+  .page-title { font-family: var(--font-display); font-size: 32px; margin: 0 0 24px; color: var(--navy-950); }
+  
+  .form-card { background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #e0dcd3; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+  .form-group { margin-bottom: 20px; }
+  label { display: block; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; color: #555; margin-bottom: 8px; letter-spacing: 0.05em; }
+  input[type="text"], input[type="email"], select, textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-family: var(--font-body); font-size: 14px; background: #faf9f6; }
+  textarea { min-height: 100px; resize: vertical; }
+  input[type="file"] { padding: 10px; background: #fff; cursor: pointer; }
+  
+  .btn-submit { background: var(--amber-500); color: var(--navy-950); padding: 14px 24px; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; width: 100%; transition: opacity 0.2s; font-family: var(--font-body); }
+  .btn-submit:hover { opacity: 0.9; }
+  .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+  
+  .status-msg { margin-top: 15px; padding: 15px; border-radius: 6px; font-size: 14px; display: none; text-align: center; font-weight: 500; }
+  .status-msg.success { background: #e6f4ea; color: #1e4620; border: 1px solid #c3e6cb; display: block; }
+  .status-msg.error { background: #fdf3f2; color: #a63e2f; border: 1px solid #f5c6cb; display: block; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1 class="sidebar-brand">EWC Corp.</h1>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="index.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></a>
+    <a href="careers.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Back to Careers</span></a>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <h1 class="page-title">Submit Application</h1>
+  
+  <div class="form-card">
+    <form id="applicationForm">
+      <div class="form-group">
+        <label>Position Applied For</label>
+        <select id="positionId" required>
+          <option value="">Loading positions...</option>
+        </select>
+      </div>
+      
+      <div style="display: flex; gap: 15px;">
+        <div class="form-group" style="flex: 1;">
+          <label>Full Name</label>
+          <input type="text" id="fullName" required placeholder="Juan Dela Cruz">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Email Address</label>
+          <input type="email" id="email" required placeholder="juan@example.com">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 15px;">
+        <div class="form-group" style="flex: 1;">
+          <label>Viber Number</label>
+          <input type="text" id="viber" required placeholder="0917-123-4567">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>Asking Salary</label>
+          <input type="text" id="salary" required placeholder="Expected monthly rate">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Briefly Describe Your Experience</label>
+        <textarea id="experience" required placeholder="Tell us about your relevant background..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Upload Resume / CV (PDF or Word, Max 5MB)</label>
+        <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" required>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">Submit Application</button>
+      <div id="statusMsg" class="status-msg"></div>
+    </form>
+  </div>
+</main>
+
+<script src="supabase-config.js"></script>
+<script>
+(async function(){
+  const positionSelect = document.getElementById('positionId');
+  
+  // 1. Load active positions into the dropdown
+  const { data: positions } = await supabaseClient
+    .from('career_positions')
+    .select('id, title')
+    .eq('is_open', true)
+    .order('title');
+
+  if (positions) {
+    positionSelect.innerHTML = '<option value="">Select a position...</option>' + 
+      positions.map(p => `<option value="${p.id}">${p.title}</option>`).join('');
+      
+    // 2. Auto-select position if passed in URL (e.g., apply.html?id=123)
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetId = urlParams.get('id');
+    if (targetId) {
+      positionSelect.value = targetId;
+    }
+  }
+
+  // 3. Handle Form Submission
+  document.getElementById('applicationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const msg = document.getElementById('statusMsg');
+    
+    const posId = positionSelect.value;
+    const name = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const viber = document.getElementById('viber').value.trim();
+    const salary = document.getElementById('salary').value.trim();
+    const exp = document.getElementById('experience').value.trim();
+    const fileInput = document.getElementById('resumeFile');
+    const file = fileInput.files[0];
+
+    if (!file) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'Please select a resume file to upload.';
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      msg.className = 'status-msg error';
+      msg.textContent = 'File is too large. Maximum size is 5MB.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Uploading Resume & Submitting...';
+    msg.style.display = 'none';
+
+    try {
+      // Step A: Upload file to securely locked 'resumes' bucket
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabaseClient.storage
+        .from('resumes')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Step B: Insert the application record
+      const { error: dbError } = await supabaseClient
+        .from('career_applications')
+        .insert({
+          position_id: posId,
+          full_name: name,
+          email: email,
+          viber_number: viber,
+          asking_salary: salary,
+          experience: exp,
+          resume_url: fileName // We only need the file path to download it later
+        });
+
+      if (dbError) throw dbError;
+
+      // Success Reset
+      msg.className = 'status-msg success';
+      msg.textContent = 'Application submitted successfully! We will be in touch soon.';
+      document.getElementById('applicationForm').reset();
+      
+    } catch (err) {
+      console.error(err);
+      msg.className = 'status-msg error';
+      msg.textContent = 'An error occurred during submission. Please try again.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Application';
+    }
+  });
+})();
+</script>
+</body>
+</html>
