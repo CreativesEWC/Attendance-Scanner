@@ -285,17 +285,17 @@ aside.sidebar.collapsed ~ main.main-content {
     width: 80px; /* Shrinks the sidebar */
   }
 
-  /* Hide the text when collapsed */
-  .sidebar.collapsed .sidebar-user-block div, /* Hides user name/title */
-  .sidebar.collapsed .sidebar-nav button span, /* Hides button text */
+  /* Hide the ENTIRE profile block and other text when collapsed */
+  .sidebar.collapsed .sidebar-user-block, 
+  .sidebar.collapsed .sidebar-nav button span, 
   .sidebar.collapsed .sidebar-footer {
-    display: none;
+    display: none !important;
   }
 
-  /* Center the icons and avatar when collapsed */
-  .sidebar.collapsed .sidebar-user-block {
-    justify-content: center;
-    padding: 10px;
+  /* Center the collapse button perfectly in the header */
+  .sidebar.collapsed .sidebar-header {
+    justify-content: center !important;
+    padding: 15px 0 !important;
   }
   
   .sidebar.collapsed .sidebar-nav button {
@@ -315,7 +315,6 @@ aside.sidebar.collapsed ~ main.main-content {
   /* Collapse Button Styling */
   .collapse-btn {
     background: transparent;
-    border: 1px solid #7488b6;
     color: #7488b6;
     border-radius: 4px;
     cursor: pointer;
