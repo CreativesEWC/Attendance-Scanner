@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Position Details — EWC Corp.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --navy-950:#0a0f1e; --navy-900:#0f1830; --amber-500:#e8a13a; --paper:#f3efe6; --line:#2a3a63;
+    --font-display:'Rockwell',Georgia,serif; --font-body:-apple-system,BlinkMacSystemFont,sans-serif;
+    --font-mono:'SFMono-Regular',Consolas,monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); display: flex; }
+  
+  /* Sidebar */
+  aside.sidebar { width: 260px; background: var(--navy-950); border-right: 1px solid var(--line); display: flex; flex-direction: column; position: fixed; inset: 0 auto 0 0; z-index: 100; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); }
+  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; margin: 0; }
+  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; }
+  .sidebar-nav a { text-decoration: none; color: #7488b6; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+  .sidebar-nav a:hover { color: var(--paper); background: var(--navy-900); }
+  @media (max-width: 768px) { aside.sidebar { width: 72px; } aside.sidebar .sidebar-brand, aside.sidebar nav a span { display: none; } main.main-content { margin-left: 72px !important; padding: 30px 20px !important; } }
+
+  /* Main Content */
+  main.main-content { margin-left: 260px; flex: 1; padding: 60px 40px; max-width: 900px; }
+  .back-link { font-family: var(--font-mono); font-size: 12px; color: #7488b6; text-decoration: none; text-transform: uppercase; display: inline-block; margin-bottom: 20px; }
+  .back-link:hover { color: var(--navy-900); }
+  
+  .job-header { margin-bottom: 40px; border-bottom: 2px solid #e0dcd3; padding-bottom: 20px; }
+  .job-title { font-family: var(--font-display); font-size: 36px; margin: 0 0 10px; color: var(--navy-950); }
+  .job-dept { font-family: var(--font-mono); font-size: 14px; color: var(--navy-700); text-transform: uppercase; letter-spacing: 0.05em; }
+  
+  .job-body { font-size: 16px; line-height: 1.7; color: #333; margin-bottom: 40px; white-space: pre-wrap; }
+  
+  .btn-apply { background: var(--amber-500); color: var(--navy-950); padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px; text-decoration: none; transition: opacity 0.2s; display: inline-block; }
+  .btn-apply:hover { opacity: 0.9; }
+  
+  #loadingState, #errorState { text-align: center; padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed #ccc; color: #777; }
+  #jobContent { display: none; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1 class="sidebar-brand">EWC Corp.</h1>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="index.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></a>
+    <a href="careers.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Careers</span></a>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <a href="careers.html" class="back-link">← Back to Open Roles</a>
+  
+  <div id="loadingState">Loading position details...</div>
+  
+  <div id="errorState" style="display: none;">
+    <h2>Position Not Found</h2>
+    <p>This role may have been closed or the link is invalid.</p>
+    <br>
+    <a href="careers.html" class="btn-apply" style="background: var(--navy-900); color: var(--paper);">View Open Roles</a>
+  </div>
+
+  <div id="jobContent">
+    <div class="job-header">
+      <h1 class="job-title" id="displayTitle"></h1>
+      <div class="job-dept" id="displayDept"></div>
+    </div>
+    
+    <div class="job-body" id="displayDesc"></div>
+    
+    <a href="#" id="applyBtn" class="btn-apply">Apply for this Role</a>
+  </div>
+</main>
+
+<script src="supabase-config.js"></script>
+<script>
+(async function(){
+  // Grab the ID from the URL (e.g. position.html?id=123-abc)
+  const urlParams = new URLSearchParams(window.location.search);
+  const jobId = urlParams.get('id');
+
+  const loadingState = document.getElementById('loadingState');
+  const errorState = document.getElementById('errorState');
+  const jobContent = document.getElementById('jobContent');
+
+  if (!jobId) {
+    loadingState.style.display = 'none';
+    errorState.style.display = 'block';
+    return;
+  }
+
+  // Fetch the specific role
+  const { data: job, error } = await supabaseClient
+    .from('career_positions')
+    .select('*')
+    .eq('id', jobId)
+    .eq('is_open', true)
+    .single();
+
+  loadingState.style.display = 'none';
+
+  if (error || !job) {
+    console.error('Error fetching job:', error);
+    errorState.style.display = 'block';
+    return;
+  }
+
+  // Populate the UI
+  document.getElementById('displayTitle').textContent = job.title;
+  document.getElementById('displayDept').textContent = job.department;
+  
+  // Use textContent to safely inject, but preserve the formatting via white-space: pre-wrap in CSS
+  document.getElementById('displayDesc').textContent = job.description || 'No description provided.';
+  
+  // Update the apply button to pass the ID forward to the application form
+  document.getElementById('applyBtn').href = `apply.html?id=${job.id}`;
+  
+  jobContent.style.display = 'block';
+})();
+</script>
+</body>
+</html>
