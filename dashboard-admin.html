@@ -153,14 +153,31 @@
   
   /* THIS IS THE CRITICAL FIX: Add overflow-y and flex-grow so it scrolls inside the sidebar instead of overflowing */
   .sidebar-nav { 
-    padding: 10px 0; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 4px; 
-    overflow-y: auto; 
-    flex-grow: 1; 
+    display: flex;
+    flex-direction: column;
+    gap: 6px; 
+    margin-top: 15px;
+    /* Keep these two lines from your old code so it still scrolls! */
+    overflow-y: auto;
+    flex-grow: 1;
   }
-  .sidebar-nav button { background: transparent; border: none; color: #7488b6; text-align: left; padding: 10px 20px; font-size: 12px; font-family: var(--font-mono); cursor: pointer; width: 100%; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+  .sidebar-nav button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 20px; 
+    background: transparent;
+    border: none;
+    color: #7488b6;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+  }
   .sidebar-nav button:hover { color: var(--paper); background: var(--navy-800); }
   .sidebar-nav button.active { color: var(--amber-500); background: var(--navy-800); border-left: 4px solid var(--amber-500); font-weight: bold; }
   
@@ -258,6 +275,60 @@ aside.sidebar.collapsed ~ main.main-content {
   .sidebar-user-info { display: flex; flex-direction: column; }
   .sidebar-welcome { font-family: var(--font-mono); font-size: 10px; color: var(--amber-500); }
   .sidebar-name { font-size: 13px; font-weight: bold; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+
+  /* --- COLLAPSIBLE SIDEBAR STYLES --- */
+  .sidebar {
+    transition: width 0.3s ease;
+  }
+  
+  .sidebar.collapsed {
+    width: 80px; /* Shrinks the sidebar */
+  }
+
+  /* Hide the text when collapsed */
+  .sidebar.collapsed .sidebar-user-block div, /* Hides user name/title */
+  .sidebar.collapsed .sidebar-nav button span, /* Hides button text */
+  .sidebar.collapsed .sidebar-footer {
+    display: none;
+  }
+
+  /* Center the icons and avatar when collapsed */
+  .sidebar.collapsed .sidebar-user-block {
+    justify-content: center;
+    padding: 10px;
+  }
+  
+  .sidebar.collapsed .sidebar-nav button {
+    justify-content: center;
+    padding: 14px 0;
+  }
+  
+  .sidebar.collapsed .sidebar-nav button svg {
+    margin: 0;
+  }
+
+  /* Adjust main content layout when sidebar shrinks */
+  body:has(.sidebar.collapsed) .main-content {
+    margin-left: 80px;
+  }
+
+  /* Collapse Button Styling */
+  .collapse-btn {
+    background: transparent;
+    border: 1px solid #7488b6;
+    color: #7488b6;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  .collapse-btn:hover {
+    border-color: var(--amber-500);
+    color: var(--amber-500);
+  }
   
 </style>
 </head>
@@ -265,14 +336,26 @@ aside.sidebar.collapsed ~ main.main-content {
 
 <aside class="sidebar">
   <div>
-    <!-- New Sidebar Profile Header -->
-        <div class="sidebar-user-block">
-          <img src="https://via.placeholder.com/40" id="sidebarAvatarImg" alt="Profile">
-          <div class="sidebar-user-info">
-            <span class="sidebar-welcome">Welcome,</span>
-            <span class="sidebar-name" id="sidebarNameTxt">Admin</span>
-          </div>
+   <!-- Sidebar Header (Profile + Collapse Button) -->
+    <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--line);">
+      
+      <div class="sidebar-user-block" style="padding: 0; border: none; margin: 0;">
+        <img src="https://via.placeholder.com/40" id="sidebarAvatarImg" alt="Profile">
+        <div class="sidebar-user-info">
+          <span class="sidebar-welcome">Welcome,</span>
+          <span class="sidebar-name" id="sidebarNameTxt">Admin</span>
         </div>
+      </div>
+      
+      <!-- THE NEW COLLAPSE BUTTON -->
+      <button id="collapseBtn" class="collapse-btn" title="Toggle Sidebar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+      </button>
+
+    </div>
     
    <nav class="sidebar-nav">
   
@@ -2069,6 +2152,42 @@ async function reviewTicket(ticketId, status, approverName) {
 
   populateAccountDetails();
   loadMonitoringBoard();
+
+  // --- TEAM SCHEDULES: TOGGLE VIEWS ---
+  const schedFilters = document.querySelectorAll('#scheduleFilters button');
+  const viewLiveSeller = document.getElementById('view-liveseller');
+  const viewCsr = document.getElementById('view-csr');
+
+  if (schedFilters.length > 0) {
+    schedFilters.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        // Remove active class from all
+        schedFilters.forEach(b => b.classList.remove('active'));
+        // Add to clicked
+        e.target.classList.add('active');
+
+        // Switch the display containers
+        if (e.target.dataset.sched === 'liveseller') {
+          viewLiveSeller.style.display = 'block';
+          viewCsr.style.display = 'none';
+        } else {
+          viewLiveSeller.style.display = 'none';
+          viewCsr.style.display = 'block';
+          // We will call loadCsrRoster() here when you're ready to build it!
+        }
+      });
+    });
+  }
+
+  // --- SIDEBAR COLLAPSE TOGGLE ---
+  const collapseBtn = document.getElementById('collapseBtn');
+  const sidebar = document.querySelector('.sidebar');
+  
+  if (collapseBtn && sidebar) {
+    collapseBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+    });
+  }
 
 })();
 </script>
