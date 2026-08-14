@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Careers — EWC Corp.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --navy-950:#0a0f1e; --navy-900:#0f1830; --navy-800:#16213f; --navy-700:#22315a;
+    --amber-500:#e8a13a; --amber-400:#f2b854; --paper:#f3efe6;
+    --line:#2a3a63;
+    --font-display:'Rockwell',Georgia,serif; 
+    --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); }
+
+  /* SIDEBAR (Matches index.html) */
+  body { display: flex; min-height: 100vh; }
+  aside.sidebar { width: 260px; background: var(--navy-950); border-right: 1px solid var(--line); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); }
+  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; margin: 0; }
+  .sidebar-sub { font-size: 11px; color: #7488b6; font-family: var(--font-mono); margin-top: 4px; }
+  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-nav a { text-decoration: none; color: #7488b6; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--paper); background: var(--navy-900); border-left: 4px solid var(--amber-500); }
+
+  @media (max-width: 768px) {
+    aside.sidebar { width: 72px; }
+    aside.sidebar .sidebar-brand, aside.sidebar .sidebar-sub, aside.sidebar nav.sidebar-nav a span { display: none; }
+    aside.sidebar nav.sidebar-nav a { justify-content: center; padding: 12px; }
+    main.main-content { margin-left: 72px !important; }
+  }
+
+  /* MAIN CONTENT */
+  main.main-content { margin-left: 260px; flex: 1; padding: 60px 40px; max-width: 900px; }
+  .page-title { font-family: var(--font-display); font-size: 36px; margin: 0 0 10px; color: var(--navy-950); }
+  .page-subtitle { font-size: 16px; color: #555; margin-bottom: 40px; line-height: 1.6; }
+
+  /* JOB LISTINGS */
+  #jobsContainer { display: flex; flex-direction: column; gap: 16px; }
+  .job-card { background: #fff; padding: 24px; border-radius: 12px; border: 1px solid #e0dcd3; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; text-decoration: none; color: inherit; }
+  .job-card:hover { border-color: var(--amber-500); box-shadow: 0 8px 25px rgba(0,0,0,0.05); transform: translateY(-2px); }
+  .job-title { font-family: var(--font-display); font-size: 20px; color: var(--navy-900); margin: 0 0 8px; }
+  .job-meta { font-family: var(--font-mono); font-size: 12px; color: #7488b6; text-transform: uppercase; }
+  .btn-apply { background: var(--navy-900); color: var(--paper); padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 13px; text-decoration: none; transition: background 0.2s; }
+  .btn-apply:hover { background: var(--amber-500); color: var(--navy-950); }
+  .empty-state { text-align: center; padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed #ccc; color: #777; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1 class="sidebar-brand">EWC Corp.</h1>
+    <div class="sidebar-sub">Careers Portal</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="careers.html" class="active">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Careers</span>
+    </a>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <h1 class="page-title">Join Our Team</h1>
+  <p class="page-subtitle">We are always looking for driven, creative individuals to help us build the future of digital commerce. Browse our open positions below.</p>
+  
+  <div id="jobsContainer">
+    <div class="empty-state">Loading open positions...</div>
+  </div>
+</main>
+
+<script src="supabase-config.js"></script>
+<script>
+(async function(){
+  const container = document.getElementById('jobsContainer');
+
+  const { data: jobs, error } = await supabaseClient
+    .from('career_positions')
+    .select('id, title, department, description')
+    .eq('is_open', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching jobs:', error);
+    container.innerHTML = '<div class="empty-state">Unable to load positions at this time. Please try again later.</div>';
+    return;
+  }
+
+  if (!jobs || jobs.length === 0) {
+    container.innerHTML = '<div class="empty-state">We currently have no open positions. Please check back soon!</div>';
+    return;
+  }
+
+  container.innerHTML = jobs.map(job => `
+    <div class="job-card">
+      <div>
+        <h2 class="job-title">${escapeHtml(job.title)}</h2>
+        <div class="job-meta">${escapeHtml(job.department)}</div>
+      </div>
+      <a href="apply.html?id=${job.id}" class="btn-apply">Apply Now</a>
+    </div>
+  `).join('');
+
+  function escapeHtml(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+})();
+</script>
+</body>
+</html>
