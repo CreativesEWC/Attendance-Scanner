@@ -819,11 +819,16 @@ aside.sidebar.collapsed ~ main.main-content {
     return;
   }
 
-  // ---- Switch to Admin View Handling for Admins/Presidents ----
-  const switchViewBtn = document.getElementById('switchViewBtn');
-  if (switchViewBtn && (emp.role === 'admin' || emp.role === 'president')) {
-    switchViewBtn.style.display = 'inline-block';
-    switchViewBtn.addEventListener('click', () => {
+  // Handle Switch View functionality for Admin/President
+  const switchBtn = document.getElementById('switchViewBtn');
+  if (switchBtn && (emp.role === 'admin' || emp.role === 'president')) {
+    switchBtn.style.display = 'inline-block';
+    
+    // We are on the Employee Dashboard, so this always goes back to Admin View
+    switchBtn.textContent = 'Switch to Admin View';
+    
+    switchBtn.addEventListener('click', () => {
+      localStorage.removeItem('ewc_view_mode');
       window.location.href = 'dashboard-admin.html';
     });
   }
@@ -1930,6 +1935,55 @@ if (ticketBtn) {
       } catch (err) {
         console.error("Error updating image:", err);
         alert("Failed to upload image. " + err.message);
+      }
+    });
+  }
+
+  // --- ACCOUNT TAB: AVATAR UPLOAD ---
+  const acctAvatarUpload = document.getElementById('acctAvatarUpload');
+  if (acctAvatarUpload) {
+    acctAvatarUpload.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const btnLabel = document.querySelector('.edit-avatar-btn');
+      const originalHtml = btnLabel.innerHTML;
+      btnLabel.innerHTML = '⏳'; // Show a simple loading state
+
+      try {
+        // 1. Upload the file to the 'avatars' bucket
+        const fileName = `public/${emp.id}_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+        const { error: uploadError } = await supabaseClient.storage
+          .from('avatars')
+          .upload(fileName, file, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        // 2. Get the new secure Public URL
+        const { data: publicUrlData } = supabaseClient.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+        const imageUrl = publicUrlData.publicUrl;
+
+        // 3. Save the URL to the logged-in user's database record
+        const { error: dbError } = await supabaseClient
+          .from('employees')
+          .update({ profile_image: imageUrl })
+          .eq('id', emp.id);
+
+        if (dbError) throw dbError;
+
+        // 4. Instantly update the pictures on the screen
+        document.getElementById('sidebarAvatarImg').src = imageUrl;
+        document.getElementById('acctAvatar').src = imageUrl;
+        emp.profile_image = imageUrl; // Update local data
+        
+        alert('Profile picture updated successfully!');
+      } catch (err) {
+        console.error("Error uploading avatar:", err);
+        alert("Failed to upload image: " + err.message);
+      } finally {
+        btnLabel.innerHTML = originalHtml; // Restore the pencil icon
       }
     });
   }
