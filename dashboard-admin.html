@@ -1705,7 +1705,7 @@ async function reviewTicket(ticketId, status, approverName) {
     if (!title || !dept) return alert("Title and Department are required.");
     
     document.getElementById('addCareerBtn').disabled = true;
-    const { error } = await supabaseClient.from('career_positions').insert({ title, department: dept, description: desc, created_by: emp.id });
+    const { error } = await supabaseClient.from('career_positions').insert({ title, department: dept, description: desc });
     document.getElementById('addCareerBtn').disabled = false;
     
     if (error) return alert("Error adding role: " + error.message);
