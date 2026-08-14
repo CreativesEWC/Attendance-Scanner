@@ -201,6 +201,14 @@ aside.sidebar.collapsed nav.sidebar-nav button span,
 aside.sidebar.collapsed .sidebar-footer button {
   display: none;
 }
+  /* Locks the width of all normal sidebar icons so text aligns */
+  .sidebar-nav button svg {
+    width: 20px !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0;
+    display: block;
+  }
 aside.sidebar.collapsed nav.sidebar-nav button {
   justify-content: center;
   padding: 12px;
