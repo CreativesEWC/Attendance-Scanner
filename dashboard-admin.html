@@ -937,7 +937,7 @@ aside.sidebar.collapsed ~ main.main-content {
   document.getElementById('authGate').style.display = 'none';
   document.getElementById('appRoot').style.display = 'block';
   document.getElementById('whoLine').textContent =
-    'Signed in as ' + emp.name + ' · ' + (emp.role === 'president' ? 'President' : 'Admin');
+    'Signed in as ' + emp.name.split(' ')[0] + ' . ' + (emp.role === 'president' ? 'President' : 'Admin');
 
   // ---- Clock ----
   function tickClock(){
