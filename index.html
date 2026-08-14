@@ -2,613 +2,317 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Badge Scan — Attendance</title>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EWC Corp. — Easy Ways Connection Corporation</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-  :root{
-    --navy-950:#0b1220;
-    --navy-900:#0f1830;
-    --navy-800:#16213f;
-    --navy-700:#22315a;
-    --amber-500:#e8a13a;
-    --amber-400:#f2b854;
-    --paper:#f3efe6;
-    --mint-500:#4fb286;
-    --red-500:#d9614f;
+  :root {
+    --navy-950:#0a0f1e; --navy-900:#0f1830; --navy-800:#16213f; --navy-700:#22315a;
+    --amber-500:#e8a13a; --amber-400:#f2b854; --paper:#f3efe6;
     --line:#2a3a63;
-    --font-display: 'Rockwell', 'Georgia', serif;
-    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    --font-display:'Rockwell',Georgia,serif; 
+    --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:var(--navy-950);color:var(--paper);font-family:var(--font-body);}
-  body{min-height:100vh;padding-bottom:40px;}
+  
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); }
 
-  .badge-strip{
-    background:repeating-linear-gradient(135deg,var(--navy-900),var(--navy-900) 10px,var(--navy-800) 10px,var(--navy-800) 20px);
-    height:6px;width:100%;
-  }
-
-  header{
-    padding:22px 20px 14px;
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    border-bottom:1px solid var(--line);
-  }
-  header .eyebrow{
-    font-family:var(--font-mono);
-    font-size:11px;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:var(--amber-400);
-    margin:0 0 4px;
-  }
-  header h1{
-    font-family:var(--font-display);
-    font-size:26px;
-    margin:0;
-    font-weight:700;
-    letter-spacing:.01em;
-  }
-  header .clock{
-    font-family:var(--font-mono);
-    font-size:13px;
-    color:#9fb0d6;
-    text-align:right;
+  /* ---- SIDEBAR NAVIGATION ---- */
+  body { display: flex; min-height: 100vh; margin: 0; }
+  aside.sidebar { width: 260px; background: var(--navy-950); border-right: 1px solid var(--line); display: flex; flex-direction: column; justify-content: space-between; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; transition: width 0.3s ease; }
+  
+  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+  .sidebar-sub { font-size: 11px; color: #7488b6; font-family: var(--font-mono); margin-top: 4px; }
+  
+  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
+  .sidebar-nav a { text-decoration: none; background: transparent; border: none; color: #7488b6; text-align: left; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); cursor: pointer; width: 100%; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--paper); background: var(--navy-900); border-left: 4px solid var(--amber-500); }
+  
+  /* Sidebar Collapse Mobile */
+  @media (max-width: 768px) {
+    aside.sidebar { width: 72px; }
+    aside.sidebar .sidebar-brand, aside.sidebar .sidebar-sub, aside.sidebar nav.sidebar-nav a span { display: none; }
+    aside.sidebar nav.sidebar-nav a { justify-content: center; padding: 12px; }
+    main.main-content { margin-left: 72px !important; }
   }
 
-  main{max-width:520px;margin:0 auto;padding:18px 16px 0;}
+  /* ---- MAIN CONTENT ---- */
+  main.main-content { margin-left: 260px; flex: 1; padding: 0; overflow-y: auto; background: var(--paper); }
+  
+  /* Hero Carousel Section */
+  .hero-section { background: var(--navy-900); color: var(--paper); padding: 80px 40px; text-align: center; border-bottom: 4px solid var(--amber-500); position: relative; }
+  .hero-section h1 { font-family: var(--font-display); font-size: 42px; margin: 0 0 16px; color: var(--amber-400); }
+  .hero-section p { font-size: 18px; max-width: 600px; margin: 0 auto 30px; line-height: 1.6; color: #9fb0d6; }
+  .btn-hero { background: var(--amber-500); color: var(--navy-950); padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; transition: transform 0.2s; display: inline-block; }
+  .btn-hero:hover { transform: scale(1.05); }
 
-  .scan-card{
-    background:var(--navy-900);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:16px;
-    margin-bottom:18px;
-  }
+  /* Content Sections */
+  .section-container { max-width: 1000px; margin: 0 auto; padding: 60px 40px; }
+  .section-title { font-family: var(--font-display); font-size: 28px; color: var(--navy-950); margin-bottom: 20px; text-align: center; }
+  .section-subtitle { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber-500); text-align: center; display: block; margin-bottom: 40px; }
 
-  #reader{
-    width:100%;
-    border-radius:10px;
-    overflow:hidden;
-    background:#000;
-    position:relative;
-    min-height:220px;
-  }
-  #reader video{ border-radius:10px; }
+  /* Company Culture */
+  .culture-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+  .culture-card { background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #e0dcd3; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  .culture-card h3 { font-family: var(--font-display); font-size: 20px; margin-top: 0; color: var(--navy-900); }
+  .culture-card p { font-size: 14px; line-height: 1.6; color: #555; margin-bottom: 0; }
 
-  .scan-toggle{
-    width:100%;
-    margin-top:14px;
-    padding:14px;
-    border-radius:10px;
-    border:none;
-    font-family:var(--font-display);
-    font-size:16px;
-    font-weight:700;
-    letter-spacing:.02em;
-    background:var(--amber-500);
-    color:var(--navy-950);
-    cursor:pointer;
-  }
-  .scan-toggle.active{ background:var(--red-500); color:var(--paper); }
-  .scan-toggle:active{ transform:scale(.99); }
+  /* Careers Preview */
+  .careers-preview-list { display: flex; flex-direction: column; gap: 15px; }
+  .job-card { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 20px 24px; border-radius: 12px; border: 1px solid #e0dcd3; text-decoration: none; color: inherit; transition: box-shadow 0.2s, border-color 0.2s; }
+  .job-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.08); border-color: var(--amber-500); }
+  .job-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--navy-900); margin: 0 0 4px; }
+  .job-dept { font-family: var(--font-mono); font-size: 11px; color: #7488b6; text-transform: uppercase; letter-spacing: 0.05em; }
+  .job-arrow { color: var(--amber-500); font-weight: bold; font-size: 20px; }
+  .empty-note { text-align: center; color: #777; font-style: italic; padding: 20px; }
 
-  .manual-entry{
-    display:flex;
-    gap:8px;
-    margin-top:12px;
-  }
-  .manual-entry input{
-    flex:1;
-    background:var(--navy-800);
-    border:1px solid var(--line);
-    color:var(--paper);
-    border-radius:8px;
-    padding:11px 12px;
-    font-family:var(--font-mono);
-    font-size:14px;
-  }
-  .manual-entry button{
-    background:var(--navy-700);
-    border:1px solid var(--line);
-    color:var(--paper);
-    border-radius:8px;
-    padding:0 16px;
-    font-family:var(--font-body);
-    font-size:13px;
-    cursor:pointer;
-  }
+  /* Footer */
+  .public-footer { background: var(--navy-950); color: #7488b6; padding: 40px; text-align: center; font-family: var(--font-mono); font-size: 11px; margin-top: 40px; border-top: 1px solid var(--line); }
+  .public-footer a { color: var(--amber-400); text-decoration: none; margin-left: 10px; }
+  .public-footer a:hover { text-decoration: underline; }
 
-  .result-banner{
-    display:none;
-    border-radius:10px;
-    padding:14px 16px;
-    margin-bottom:18px;
-    font-family:var(--font-body);
-    animation:pop .25s ease;
-  }
-  @keyframes pop{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
-  .result-banner.in{ background:rgba(79,178,134,.15); border:1px solid var(--mint-500); }
-  .result-banner.out{ background:rgba(232,161,58,.15); border:1px solid var(--amber-500); }
-  .result-banner.warn{ background:rgba(217,97,79,.15); border:1px solid var(--red-500); }
-  .result-banner .rb-name{ font-family:var(--font-display); font-size:19px; margin:0 0 2px; }
-  .result-banner .rb-detail{ font-family:var(--font-mono); font-size:13px; color:#c9d3ea; margin:0; }
-
-  section.panel{
-    background:var(--navy-900);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:16px;
-    margin-bottom:18px;
-  }
-  .panel h2{
-    font-family:var(--font-mono);
-    font-size:12px;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:var(--amber-400);
-    margin:0 0 12px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-  }
-  .panel h2 .count{ color:#7488b6; }
-
-  table{ width:100%; border-collapse:collapse; }
-  th,td{
-    text-align:left;
-    padding:9px 6px;
-    border-bottom:1px solid var(--line);
-    font-size:13px;
-  }
-  th{ font-family:var(--font-mono); font-size:11px; color:#7488b6; text-transform:uppercase; letter-spacing:.06em; }
-  td.mono{ font-family:var(--font-mono); }
-  .empty-row td{ text-align:center; color:#5c6d99; padding:22px 6px; font-style:italic; }
-
-  .roster-form{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-  .roster-form input{
-    background:var(--navy-800); border:1px solid var(--line); color:var(--paper);
-    border-radius:8px; padding:10px 12px; font-size:13px; font-family:var(--font-body);
-  }
-  .roster-form input[name="id"]{ flex:1; min-width:100px; font-family:var(--font-mono); }
-  .roster-form input[name="name"]{ flex:2; min-width:140px; }
-  .roster-form button{
-    background:var(--navy-700); border:1px solid var(--line); color:var(--paper);
-    border-radius:8px; padding:0 14px; cursor:pointer; font-size:13px;
-  }
-
-  .toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
-  .toolbar button{
-    flex:1;
-    background:var(--navy-800);
-    border:1px solid var(--line);
-    color:var(--paper);
-    border-radius:8px;
-    padding:11px;
-    font-size:13px;
-    cursor:pointer;
-  }
-  .toolbar button.danger{ border-color:var(--red-500); color:var(--red-500); }
-
-  .del-btn{
-    background:none; border:none; color:#7488b6; cursor:pointer; font-size:15px; padding:0 4px;
-  }
-
-  footer{ text-align:center; padding:20px; font-family:var(--font-mono); font-size:11px; color:#4a5a85; }
 </style>
 </head>
 <body>
 
-<div class="badge-strip"></div>
-
-<header>
+<!-- COLLAPSIBLE SIDEBAR -->
+<aside class="sidebar" id="appSidebar">
   <div>
-    <p class="eyebrow">Company ID · Barcode Log</p>
-    <h1>Badge Scan</h1>
-  </div>
-  <div class="clock" id="liveClock">—</div>
-</header>
-
-<main>
-
-  <div class="scan-card">
-    <div id="reader"></div>
-    <button class="scan-toggle" id="scanToggle">Start Scanning</button>
-    <div class="manual-entry">
-      <input type="text" id="manualId" placeholder="Or type ID manually…" inputmode="text">
-      <button id="manualBtn">Log</button>
+    <div class="sidebar-header">
+      <div>
+        <h1 class="sidebar-brand">EWC Corp.</h1>
+        <div class="sidebar-sub">Public Portal</div>
+      </div>
     </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="active">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="#culture">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Our Culture</span>
+      </a>
+      <a href="#blog">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>Blog & News</span>
+      </a>
+      <a href="careers.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Careers</span>
+      </a>
+    </nav>
   </div>
+</aside>
 
-  <div class="result-banner" id="resultBanner">
-    <p class="rb-name" id="rbName"></p>
-    <p class="rb-detail" id="rbDetail"></p>
-  </div>
-
-  <section class="panel">
-    <h2>Today's Log <span class="count" id="todayCount">0 entries</span></h2>
-    <table>
-      <thead><tr><th>ID</th><th>Name</th><th>In</th><th>Out</th></tr></thead>
-      <tbody id="todayTable"><tr class="empty-row"><td colspan="4">No scans yet today</td></tr></tbody>
-    </table>
-    <div class="toolbar">
-      <button id="exportBtn">Export CSV</button>
-      <button id="clearTodayBtn" class="danger">Clear Today</button>
+<!-- MAIN CONTENT -->
+<main class="main-content">
+  
+  <!-- Manual Hero Carousel -->
+  <section class="hero-carousel" style="position: relative; overflow: hidden; background: var(--navy-900); color: var(--paper); border-bottom: 4px solid var(--amber-500);">
+    <div id="carouselTrack" style="display: flex; transition: transform 0.4s ease-in-out; height: 450px;">
+      <!-- Slides load here -->
+      <div style="min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+        <h1 style="font-family: var(--font-display); font-size: 42px; color: var(--amber-400); margin: 0 0 16px;">Welcome to Easy Ways Connection Corp.</h1>
+        <p style="font-size: 18px; max-width: 600px; color: #9fb0d6; margin: 0 0 30px;">Loading images...</p>
+      </div>
     </div>
-    <div class="toolbar" style="margin-top:8px;">
-      <button id="clearAllBtn" class="danger">Clear All History (all dates)</button>
+    <!-- Manual Controls -->
+    <button id="prevSlide" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: none;">&#10094;</button>
+    <button id="nextSlide" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: none;">&#10095;</button>
+  </section>
+
+  <!-- Company Culture Section -->
+  <section id="culture" class="section-container">
+    <span class="section-subtitle">Who We Are</span>
+    <h2 class="section-title">Company as Family</h2>
+    <div class="culture-grid">
+      <div class="culture-card">
+        <h3>Our Mission</h3>
+        <p>To streamline digital seller logistics and establish high-performing e-commerce storefronts that connect brands with their ideal audiences.</p>
+      </div>
+      <div class="culture-card">
+        <h3>Growth & Innovation</h3>
+        <p>We invest heavily in the tools and training our team needs to succeed, from the latest AI prompting techniques to advanced network hardware optimization.</p>
+      </div>
+      <div class="culture-card">
+        <h3>Work-Life Balance</h3>
+        <p>We believe that a well-rested team is a highly productive team. We value our company culture and regularly host team-building events and celebrations.</p>
+      </div>
     </div>
   </section>
 
-  <section class="panel">
-    <h2>Employee Roster <span class="count" id="rosterCount">0 registered</span></h2>
-    <div class="roster-form">
-      <input type="text" name="id" id="newId" placeholder="Barcode / ID value">
-      <input type="text" name="name" id="newName" placeholder="Employee name">
-      <button id="addEmployeeBtn">Add</button>
+  <!-- Careers Preview Section -->
+  <section id="careers" class="section-container" style="background: #fdfaf2; border-top: 1px solid #e0dcd3; border-bottom: 1px solid #e0dcd3;">
+    <span class="section-subtitle">Join Our Team</span>
+    <h2 class="section-title">Current Openings</h2>
+    <div class="careers-preview-list" id="publicCareersList">
+      <div class="empty-note">Loading open positions...</div>
     </div>
-    <table>
-      <thead><tr><th>ID</th><th>Name</th><th></th></tr></thead>
-      <tbody id="rosterTable"><tr class="empty-row"><td colspan="3">No employees added yet</td></tr></tbody>
-    </table>
-    <div class="toolbar">
-      <button id="loadDefaultRosterBtn">Load Company Roster (36)</button>
+    <div style="text-align: center; margin-top: 30px;">
+      <a href="careers.html" class="btn-hero" style="background: transparent; color: var(--navy-900); border: 2px solid var(--navy-900);">See All Openings</a>
     </div>
   </section>
+
+  <!-- Blog Preview Section -->
+  <section id="blog" class="section-container">
+    <span class="section-subtitle">Latest Updates</span>
+    <h2 class="section-title">Blog & News</h2>
+    <div id="publicBlogList">
+      <div class="empty-note">Loading latest news...</div>
+    </div>
+  </section>
+
+  <!-- Quiet Login Footer -->
+  <footer class="public-footer">
+    &copy; 2026 Easy Ways Connection Corporation. All rights reserved.
+    <br><br>
+    <a href="login.html">Employee Login</a> | <a href="kiosk-live.html">Scanner Kiosk</a>
+  </footer>
 
 </main>
 
-<footer>Stored on this device only · works offline once loaded</footer>
-
+<script src="supabase-config.js"></script>
 <script>
-(function(){
-  const EMP_KEY = 'attendance_employees_v1';
-  const LOG_KEY = 'attendance_log_v1';
+(async function(){
+  // --- Load Public Career Previews ---
+  // Anonymous users can strictly SELECT from career_positions where is_open = true
+  async function loadCareersPreview() {
+    const listEl = document.getElementById('publicCareersList');
+    
+    const { data, error } = await supabaseClient
+      .from('career_positions')
+      .select('id, title, department')
+      .eq('is_open', true)
+      .order('created_at', { ascending: false })
+      .limit(3);
 
-  // Built-in company roster (Easy Ways Connection Corp — Active, Aug 2026).
-  // Loaded automatically the first time this page runs on a device with an
-  // empty roster. If you've already added/edited employees locally, this is
-  // NOT re-applied — your local roster always wins once it exists.
-  const DEFAULT_ROSTER = [
-    { id: "EW-0001-2023", name: "CAY, CATHERINE" },
-    { id: "EW-0069-2024", name: "MONTECLARO, RODNEY PAGAS" },
-    { id: "EW-0076-2024", name: "DE LEON, EDEN ROSE REYES" },
-    { id: "EW-0024-2025", name: "HERRERA, BOYET JUSTIMBASTE" },
-    { id: "EW-0066-2025", name: "VILLANUEVA, HILARRY P." },
-    { id: "EW-0095-2025", name: "SANTOS, KENNETH FLORES" },
-    { id: "EW-0096-2026", name: "OKABE, SHIZUMI AI B" },
-    { id: "EW-0097-2026", name: "SANTOS, KATHLEEN FLORES" },
-    { id: "EW-0098-2026", name: "INTIA, TRICIA MAE L" },
-    { id: "EW-0020-2023", name: "BUHAT, BHEA A." },
-    { id: "EW-0044-2024", name: "CARIÑO, LADY ANN GASPAR" },
-    { id: "EW-0011-2024", name: "MORTEL, ANGELICA" },
-    { id: "EW-0077-2024", name: "DE LEON, EDZ MARIELLE REYES" },
-    { id: "EW-0085-2024", name: "DELA CRUZ, RYZZEL MAE BOLLOSA" },
-    { id: "EW-0099-2025", name: "MENDOZA, ARA" },
-    { id: "EW-0100-2025", name: "BAÑARES, KATE JEWEL TEJADA" },
-    { id: "EW-0101-2025", name: "CRUZIN, KRISTINE BALDICASA" },
-    { id: "EW-0102-2025", name: "SAN JOSE, DANIELA M" },
-    { id: "EW-0103-2026", name: "TOLOSA, RIALYN B" },
-    { id: "EW-0104-2026", name: "SIM, FERMEL" },
-    { id: "EW-0105-2026", name: "BAUTISTA, NYCHA B" },
-    { id: "EW-0106-2026", name: "CURANGCURANG, IRENE CELLO" },
-    { id: "EW-0107-2026", name: "FRANCISCO, LORANA" },
-    { id: "EW-0108-2026", name: "BELEN, MARJORIE" },
-    { id: "EW-0109-2026", name: "ANCAJA, COLEEN FRANCISCO" },
-    { id: "EW-0110-2026", name: "SENIAGA, MARIA VELENE" },
-    { id: "EW-0111-2026", name: "CASTILLO, LIZA LESLIE IGLESIA" },
-    { id: "EW-0112-2026", name: "JIMENA, JESSA NICOLE MARIÑAS" },
-    { id: "EW-0113-2026", name: "LACAP, ANA MARIE" },
-    { id: "EW-0114-2026", name: "FRANCISCO, IYAH" },
-    { id: "EW-0115-2026", name: "MUSTAPHA, JONAISAH IBRAHIM" },
-    { id: "EW-0116-2026", name: "CAPISTRANO, FEBRIANE PAMPLIA" },
-    { id: "EW-0117-2026", name: "MARIANO, ANGELICA MAE CASTA" },
-    { id: "EW-0118-2026", name: "TESTANADO, LEIVERY ANN" },
-    { id: "EW-0010-2023", name: "GABRIEL, MARY ANN S." },
-    { id: "EW-0049-2023", name: "GABRIEL, GLENN" }
-  ];
-
-  function loadEmployees(){ try{ return JSON.parse(localStorage.getItem(EMP_KEY)) || []; }catch(e){ return []; } }
-  function saveEmployees(list){ localStorage.setItem(EMP_KEY, JSON.stringify(list)); }
-  function loadLog(){ try{ return JSON.parse(localStorage.getItem(LOG_KEY)) || []; }catch(e){ return []; } }
-  function saveLog(list){ localStorage.setItem(LOG_KEY, JSON.stringify(list)); }
-
-  let employees = loadEmployees();
-  if(employees.length === 0){
-    employees = DEFAULT_ROSTER.slice();
-    saveEmployees(employees);
-  }
-  let log = loadLog();
-
-  function todayStr(){
-    const d = new Date();
-    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  }
-  function timeStr(){
-    return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  }
-  function findEmployee(id){ return employees.find(e => e.id === id); }
-
-  // ---- Live clock ----
-  function tickClock(){
-    document.getElementById('liveClock').textContent = new Date().toLocaleString([], {
-      weekday:'short', hour:'2-digit', minute:'2-digit', second:'2-digit'
-    });
-  }
-  tickClock();
-  setInterval(tickClock, 1000);
-
-  // ---- Text-to-speech announcement ----
-  function firstName(fullName){
-
-    if(!fullName) return '';
-    // "LAST, FIRST MIDDLE" -> First; falls back to the whole string if no comma
-    const afterComma = fullName.includes(',') ? fullName.split(',')[1] : fullName;
-    const cleaned = (afterComma || fullName).trim().split(/\s+/)[0];
-    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
-  }
-
-  function daypartGreeting(){
-    const h = new Date().getHours();
-    if(h < 12) return 'Good morning';
-    if(h < 18) return 'Good afternoon';
-    return 'Good evening';
-  }
-
-  function speak(text){
-    if(!('speechSynthesis' in window)) return;
-    try{
-      window.speechSynthesis.cancel(); // don't stack announcements
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'en-US';
-      utter.rate = 1;
-      window.speechSynthesis.speak(utter);
-    }catch(e){ /* ignore speech errors, never block the scan flow */ }
-  }
-
-  function announce(kind, name){
-    const greeting = daypartGreeting();
-    const who = name ? firstName(name) : '';
-    if(kind === 'in'){
-      speak(`${greeting}${who ? ', ' + who : ''}. Time in recorded.`);
-    } else if(kind === 'out'){
-      speak(`${greeting}${who ? ', ' + who : ''}. Time out recorded.`);
-    } else if(kind === 'warn'){
-      speak(`${who ? who + ', y' : 'Y'}ou already completed your attendance for today.`);
-    }
-  }
-
-  // ---- Core scan handler ----
-  function handleScan(rawId){
-    const id = (rawId || '').trim();
-    if(!id) return;
-
-    const emp = findEmployee(id);
-
-    // Not in the roster at all — refuse the scan, log nothing.
-    if(!emp){
-      showBanner('warn', 'Not Registered', `"${id}" is not a recognized employee ID. This scan was not recorded.`);
-      speak('This ID is not registered.');
+    if (error) {
+      console.error("Error fetching careers:", error);
+      listEl.innerHTML = '<div class="empty-note">Check back later for open positions.</div>';
       return;
     }
 
-    const name = emp.name;
-    const today = todayStr();
-
-    let entry = log.find(r => r.id === id && r.date === today);
-
-    if(!entry){
-      entry = { id, name, date: today, timeIn: timeStr(), timeOut: '' };
-      log.push(entry);
-      saveLog(log);
-      showBanner('in', entry.name, 'Time IN logged at ' + entry.timeIn);
-      announce('in', name);
-    } else if(entry.timeIn && !entry.timeOut){
-      entry.timeOut = timeStr();
-      saveLog(log);
-      showBanner('out', entry.name, 'Time OUT logged at ' + entry.timeOut);
-      announce('out', name);
-    } else {
-      showBanner('warn', entry.name, 'Already completed today — In ' + entry.timeIn + ' / Out ' + entry.timeOut);
-      announce('warn', name);
-    }
-    renderToday();
-  }
-
-  function showBanner(kind, name, detail){
-    const b = document.getElementById('resultBanner');
-    b.className = 'result-banner ' + kind;
-    b.style.display = 'block';
-    document.getElementById('rbName').textContent = name;
-    document.getElementById('rbDetail').textContent = detail;
-  }
-
-  // ---- Camera scanner (html5-qrcode) ----
-  let html5QrCode = null;
-  let scanning = false;
-  const toggleBtn = document.getElementById('scanToggle');
-
-  async function startScan(){
-    html5QrCode = new Html5Qrcode("reader", { formatsToSupport: [
-      Html5QrcodeSupportedFormats.CODE_128,
-      Html5QrcodeSupportedFormats.CODE_39,
-      Html5QrcodeSupportedFormats.EAN_13,
-      Html5QrcodeSupportedFormats.EAN_8,
-      Html5QrcodeSupportedFormats.UPC_A,
-      Html5QrcodeSupportedFormats.QR_CODE
-    ]});
-    try{
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 260, height: 140 } },
-        (decodedText) => {
-          handleScan(decodedText);
-          // brief pause to avoid double-fires on the same badge
-          html5QrCode.pause(true);
-          setTimeout(()=>{ if(scanning) html5QrCode.resume(); }, 1500);
-        },
-        ()=>{ /* per-frame decode errors, ignore */ }
-      );
-      scanning = true;
-      toggleBtn.textContent = 'Stop Scanning';
-      toggleBtn.classList.add('active');
-    }catch(err){
-      alert('Could not access camera: ' + err + '\nYou can still type the ID manually below.');
-    }
-  }
-
-  async function stopScan(){
-    if(html5QrCode){
-      try{ await html5QrCode.stop(); html5QrCode.clear(); }catch(e){}
-    }
-    scanning = false;
-    toggleBtn.textContent = 'Start Scanning';
-    toggleBtn.classList.remove('active');
-  }
-
-  toggleBtn.addEventListener('click', ()=>{
-    if(!scanning){
-      // "Unlock" speech synthesis with a near-silent utterance triggered by this tap —
-      // mobile browsers require the first speech call to happen inside a user gesture.
-      if('speechSynthesis' in window){
-        const unlock = new SpeechSynthesisUtterance(' ');
-        unlock.volume = 0;
-        window.speechSynthesis.speak(unlock);
-      }
-      startScan();
-    } else {
-      stopScan();
-    }
-  });
-
-  // ---- Manual entry ----
-  document.getElementById('manualBtn').addEventListener('click', ()=>{
-    const input = document.getElementById('manualId');
-    handleScan(input.value);
-    input.value = '';
-  });
-  document.getElementById('manualId').addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter'){ document.getElementById('manualBtn').click(); }
-  });
-
-  // ---- Today's table ----
-  function renderToday(){
-    const today = todayStr();
-    const rows = log.filter(r => r.date === today).sort((a,b)=> a.timeIn < b.timeIn ? 1 : -1);
-    const tbody = document.getElementById('todayTable');
-    document.getElementById('todayCount').textContent = rows.length + (rows.length===1 ? ' entry' : ' entries');
-    if(rows.length === 0){
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No scans yet today</td></tr>';
+    if (!data || data.length === 0) {
+      listEl.innerHTML = '<div class="empty-note">We currently have no open positions. Please check back soon!</div>';
       return;
     }
-    tbody.innerHTML = rows.map(r => `
-      <tr>
-        <td class="mono">${escapeHtml(r.id)}</td>
-        <td>${escapeHtml(r.name)}</td>
-        <td class="mono">${r.timeIn || '—'}</td>
-        <td class="mono">${r.timeOut || '—'}</td>
-      </tr>
+
+    listEl.innerHTML = data.map(job => `
+      <a href="position.html?id=${job.id}" class="job-card">
+        <div>
+          <h3 class="job-title">${escapeHtml(job.title)}</h3>
+          <div class="job-dept">${escapeHtml(job.department)}</div>
+        </div>
+        <div class="job-arrow">→</div>
+      </a>
     `).join('');
   }
 
-  document.getElementById('clearTodayBtn').addEventListener('click', ()=>{
-    if(!confirm('Clear all of today\'s log entries? This cannot be undone.')) return;
-    const today = todayStr();
-    log = log.filter(r => r.date !== today);
-    saveLog(log);
-    renderToday();
-  });
+  // --- Load Public Blog Previews ---
+  async function loadBlogPreview() {
+    const listEl = document.getElementById('publicBlogList');
+    
+    // Assumes an 'is_public' boolean has been added to blog_posts for anonymous viewing
+    const { data, error } = await supabaseClient
+      .from('blog_posts')
+      .select('id, title, created_at')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(2);
 
-  document.getElementById('clearAllBtn').addEventListener('click', ()=>{
-    if(!confirm('This clears EVERY logged scan on this device, from every date — including anything not shown in Today\'s Log. This cannot be undone. Continue?')) return;
-    log = [];
-    saveLog(log);
-    renderToday();
-  });
+    if (error || !data || data.length === 0) {
+      listEl.innerHTML = '<div class="empty-note">No public news posts available at this time.</div>';
+      return;
+    }
 
-  // ---- CSV export ----
-  document.getElementById('exportBtn').addEventListener('click', ()=>{
-    if(log.length === 0){ alert('No log entries to export yet.'); return; }
-    const rows = [['ID','Name','Date','Time In','Time Out'], ...log.map(r=>[r.id, r.name, r.date, r.timeIn, r.timeOut])];
-    const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
-    const blob = new Blob([csv], {type:'text/csv'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'attendance_' + todayStr() + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
-  function csvEscape(v){
-    v = String(v ?? '');
-    return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+    listEl.innerHTML = data.map(post => `
+      <div style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e0dcd3; margin-bottom: 15px;">
+        <h3 style="font-family: var(--font-display); margin: 0 0 10px; color: var(--navy-900);">${escapeHtml(post.title)}</h3>
+        <div style="font-family: var(--font-mono); font-size: 11px; color: #7488b6;">Posted ${new Date(post.created_at).toLocaleDateString()}</div>
+      </div>
+    `).join('');
   }
-  function escapeHtml(v){
+
+  function escapeHtml(v) {
     return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+  
+// --- Load Dynamic Site Photos (Carousel & Culture) ---
+  let currentSlide = 0;
+  let totalSlides = 0;
 
-  // ---- Roster ----
-  function renderRoster(){
-    const tbody = document.getElementById('rosterTable');
-    document.getElementById('rosterCount').textContent = employees.length + (employees.length===1 ? ' registered' : ' registered');
-    if(employees.length === 0){
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No employees added yet</td></tr>';
-      return;
+  async function loadSitePhotos() {
+    const { data: photos, error } = await supabaseClient
+      .from('site_photos')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('Error loading site photos:', error);
+      return; // Will gracefully leave the static fallback text in place
     }
-    tbody.innerHTML = employees.map(e => `
-      <tr>
-        <td class="mono">${escapeHtml(e.id)}</td>
-        <td>${escapeHtml(e.name)}</td>
-        <td><button class="del-btn" data-id="${escapeHtml(e.id)}" title="Remove">✕</button></td>
-      </tr>
-    `).join('');
-    tbody.querySelectorAll('.del-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        employees = employees.filter(e => e.id !== btn.dataset.id);
-        saveEmployees(employees);
-        renderRoster();
-      });
-    });
+
+    // 1. Build Carousel
+    const carouselPhotos = photos.filter(p => p.category === 'Carousel');
+    const track = document.getElementById('carouselTrack');
+    const btnPrev = document.getElementById('prevSlide');
+    const btnNext = document.getElementById('nextSlide');
+
+    if (carouselPhotos.length > 0) {
+      totalSlides = carouselPhotos.length;
+      if (totalSlides > 1) {
+        btnPrev.style.display = 'block';
+        btnNext.style.display = 'block';
+      }
+      
+      track.innerHTML = carouselPhotos.map(photo => `
+        <div style="min-width: 100%; height: 100%; position: relative;">
+          <img src="${photo.image_url}" alt="Carousel image" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+          <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+            <h2 style="font-family: var(--font-display); font-size: 38px; color: var(--paper); text-shadow: 2px 2px 10px rgba(0,0,0,0.9); margin-bottom: 20px;">${photo.caption ? escapeHtml(photo.caption) : ''}</h2>
+            <a href="careers.html" class="btn-hero">View Open Roles</a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 2. Build Culture Grid
+    const culturePhotos = photos.filter(p => p.category === 'Culture');
+    const cultureGrid = document.getElementById('cultureGrid');
+    
+    if (culturePhotos.length > 0) {
+      cultureGrid.innerHTML = culturePhotos.map(photo => `
+        <div class="culture-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+          <img src="${photo.image_url}" alt="Culture" style="width: 100%; height: 220px; object-fit: cover;">
+          ${photo.caption ? `<div style="padding: 20px; text-align: center;"><h3 style="font-family: var(--font-display); font-size: 18px; color: var(--navy-900); margin: 0;">${escapeHtml(photo.caption)}</h3></div>` : ''}
+        </div>
+      `).join('');
+    }
   }
 
-  document.getElementById('addEmployeeBtn').addEventListener('click', ()=>{
-    const idInput = document.getElementById('newId');
-    const nameInput = document.getElementById('newName');
-    const id = idInput.value.trim();
-    const name = nameInput.value.trim();
-    if(!id || !name){ alert('Enter both an ID and a name.'); return; }
-    if(findEmployee(id)){ alert('That ID is already registered.'); return; }
-    employees.push({id, name});
-    saveEmployees(employees);
-    idInput.value = ''; nameInput.value = '';
-    renderRoster();
+  // Carousel Button Logic
+  document.getElementById('prevSlide')?.addEventListener('click', () => {
+    if (totalSlides <= 1) return;
+    currentSlide = (currentSlide === 0) ? totalSlides - 1 : currentSlide - 1;
+    document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
+  });
+  
+  document.getElementById('nextSlide')?.addEventListener('click', () => {
+    if (totalSlides <= 1) return;
+    currentSlide = (currentSlide === totalSlides - 1) ? 0 : currentSlide + 1;
+    document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
   });
 
-  document.getElementById('loadDefaultRosterBtn').addEventListener('click', ()=>{
-    let added = 0;
-    DEFAULT_ROSTER.forEach(person => {
-      if(!findEmployee(person.id)){
-        employees.push({ id: person.id, name: person.name });
-        added++;
-      }
-    });
-    if(added > 0){
-      saveEmployees(employees);
-      renderRoster();
-      alert(added + ' employee(s) added from the company roster. Existing entries were left untouched.');
-    } else {
-      alert('This device already has the full company roster loaded — nothing new to add.');
-    }
-  });
+  // Call the function on load
+  loadSitePhotos();
+  // Execute anonymous queries on page load
+  loadCareersPreview();
+  loadBlogPreview();
 
-  // ---- Init ----
-  renderToday();
-  renderRoster();
 })();
 </script>
 
