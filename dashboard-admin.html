@@ -213,6 +213,51 @@ aside.sidebar.collapsed ~ main.main-content {
 .nav-bell-list { max-height: 350px; overflow-y: auto; }
 .nav-bell-empty { padding: 20px; text-align: center; color: #7488b6; font-size: 13px; font-style: italic; }
 .nav-bell-item { padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
+
+/* ---- EMPLOYEE MONITORING GRID & CARDS ---- */
+  .monitoring-title { font-family: var(--font-display); font-size: 28px; color: var(--amber-400); text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.05em; }
+  .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; padding-bottom: 10px; }
+  .filter-bar button { background: transparent; border: 1px solid var(--amber-500); color: var(--amber-500); font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+  .filter-bar button.active, .filter-bar button:hover { background: var(--amber-500); color: var(--navy-950); font-weight: bold; }
+  
+  .monitoring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .emp-card { background: var(--navy-800); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 15px; position: relative; }
+  .emp-card img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--navy-700); }
+  .emp-card .info { flex: 1; }
+  .emp-card .name { font-weight: bold; font-size: 14px; color: var(--amber-400); margin: 0 0 2px; text-transform: uppercase; }
+  .emp-card .id-num { font-family: var(--font-mono); font-size: 10px; color: #7488b6; margin: 0 0 4px; }
+  .emp-card .status-text { font-size: 10px; color: #9fb0d6; }
+  
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; position: absolute; top: 16px; right: 16px; }
+  .status-dot.green { background: var(--mint-500); box-shadow: 0 0 6px var(--mint-500); }
+  .status-dot.gray { background: #5c6d99; }
+  .status-dot.yellow { background: var(--amber-400); box-shadow: 0 0 6px var(--amber-400); }
+  .status-dot.red { background: var(--coral-500); box-shadow: 0 0 6px var(--coral-500); }
+  
+  .msg-icon { position: absolute; bottom: 16px; right: 16px; color: var(--amber-500); cursor: pointer; opacity: 0.8; transition: opacity 0.2s; }
+  .msg-icon:hover { opacity: 1; }
+
+  /* ---- ACCOUNT DASHBOARD CARDS ---- */
+  .account-section { background: var(--navy-900); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+  .account-section h3 { font-family: var(--font-mono); font-size: 12px; color: var(--amber-500); text-transform: uppercase; margin: 0 0 20px; letter-spacing: 0.1em; }
+  
+  .acct-header-flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+  .acct-profile { display: flex; align-items: center; gap: 20px; }
+  .acct-avatar-wrap { position: relative; width: 80px; height: 80px; }
+  .acct-avatar-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--amber-500); }
+  .edit-avatar-btn { position: absolute; bottom: -4px; right: -4px; background: var(--amber-500); color: var(--navy-950); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+  
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .info-group { display: flex; flex-direction: column; gap: 4px; }
+  .info-label { font-family: var(--font-mono); font-size: 10px; color: #7488b6; text-transform: uppercase; }
+  .info-value { font-weight: bold; font-size: 14px; color: var(--paper); }
+  
+  /* Sidebar Profile Tweak */
+  .sidebar-user-block { display: flex; align-items: center; gap: 12px; padding: 20px; border-bottom: 1px solid var(--line); }
+  .sidebar-user-block img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--amber-500); }
+  .sidebar-user-info { display: flex; flex-direction: column; }
+  .sidebar-welcome { font-family: var(--font-mono); font-size: 10px; color: var(--amber-500); }
+  .sidebar-name { font-size: 13px; font-weight: bold; color: var(--paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
   
 </style>
 </head>
@@ -220,10 +265,14 @@ aside.sidebar.collapsed ~ main.main-content {
 
 <aside class="sidebar">
   <div>
-    <div class="sidebar-header">
-      <h1 class="sidebar-brand">EWC Corp.</h1>
-      <div class="sidebar-sub">Admin Dashboard</div>
-    </div>
+    <!-- New Sidebar Profile Header -->
+        <div class="sidebar-user-block">
+          <img src="https://via.placeholder.com/40" id="sidebarAvatarImg" alt="Profile">
+          <div class="sidebar-user-info">
+            <span class="sidebar-welcome">Welcome,</span>
+            <span class="sidebar-name" id="sidebarNameTxt">Admin</span>
+          </div>
+        </div>
     
    <nav class="sidebar-nav">
   
@@ -340,9 +389,24 @@ aside.sidebar.collapsed ~ main.main-content {
   <main>
       <div id="content">
 
-  <!-- 1. HOME TAB -->
+  <!-- 1. HOME TAB (EMPLOYEE MONITORING) -->
   <div id="tab-home" class="tab-panel">
-    <!-- Admin Home contents (Stats, top-level overview cards go here) -->
+    <h2 class="monitoring-title">Employee Monitoring</h2>
+    
+    <div class="filter-bar" id="monFilters">
+      <button class="active" data-filter="all">All Types</button>
+      <button data-filter="online">Time In</button>
+      <button data-filter="offline">Time Out</button>
+      <button data-filter="undertime">Undertime</button>
+      <button data-filter="absent">Absent</button>
+      <button data-filter="leave">On Leave</button>
+      <button data-filter="dayoff">Day Off</button>
+    </div>
+    
+    <div id="monLoading" class="loading-note">Loading employee status...</div>
+    <div class="monitoring-grid" id="monitoringGrid">
+      <!-- Cards injected by JS -->
+    </div>
   </div>
 
   <!-- 2. ANNOUNCEMENTS TAB -->
@@ -609,6 +673,52 @@ aside.sidebar.collapsed ~ main.main-content {
   </div>
 </div>
 
+    <!-- 11. ACCOUNT TAB -->
+  <div id="tab-account" class="tab-panel" style="display:none;">
+    
+    <div class="account-section" style="background: var(--navy-800); padding: 20px;">
+      <div class="acct-header-flex">
+        <div class="acct-profile">
+          <div class="acct-avatar-wrap">
+            <img src="https://via.placeholder.com/80" id="acctAvatar" alt="Avatar">
+            <label class="edit-avatar-btn" title="Update Profile Picture">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <input type="file" id="acctAvatarUpload" accept="image/*" style="display:none;">
+            </label>
+          </div>
+          <div>
+            <div style="font-family: var(--font-display); font-size: 20px; font-weight: bold; color: var(--paper);" id="acctName">Employee Name</div>
+            <div style="font-size: 12px; color: #7488b6; margin-bottom: 2px;" id="acctPosition">Position</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: #5c6d99;" id="acctBadgeId">Employee No.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn" id="acctSwitchBtn" style="border-color: var(--amber-500); color: var(--amber-500);">Switch to Employee View</button>
+          <button class="btn primary">Digital ID</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="account-section">
+      <h3>Personal Information</h3>
+      <div class="info-grid">
+        <div class="info-group"><span class="info-label">Full Name</span><span class="info-value" id="infoName">—</span></div>
+        <div class="info-group"><span class="info-label">Employee ID</span><span class="info-value" id="infoId">—</span></div>
+        <div class="info-group"><span class="info-label">Position</span><span class="info-value" id="infoPos">—</span></div>
+        <div class="info-group"><span class="info-label">Phone / Viber</span><span class="info-value" id="infoPhone">Not on file</span></div>
+      </div>
+    </div>
+
+    <div class="account-section">
+      <h3>Emergency Contact</h3>
+      <div class="info-grid">
+        <div class="info-group"><span class="info-label">Contact Name</span><span class="info-value">Not on file</span></div>
+        <div class="info-group"><span class="info-label">Phone Number</span><span class="info-value">Not on file</span></div>
+        <div class="info-group" style="grid-column: span 2;"><span class="info-label">Address</span><span class="info-value">Not on file</span></div>
+      </div>
+    </div>
+  </div>
+    
 </main> <!-- Make sure this closing main tag is here! -->
 
   <footer>Easy Ways Connection Corp. · Internal use only</footer>
@@ -1841,6 +1951,104 @@ async function reviewTicket(ticketId, status, approverName) {
   loadCareers();
   loadApplications();
   loadPhotos();
+
+  // ==========================================================
+  // PART 6 — Dashboard Updates (Monitoring & Account)
+  // ==========================================================
+
+  // Populate Sidebar & Account Tab with current Admin data
+  function populateAccountDetails() {
+    const avatar = emp.profile_image || 'https://via.placeholder.com/80';
+    document.getElementById('sidebarAvatarImg').src = avatar;
+    document.getElementById('sidebarNameTxt').textContent = emp.name;
+    
+    document.getElementById('acctAvatar').src = avatar;
+    document.getElementById('acctName').textContent = emp.name;
+    document.getElementById('acctBadgeId').textContent = emp.badge_id;
+    document.getElementById('acctPosition').textContent = emp.role.toUpperCase();
+    
+    document.getElementById('infoName').textContent = emp.name;
+    document.getElementById('infoId').textContent = emp.badge_id;
+    document.getElementById('infoPos').textContent = emp.role.toUpperCase();
+    
+    // Wire up the new Switch View button inside the account tab
+    const acctSwitch = document.getElementById('acctSwitchBtn');
+    if (acctSwitch) {
+      acctSwitch.addEventListener('click', () => {
+        localStorage.setItem('ewc_view_mode', 'employee');
+        window.location.href = 'dashboard-employee.html';
+      });
+    }
+  }
+
+  // Build the Employee Monitoring Board
+  async function loadMonitoringBoard() {
+    const grid = document.getElementById('monitoringGrid');
+    document.getElementById('monLoading').style.display = 'block';
+    
+    // 1. Fetch ALL Employees
+    const { data: emps } = await supabaseClient.from('employees').select('*').order('name');
+    // 2. Fetch Today's Attendance
+    const { data: att } = await supabaseClient.from('attendance_logs').select('*').eq('log_date', todayStr());
+    // 3. Fetch Today's Tickets (Approved Leaves/Absences)
+    const { data: tix } = await supabaseClient.from('tickets').select('*').eq('status', 'approved').lte('date_from', todayStr()).gte('date_to', todayStr());
+    
+    document.getElementById('monLoading').style.display = 'none';
+    if (!emps) return;
+
+    window.monitoringData = emps.map(e => {
+      let statusCat = 'offline';
+      let statusText = 'Time out / Offline';
+      let dotColor = 'gray';
+      
+      const log = att?.find(a => a.employee_id === e.id);
+      const ticket = tix?.find(t => t.employee_id === e.id);
+      
+      if (ticket) {
+        if (ticket.ticket_type === 'absent') { statusCat = 'absent'; statusText = 'Absent'; dotColor = 'red'; }
+        else if (ticket.ticket_type === 'undertime') { statusCat = 'undertime'; statusText = 'Undertime'; dotColor = 'yellow'; }
+        else { statusCat = 'leave'; statusText = 'On Leave / Emergency Leave'; dotColor = 'yellow'; }
+      } else if (log) {
+        if (log.time_in && !log.time_out) { statusCat = 'online'; statusText = 'Time In / Online'; dotColor = 'green'; }
+        else if (log.time_out) { statusCat = 'offline'; statusText = 'Time Out / Offline'; dotColor = 'gray'; }
+      }
+
+      return { ...e, statusCat, statusText, dotColor, timeIn: log?.time_in };
+    });
+
+    renderMonitoringGrid('all');
+  }
+
+  function renderMonitoringGrid(filter) {
+    const grid = document.getElementById('monitoringGrid');
+    let filtered = window.monitoringData || [];
+    if (filter !== 'all') { filtered = filtered.filter(e => e.statusCat === filter); }
+    
+    grid.innerHTML = filtered.map(e => `
+      <div class="emp-card">
+        <img src="${e.profile_image || 'https://via.placeholder.com/50'}" alt="Avatar">
+        <div class="info">
+          <h4 class="name">${escapeHtml(e.name)}</h4>
+          <div class="id-num">ID NUMBER: ${escapeHtml(e.badge_id)}</div>
+          <div class="status-text">${e.statusText} ${e.timeIn ? `(${new Date(e.timeIn).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})})` : ''}</div>
+        </div>
+        <div class="status-dot ${e.dotColor}"></div>
+        <svg class="msg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      </div>
+    `).join('');
+  }
+
+  // Filter Buttons Logic
+  document.querySelectorAll('#monFilters button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('#monFilters button').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      renderMonitoringGrid(e.target.dataset.filter);
+    });
+  });
+
+  populateAccountDetails();
+  loadMonitoringBoard();
 
 })();
 </script>
