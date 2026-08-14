@@ -816,17 +816,13 @@ aside.sidebar.collapsed ~ main.main-content {
   const switchBtn = document.getElementById('switchViewBtn');
   if (switchBtn) {
     switchBtn.style.display = 'inline-block';
-    const isEmployeeView = localStorage.getItem('ewc_view_mode') === 'employee';
-    switchBtn.textContent = isEmployeeView ? 'Switch to Admin View' : 'Switch to Employee View';
+    
+    // We are on the Admin Dashboard, so this always goes to the Employee View
+    switchBtn.textContent = 'Switch to Employee View';
     
     switchBtn.addEventListener('click', () => {
-      if (isEmployeeView) {
-        localStorage.removeItem('ewc_view_mode');
-        window.location.href = 'dashboard-admin.html';
-      } else {
-        localStorage.setItem('ewc_view_mode', 'employee');
-        window.location.href = 'dashboard-employee.html';
-      }
+      localStorage.setItem('ewc_view_mode', 'employee');
+      window.location.href = 'dashboard-employee.html';
     });
   }
 
