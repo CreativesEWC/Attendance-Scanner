@@ -154,7 +154,6 @@
     color: #fff !important;
     border: none !important;
     border-radius: 50% !important;
-    width: 40pxonan !important;
     width: 40px !important;
     height: 40px !important;
     cursor: pointer !important;
@@ -467,9 +466,13 @@
 
         if (carouselPhotos.length > 0) {
           totalSlides = carouselPhotos.length;
+          currentSlide = 0; // reset position on every fresh load
           if (totalSlides > 1) {
             if(btnPrev) btnPrev.style.display = 'flex';
             if(btnNext) btnNext.style.display = 'flex';
+          } else {
+            if(btnPrev) btnPrev.style.display = 'none';
+            if(btnNext) btnNext.style.display = 'none';
           }
           
           track.innerHTML = carouselPhotos.map(photo => `
@@ -477,23 +480,28 @@
               ${photo.caption ? `<div style="background: rgba(10, 15, 30, 0.6); padding: 15px 30px; border-radius: 6px;"><h1 style="font-family: var(--font-display); font-size: 28px; color: #ffffff; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">${escapeHtml(photo.caption)}</h1></div>` : ''}
             </div>
           `).join('');
+          document.getElementById('carouselTrack').style.transform = 'translateX(0px)';
+        } else {
+          if(btnPrev) btnPrev.style.display = 'none';
+          if(btnNext) btnNext.style.display = 'none';
+          track.innerHTML = `<div class="carousel-slide" style="min-width:100%; display:flex; align-items:center; justify-content:center; background:#fdfaf2;">
+            <p style="color:#999; font-style:italic;">No carousel photos have been added yet.</p>
+          </div>`;
         }
       }
 
-      // Multi-Card Carousel Button Logic
-  document.getElementById('prevSlide')?.addEventListener('click', () => {
-    if (totalSlides <= 1) return;
-    currentSlide = (currentSlide === 0) ? totalSlides - 1 : currentSlide - 1;
-    const slideWidth = document.querySelector('.carousel-slide').offsetWidth + 20; // card width + gap
-    document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * slideWidth}px)`;
-  });
-  
-  document.getElementById('nextSlide')?.addEventListener('click', () => {
-    if (totalSlides <= 1) return;
-    currentSlide = (currentSlide === totalSlides - 1) ? 0 : currentSlide + 1;
-    const slideWidth = document.querySelector('.carousel-slide').offsetWidth + 20; // card width + gap
-    document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * slideWidth}px)`;
-  });
+      // Multi-Card Carousel Button Logic (bounds-safe version)
+      function goToSlide(index) {
+        if (totalSlides <= 1) return;
+        currentSlide = ((index % totalSlides) + totalSlides) % totalSlides;
+        const slideEl = document.querySelector('.carousel-slide');
+        if (!slideEl) return;
+        const slideWidth = slideEl.offsetWidth + 20;
+        document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+      }
+
+      document.getElementById('prevSlide')?.addEventListener('click', () => goToSlide(currentSlide - 1));
+      document.getElementById('nextSlide')?.addEventListener('click', () => goToSlide(currentSlide + 1));
 
       // Initialize on load
       loadSitePhotos();
