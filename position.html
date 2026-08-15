@@ -3,126 +3,207 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Position Details — EWC Corp.</title>
+<title>Job Details — EWC Corp.</title>
 <link rel="icon" type="image/svg+xml" href="easyway_icon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root {
-    --navy-950:#0a0f1e; --navy-900:#0f1830; --amber-500:#e8a13a; --paper:#f3efe6; --line:#2a3a63;
-    --font-display:'Rockwell',Georgia,serif; --font-body:-apple-system,BlinkMacSystemFont,sans-serif;
-    --font-mono:'SFMono-Regular',Consolas,monospace;
+    --navy-950:#0a0f1e; --navy-900:#0f1830; --navy-800:#16213f; --navy-700:#22315a;
+    --amber-500:#e8a13a; --amber-400:#f2b854; --paper:#f3efe6; --bg-gray: #f4f5f7;
+    --line:#2a3a63;
+    --font-display:'Rockwell',Georgia,serif; 
+    --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); display: flex; }
-  
-  /* Sidebar */
-  aside.sidebar { width: 260px; background: var(--navy-950); border-right: 1px solid var(--line); display: flex; flex-direction: column; position: fixed; inset: 0 auto 0 0; z-index: 100; }
-  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); }
-  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; margin: 0; }
-  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; }
-  .sidebar-nav a { text-decoration: none; color: #7488b6; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
-  .sidebar-nav a:hover { color: var(--paper); background: var(--navy-900); }
-  @media (max-width: 768px) { aside.sidebar { width: 72px; } aside.sidebar .sidebar-brand, aside.sidebar nav a span { display: none; } main.main-content { margin-left: 72px !important; padding: 30px 20px !important; } }
 
-  /* Main Content */
-  main.main-content { margin-left: 260px; flex: 1; padding: 60px 40px; max-width: 900px; }
-  .back-link { font-family: var(--font-mono); font-size: 12px; color: #7488b6; text-decoration: none; text-transform: uppercase; display: inline-block; margin-bottom: 20px; }
-  .back-link:hover { color: var(--navy-900); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--bg-gray); color: var(--navy-950); font-family: var(--font-body); display: flex; flex-direction: column; }
+
+  /* Sticky Navbar */
+  .sticky-navbar {
+    position: fixed; top: 0; left: 0; width: 100%; background-color: #ffffff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 4000;
+  }
+  .nav-brand-container { display: flex; align-items: center; gap: 15px; text-decoration: none; }
+  .nav-logo { height: 50px; width: 50px; }
+  .nav-brand-name { font-family: var(--font-display); font-size: 24px; color: var(--navy-900); font-weight: bold; }
+  .nav-hamburger { background: none; border: none; color: var(--amber-500); font-size: 40px; cursor: pointer; padding: 0; }
   
-  .job-header { margin-bottom: 40px; border-bottom: 2px solid #e0dcd3; padding-bottom: 20px; }
-  .job-title { font-family: var(--font-display); font-size: 36px; margin: 0 0 10px; color: var(--navy-950); }
-  .job-dept { font-family: var(--font-mono); font-size: 14px; color: var(--navy-700); text-transform: uppercase; letter-spacing: 0.05em; }
+  /* Sidebar Drawer Styles (Light Theme) */
+  aside.sidebar { position: fixed; right: 0; top: 0; width: 260px; height: 100vh; background: #ffffff; border-left: 1px solid #e0dcd3; transform: translateX(100%); transition: transform 0.3s ease; z-index: 5000; box-shadow: -5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+  aside.sidebar.open { transform: translateX(0); }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid #e0dcd3; display: flex; align-items: center; justify-content: space-between; }
+  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--navy-900); text-transform: uppercase; margin: 0; }
+  .sidebar-sub { font-size: 11px; color: #555; font-family: var(--font-mono); margin-top: 4px; }
+  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
+  .sidebar-nav a { text-decoration: none; color: #555; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; transition: all 0.2s; }
+  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--navy-900); background: var(--paper); border-left: 4px solid var(--amber-500); }
+
+  /* Main Job Content Area */
+  main { flex: 1; padding: 120px 20px 60px; max-width: 800px; margin: 0 auto; width: 100%; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border-left: 1px solid #eee; border-right: 1px solid #eee; }
   
-  .job-body { font-size: 16px; line-height: 1.7; color: #333; margin-bottom: 40px; white-space: pre-wrap; }
+  .back-link { display: inline-block; font-family: var(--font-mono); font-size: 12px; color: var(--amber-500); text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 30px; font-weight: bold; }
+  .back-link:hover { text-decoration: underline; }
   
-  .btn-apply { background: var(--amber-500); color: var(--navy-950); padding: 14px 28px; border-radius: 6px; font-weight: bold; font-size: 16px; text-decoration: none; transition: opacity 0.2s; display: inline-block; }
-  .btn-apply:hover { opacity: 0.9; }
+  .job-title-large { font-family: var(--font-display); font-size: 38px; color: var(--navy-900); margin: 0 0 10px; line-height: 1.2; }
+  .job-dept-large { font-family: var(--font-mono); font-size: 14px; color: #7488b6; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e0dcd3; font-weight: bold; }
   
-  #loadingState, #errorState { text-align: center; padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed #ccc; color: #777; }
-  #jobContent { display: none; }
+  .job-description { font-size: 16px; line-height: 1.8; color: #444; margin-bottom: 40px; }
+  .job-description p { margin-bottom: 20px; }
+  .job-description ul { margin-bottom: 20px; padding-left: 20px; }
+  .job-description li { margin-bottom: 10px; }
+
+  .apply-box { background: #fdfaf2; border: 1px solid var(--amber-400); padding: 30px; border-radius: 8px; text-align: center; margin-top: 40px; }
+  .apply-box h3 { font-family: var(--font-display); color: var(--navy-900); margin-top: 0; font-size: 22px; }
+  .apply-btn-large { background: var(--navy-900); color: #fff; padding: 15px 40px; text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 16px; display: inline-block; transition: background 0.2s, transform 0.2s; border: none; cursor: pointer; margin-top: 15px; }
+  .apply-btn-large:hover { background: var(--amber-500); color: var(--navy-950); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+
+  .loading-msg { text-align: center; font-style: italic; color: #777; padding: 50px; }
+  .error-msg { text-align: center; color: var(--coral-500); padding: 50px; font-weight: bold; }
+
+  /* Footer */
+  .public-footer { background: #ffffff; color: #555; padding: 40px; text-align: center; font-family: var(--font-mono); font-size: 11px; margin-top: auto; border-top: 1px solid #e0dcd3; }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .sticky-navbar { padding: 15px 20px; }
+    .nav-brand-name { font-size: 16px; }
+    main { padding: 100px 20px 40px; }
+    .job-title-large { font-size: 28px; }
+  }
 </style>
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <h1 class="sidebar-brand">EWC Corp.</h1>
-  </div>
-  <nav class="sidebar-nav">
-    <a href="index.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></a>
-    <a href="careers.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Careers</span></a>
-  </nav>
-</aside>
+  <!-- Fixed Sticky Navbar -->
+  <header class="sticky-navbar">
+    <a href="index.html" class="nav-brand-container">
+      <img src="ewc icon.svg" alt="EWC Logo" class="nav-logo">
+      <span class="nav-brand-name">Easy Ways Connection Corporation</span>
+    </a>
+    <button id="topNavToggle" class="nav-hamburger">☰</button>
+  </header>
 
-<main class="main-content">
-  <a href="careers.html" class="back-link">← Back to Open Roles</a>
-  
-  <div id="loadingState">Loading position details...</div>
-  
-  <div id="errorState" style="display: none;">
-    <h2>Position Not Found</h2>
-    <p>This role may have been closed or the link is invalid.</p>
-    <br>
-    <a href="careers.html" class="btn-apply" style="background: var(--navy-900); color: var(--paper);">View Open Roles</a>
-  </div>
-
-  <div id="jobContent">
-    <div class="job-header">
-      <h1 class="job-title" id="displayTitle"></h1>
-      <div class="job-dept" id="displayDept"></div>
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside class="sidebar" id="appSidebar">
+    <div class="sidebar-header">
+      <div>
+        <h1 class="sidebar-brand">EWC Corp.</h1>
+        <div class="sidebar-sub">Public Portal</div>
+      </div>
+      <button id="closeSidebarBtn" style="background: none; border: none; color: var(--navy-900); font-size: 20px; cursor: pointer;">✕</button>
     </div>
+    <nav class="sidebar-nav">
+      <a href="index.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="index.html#culture">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Our Culture</span>
+      </a>
+      <a href="blog.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>Blog & News</span>
+      </a>
+      <a href="careers.html" class="active">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Careers</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main id="jobContainer">
+    <div class="loading-msg">Loading position details...</div>
+  </main>
+
+  <footer class="public-footer">
+    &copy; 2026 Easy Ways Connection Corporation. All rights reserved.
+  </footer>
+
+  <script src="supabase-config.js"></script>
+  <script>
+    // Toggle Right-Side Drawer
+    const topNavToggle = document.getElementById('topNavToggle');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    const appSidebar = document.getElementById('appSidebar');
     
-    <div class="job-body" id="displayDesc"></div>
-    
-    <a href="#" id="applyBtn" class="btn-apply">Apply for this Role</a>
-  </div>
-</main>
+    if (topNavToggle && appSidebar) {
+      topNavToggle.addEventListener('click', () => {
+        appSidebar.classList.add('open');
+      });
+    }
+    if (closeSidebarBtn && appSidebar) {
+      closeSidebarBtn.addEventListener('click', () => {
+        appSidebar.classList.remove('open');
+      });
+    }
 
-<script src="supabase-config.js"></script>
-<script>
-(async function(){
-  // Grab the ID from the URL (e.g. position.html?id=123-abc)
-  const urlParams = new URLSearchParams(window.location.search);
-  const jobId = urlParams.get('id');
+    (async function() {
+      const container = document.getElementById('jobContainer');
+      
+      // 1. Get the ID from the URL (e.g., position.html?id=123-abc)
+      const urlParams = new URLSearchParams(window.location.search);
+      const jobId = urlParams.get('id');
 
-  const loadingState = document.getElementById('loadingState');
-  const errorState = document.getElementById('errorState');
-  const jobContent = document.getElementById('jobContent');
+      if (!jobId) {
+        container.innerHTML = '<a href="careers.html" class="back-link">← Back to Careers</a><div class="error-msg">Position not found.</div>';
+        return;
+      }
 
-  if (!jobId) {
-    loadingState.style.display = 'none';
-    errorState.style.display = 'block';
-    return;
-  }
+      // 2. Fetch the specific job from Supabase
+      const { data, error } = await supabaseClient
+        .from('career_positions')
+        .select('*')
+        .eq('id', jobId)
+        .single(); // Grab just the one matching row
 
-  // Fetch the specific role
-  const { data: job, error } = await supabaseClient
-    .from('career_positions')
-    .select('*')
-    .eq('id', jobId)
-    .eq('is_open', true)
-    .single();
+      if (error || !data) {
+        console.error("Error fetching position:", error);
+        container.innerHTML = '<a href="careers.html" class="back-link">← Back to Careers</a><div class="error-msg">Sorry, we could not load this position. It may have been closed or removed.</div>';
+        return;
+      }
 
-  loadingState.style.display = 'none';
+      // Ensure the job is actually still open for applications
+      if (!data.is_open) {
+        container.innerHTML = '<a href="careers.html" class="back-link">← Back to Careers</a><div class="error-msg">This position is no longer accepting applications.</div>';
+        return;
+      }
 
-  if (error || !job) {
-    console.error('Error fetching job:', error);
-    errorState.style.display = 'block';
-    return;
-  }
+      // 3. Helper to make line breaks from the textarea look correct in HTML
+      function formatContent(text) {
+        if (!text) return '';
+        // Treat dashes or bullets as actual HTML lists if desired, otherwise simple breaks
+        return text.split('\n').map(line => {
+          if(line.trim().startsWith('-')) return `<li>${escapeHtml(line.substring(1).trim())}</li>`;
+          if(line.trim() === '') return '<br>';
+          return `<p>${escapeHtml(line)}</p>`;
+        }).join('').replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>').replace(/<\/ul><ul>/g, ''); 
+        // Note: Basic regex for lists, handles standard dash "-" bullets nicely
+      }
 
-  // Populate the UI
-  document.getElementById('displayTitle').textContent = job.title;
-  document.getElementById('displayDept').textContent = job.department;
-  
-  // Use textContent to safely inject, but preserve the formatting via white-space: pre-wrap in CSS
-  document.getElementById('displayDesc').textContent = job.description || 'No description provided.';
-  
-  // Update the apply button to pass the ID forward to the application form
-  document.getElementById('applyBtn').href = `apply.html?id=${job.id}`;
-  
-  jobContent.style.display = 'block';
-})();
-</script>
+      function escapeHtml(v) {
+        return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      // 4. Inject the data into the page
+      let html = `<a href="careers.html" class="back-link">← Back to Careers</a>`;
+      html += `<h1 class="job-title-large">${escapeHtml(data.title)}</h1>`;
+      html += `<div class="job-dept-large">${escapeHtml(data.department)}</div>`;
+      
+      html += `<div class="job-description">${formatContent(data.description)}</div>`;
+      
+      html += `
+        <div class="apply-box">
+          <h3>Ready to join the team?</h3>
+          <p style="color: #555; margin-bottom: 20px;">Send us your resume and cover letter referencing this position.</p>
+          <a href="mailto:careers@ewccorp.com?subject=Application:%20${escapeHtml(data.title)}" class="apply-btn-large">Apply Now via Email</a>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    })();
+  </script>
 </body>
 </html>
