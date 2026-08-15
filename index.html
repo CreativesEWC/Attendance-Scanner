@@ -543,27 +543,41 @@
       document.getElementById('prevSlide')?.addEventListener('click', () => goToSlide(currentSlide - 1));
       document.getElementById('nextSlide')?.addEventListener('click', () => goToSlide(currentSlide + 1));
 
-      // --- Dynamic Sidebar Active State ---
+     // --- Dynamic Sidebar Active State ---
     const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-
-    sidebarLinks.forEach(link => {
-      // 1. Clear any stuck active classes
-      link.classList.remove('active');
+    
+    function setActiveLink() {
+      const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+      const currentHash = window.location.hash; // Captures #blog, #culture, etc.
       
-      // 2. Set active on page load based on the current URL
-      const href = link.getAttribute('href');
-      if (href && href.includes(currentPath)) {
-        link.classList.add('active');
-      }
+      sidebarLinks.forEach(link => {
+        link.classList.remove('active');
+        const href = link.getAttribute('href') || '';
+        
+        // 1. If the URL has a hash section, highlight ONLY the link with that hash
+        if (currentHash && href.includes(currentHash)) {
+          link.classList.add('active');
+        } 
+        // 2. If there is NO hash, highlight ONLY the exact page match
+        else if (!currentHash && href === currentPath) {
+          link.classList.add('active');
+        }
+      });
+    }
 
-      // 3. Update the active tab instantly when clicked
+    // Run on initial page load
+    setActiveLink();
+
+    // Automatically update if the user clicks an anchor link on the same page
+    window.addEventListener('hashchange', setActiveLink);
+
+    // Provide instant visual feedback on click
+    sidebarLinks.forEach(link => {
       link.addEventListener('click', function() {
         sidebarLinks.forEach(l => l.classList.remove('active'));
         this.classList.add('active');
       });
     });
-
       // Initialize on load
       loadSitePhotos();
       loadCareersPreview();
