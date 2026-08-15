@@ -77,11 +77,13 @@
   
   /* Hero Carousel Single Banner Overrides */
   .hero-carousel {
+    position: relative !important;
     background: transparent !important;
     border-bottom: none !important;
     max-width: 1200px;
     margin: 40px auto;
     padding: 0 40px;
+    overflow: hidden !important;
   }
 
   #carouselTrack {
@@ -94,12 +96,12 @@
   .carousel-slide {
     min-width: 100% !important;
     width: 100% !important;
-    height: 100% !important;
+    height: 325px !important;
     border-radius: 8px;
     background-size: cover !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
-    position: relative;
+    position: relative !important;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     flex-shrink: 0;
     display: flex;
@@ -116,6 +118,47 @@
     background: rgba(10, 15, 30, 0.6);
     padding: 15px 30px;
     border-radius: 6px;
+  }
+
+  .carousel-slide p { display: none; }
+
+  /* Arrow Button Positioning */
+  #prevSlide {
+    position: absolute !important;
+    top: 50% !important;
+    left: 60px !important;
+    transform: translateY(-50%) !important;
+    background: rgba(0,0,0,0.6) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    cursor: pointer !important;
+    font-size: 20px !important;
+    z-index: 20 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #nextSlide {
+    position: absolute !important;
+    top: 50% !important;
+    right: 60px !important;
+    transform: translateY(-50%) !important;
+    background: rgba(0,0,0,0.6) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    cursor: pointer !important;
+    font-size: 20px !important;
+    z-index: 20 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .carousel-slide p { display: none; }
