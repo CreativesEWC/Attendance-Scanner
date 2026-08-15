@@ -16,7 +16,7 @@
     --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
   }
 
-  /* Landing Page Updates Section (Matches image_6f5da0.jpg) */
+  /* Landing Page Updates Section */
   .updates-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
   .updates-header-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
   .updates-title { font-family: var(--font-display); font-size: 32px; color: var(--navy-900); margin: 0; }
@@ -48,81 +48,34 @@
   .recent-content .post-tags { color: #7488b6; font-size: 10px; }
   .recent-title { font-family: var(--font-display); font-size: 14px; margin: 0; color: var(--navy-900); line-height: 1.3; }
 
-    aside.sidebar.open {
-      transform: translateX(0) !important;
-    }
-  
-/* 2. Sticky Navbar Styling */
-    .sticky-navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #ffffff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 40px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 4000;
-      box-sizing: border-box;
-    }
+  /* Sticky Navbar Styling */
+  .sticky-navbar {
+    position: fixed; top: 0; left: 0; width: 100%; background-color: #ffffff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 4000; box-sizing: border-box;
+  }
+  .nav-brand-container { display: flex; align-items: center; gap: 15px; text-decoration: none; }
+  .nav-logo { height: 50px; width: 50px; }
+  .nav-brand-name { font-family: var(--font-display); font-size: 24px; color: var(--navy-900); font-weight: bold; letter-spacing: 0.5px; }
+  .nav-hamburger { background: none; border: none; color: var(--amber-500); font-size: 40px; cursor: pointer; padding: 0; }
 
-    .nav-brand-container {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .nav-logo {
-      height: 50px;
-      width: 50px;
-    }
-
-    .nav-brand-name {
-      font-family: var(--font-display);
-      font-size: 24px;
-      color: var(--navy-900);
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
-
-    .nav-hamburger {
-      background: none;
-      border: none;
-      color: var(--amber-500);
-      font-size: 40px;
-      cursor: pointer;
-      padding: 0;
-    }
-
-  
   * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); }
-
-  /* ---- SIDEBAR NAVIGATION (Light Theme Drawer) ---- */
-aside.sidebar { position: fixed; right: 0; top: 0; width: 260px; height: 100vh; background: #ffffff; border-left: 1px solid #e0dcd3; transform: translateX(100%); transition: transform 0.3s ease; z-index: 5000; box-shadow: -5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-aside.sidebar.open { transform: translateX(0); }
-.sidebar-header { padding: 20px; border-bottom: 1px solid #e0dcd3; display: flex; align-items: center; justify-content: space-between; }
-.sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--navy-900); text-transform: uppercase; margin: 0; }
-.sidebar-sub { font-size: 11px; color: #555; font-family: var(--font-mono); margin-top: 4px; }
-.sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
-.sidebar-nav a { text-decoration: none; color: #555; background: transparent; border: none; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; transition: all 0.2s; text-align: left; width: 100%; cursor: pointer; }
-.sidebar-nav a:hover, .sidebar-nav a.active { color: var(--navy-900); background: var(--paper); border-left: 4px solid var(--amber-500); }
-
   html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); display: flex; flex-direction: column; overflow-x: hidden; }
 
-  /* ---- MAIN CONTENT ---- */
+  /* SIDEBAR NAVIGATION */
+  aside.sidebar { position: fixed; right: 0; top: 0; width: 260px; height: 100vh; background: #ffffff; border-left: 1px solid #e0dcd3; transform: translateX(100%); transition: transform 0.3s ease; z-index: 5000; box-shadow: -5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+  aside.sidebar.open { transform: translateX(0); }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid #e0dcd3; display: flex; align-items: center; justify-content: space-between; }
+  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--navy-900); text-transform: uppercase; margin: 0; }
+  .sidebar-sub { font-size: 11px; color: #555; font-family: var(--font-mono); margin-top: 4px; }
+  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
+  .sidebar-nav a { text-decoration: none; color: #555; background: transparent; border: none; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; transition: all 0.2s; text-align: left; width: 100%; cursor: pointer; }
+  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--navy-900); background: var(--paper); border-left: 4px solid var(--amber-500); }
+
+  /* MAIN CONTENT */
   main.main-content { margin: 0; flex: 1; padding: 80px 0 0 0; width: 100%; display: flex; flex-direction: column; overflow-x: hidden; background: var(--paper); }
   
-  /* Hero Carousel Section */
-  .hero-section { background: var(--navy-900); color: var(--paper); padding: 80px 40px; text-align: center; border-bottom: 4px solid var(--amber-500); position: relative; }
-  .hero-section h1 { font-family: var(--font-display); font-size: 42px; margin: 0 0 16px; color: var(--amber-400); }
-  .hero-section p { font-size: 18px; max-width: 600px; margin: 0 auto 30px; line-height: 1.6; color: #9fb0d6; }
-  .btn-hero { background: var(--amber-500); color: var(--navy-950); padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; transition: transform 0.2s; display: inline-block; }
-  .btn-hero:hover { transform: scale(1.05); }
-
-  /* Full-Width Single Banner Carousel Overrides */
+  /* Hero Carousel Single Banner Overrides */
   .hero-carousel {
     background: transparent !important;
     border-bottom: none !important;
@@ -134,7 +87,7 @@ aside.sidebar.open { transform: translateX(0); }
   #carouselTrack {
     display: flex;
     transition: transform 0.4s ease-in-out;
-    height: 325px !important; /* Sets your exact requested height */
+    height: 325px !important;
     width: 100%;
   }
 
@@ -165,15 +118,7 @@ aside.sidebar.open { transform: translateX(0); }
     border-radius: 6px;
   }
 
-  .carousel-slide p {
-    display: none;
-  }
-
-  @media (max-width: 768px) {
-    .carousel-slide { min-width: 100% !important; }
-    .hero-carousel { padding: 0 20px; }
-    #carouselTrack { height: 250px !important; }
-  }
+  .carousel-slide p { display: none; }
 
   /* Content Sections */
   .section-container { max-width: 1000px; margin: 0 auto; padding: 60px 40px; }
@@ -196,7 +141,6 @@ aside.sidebar.open { transform: translateX(0); }
   .empty-note { text-align: center; color: #777; font-style: italic; padding: 20px; }
 
   /* Footer */
-  /* Footer (Light Theme Forced) */
   .public-footer { background: #ffffff !important; color: #555 !important; padding: 40px; text-align: center; font-family: var(--font-mono); font-size: 11px; margin-top: auto; border-top: 1px solid #e0dcd3; }
   .public-footer a { color: var(--amber-400); text-decoration: none; margin-left: 10px; }
   .public-footer a:hover { text-decoration: underline; }
@@ -212,18 +156,13 @@ aside.sidebar.open { transform: translateX(0); }
 
   /* Mobile Phone Responsiveness */
   @media (max-width: 768px) {
-    /* Fix Navigation & Spacing */
     .sticky-navbar { padding: 15px 20px; }
     .nav-brand-name { font-size: 16px; }
     main.main-content { padding-top: 80px !important; }
     .section-container { padding: 40px 20px !important; }
-    
-    /* Fix the Carousel Gaps */
     #carouselTrack { height: 250px !important; }
     .hero-carousel { padding: 0 !important; }
     .carousel-slide h1 { font-size: 18px !important; }
-    
-    /* Fix Easy Ways Updates Layout */
     .updates-divider { display: none; }
     .updates-header { flex-direction: column; align-items: flex-start; gap: 15px; margin-bottom: 25px; }
     .updates-header-left { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -232,36 +171,28 @@ aside.sidebar.open { transform: translateX(0); }
     .featured-title { font-size: 18px; line-height: 1.3; }
     .recent-grid { grid-template-columns: 1fr; }
   }
-
 </style>
 </head>
 <body>
   
-<!-- Fixed Sticky Navbar -->
+  <!-- Fixed Sticky Navbar -->
   <header class="sticky-navbar">
-    
-    <!-- Left Side: SVG Icon & Full Brand Name -->
-    <div class="nav-brand-container">
+    <a href="index.html" class="nav-brand-container">
       <img src="ewc icon.svg" alt="EWC Logo" class="nav-logo">
       <span class="nav-brand-name">Easy Ways Connection Corporation</span>
-    </div>
-
-    <!-- Right Side: Hamburger Button -->
+    </a>
     <button id="topNavToggle" class="nav-hamburger">☰</button>
-    
   </header>
   
-<!-- COLLAPSIBLE SIDEBAR -->
-<aside class="sidebar" id="appSidebar">
-  <div>
-    <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <h1 class="sidebar-brand">EWC Corp.</h1>
-        <div class="sidebar-sub">Public Portal</div>
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside class="sidebar" id="appSidebar">
+    <div>
+      <div class="sidebar-header">
+        <div>
+          <h1 class="sidebar-brand">EWC Corp.</h1>
+          <div class="sidebar-sub">Public Portal</div>
+        </div>
       </div>
-      <button id="pcToggleBtn" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;">☰</button>
-    </div>
-    
     </div>
     <nav class="sidebar-nav">
       <a href="index.html" class="active">
@@ -281,107 +212,100 @@ aside.sidebar.open { transform: translateX(0); }
         <span>Careers</span>
       </a>
     </nav>
-  </div>
-</aside>
+  </aside>
   
-<!-- MAIN CONTENT -->
-<main class="main-content">
-  <!-- TIMELINE COVER (STATIC HERO) -->
-    <section style="background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url('your-cover-image.jpg') center/cover; height: 350px; display: flex; align-items: center; justify-content: center; text-align: center; border-bottom: 1px solid #e0dcd3;">
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <!-- TIMELINE COVER (STATIC HERO) -->
+    <section style="background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)); height: 350px; display: flex; align-items: center; justify-content: center; text-align: center; border-bottom: 1px solid #e0dcd3;">
       <div style="padding: 20px;">
         <h1 style="margin: 0; font-family: var(--font-display); font-size: 48px; color: var(--navy-900);">EWC CORPORATION</h1>
         <p style="color: #555; font-size: 18px; margin-top: 10px; max-width: 600px;">Streamlining digital logistics and connecting brands with ideal audiences.</p>
       </div>
     </section>
   
-  <!-- Company Culture Section -->
-  <section id="culture" class="section-container">
-    <span class="section-subtitle">Who We Are</span>
-    <h2 class="section-title">Company as Family</h2>
-    <div class="culture-grid">
-      <div class="culture-card">
-        <h3>Our Mission</h3>
-        <p>To streamline digital seller logistics and establish high-performing e-commerce storefronts that connect brands with their ideal audiences.</p>
+    <!-- Company Culture Section -->
+    <section id="culture" class="section-container">
+      <span class="section-subtitle">Who We Are</span>
+      <h2 class="section-title">Company as Family</h2>
+      <div class="culture-grid">
+        <div class="culture-card">
+          <h3>Our Mission</h3>
+          <p>To streamline digital seller logistics and establish high-performing e-commerce storefronts that connect brands with their ideal audiences.</p>
+        </div>
+        <div class="culture-card">
+          <h3>Growth & Innovation</h3>
+          <p>We invest heavily in the tools and training our team needs to succeed, from the latest AI prompting techniques to advanced network hardware optimization.</p>
+        </div>
+        <div class="culture-card">
+          <h3>Work-Life Balance</h3>
+          <p>We believe that a well-rested team is a highly productive team. We value our company culture and regularly host team-building events and celebrations.</p>
+        </div>
       </div>
-      <div class="culture-card">
-        <h3>Growth & Innovation</h3>
-        <p>We invest heavily in the tools and training our team needs to succeed, from the latest AI prompting techniques to advanced network hardware optimization.</p>
-      </div>
-      <div class="culture-card">
-        <h3>Work-Life Balance</h3>
-        <p>We believe that a well-rested team is a highly productive team. We value our company culture and regularly host team-building events and celebrations.</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Careers Preview Section -->
-  <section id="careers" class="section-container" style="background: #fdfaf2; border-top: 1px solid #e0dcd3; border-bottom: 1px solid #e0dcd3;">
-    <span class="section-subtitle">Join Our Team</span>
-    <h2 class="section-title">Current Openings</h2>
-    <div class="careers-preview-list" id="publicCareersList">
-      <div class="empty-note">Loading open positions...</div>
-    </div>
-    <div style="text-align: center; margin-top: 30px;">
-      <a href="careers.html" class="btn-hero" style="background: transparent; color: var(--navy-900); border: 2px solid var(--navy-900);">See All Openings</a>
-    </div>
-  </section>
+    <!-- Careers Preview Section -->
+    <section id="careers" class="section-container" style="background: #fdfaf2; border-top: 1px solid #e0dcd3; border-bottom: 1px solid #e0dcd3;">
+      <span class="section-subtitle">Join Our Team</span>
+      <h2 class="section-title">Current Openings</h2>
+      <div class="careers-preview-list" id="publicCareersList">
+        <div class="empty-note">Loading open positions...</div>
+      </div>
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="careers.html" class="btn-hero" style="background: transparent; color: var(--navy-900); border: 2px solid var(--navy-900);">See All Openings</a>
+      </div>
+    </section>
   
- <!-- Manual Hero Carousel -->
-  <section class="hero-carousel" style="position: relative; overflow: hidden; background: #ffffff; border-top: 1px solid #e0dcd3; border-bottom: 1px solid #e0dcd3;">
-    <div id="carouselTrack" style="display: flex; transition: transform 0.4s ease-in-out; height: 450px;">
-      <!-- Slides load here -->
-      <div style="min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
-        <h1 style="font-family: var(--font-display); font-size: 42px; color: var(--navy-900); margin: 0 0 16px;">Welcome to Easy Ways Connection Corp.</h1>
-        <p style="font-size: 18px; max-width: 600px; color: #555; margin: 0 0 30px;">Loading images...</p>
+    <!-- Manual Hero Carousel -->
+    <section class="hero-carousel" style="position: relative; overflow: hidden; background: #ffffff; border-top: 1px solid #e0dcd3; border-bottom: 1px solid #e0dcd3;">
+      <div id="carouselTrack" style="display: flex; transition: transform 0.4s ease-in-out; height: 325px;">
+        <div class="carousel-slide" style="min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          <h1 style="font-family: var(--font-display); font-size: 32px; color: var(--navy-900); margin: 0 0 16px;">Welcome to Easy Ways Connection Corp.</h1>
+          <p style="font-size: 18px; max-width: 600px; color: #555; margin: 0;">Loading images...</p>
+        </div>
       </div>
-    </div>
-    <!-- Manual Controls -->
-    <button id="prevSlide" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: flex; align-items: center; justify-content: center;">&#10094;</button>
-    <button id="nextSlide" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: flex; align-items: center; justify-content: center;">&#10095;</button>
-  </section>
+      <button id="prevSlide" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: flex; align-items: center; justify-content: center;">&#10094;</button>
+      <button id="nextSlide" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: flex; align-items: center; justify-content: center;">&#10095;</button>
+    </section>
   
-  <!-- Blog Preview Section -->
-  <!-- Easy Ways Updates Section -->
-  <section id="blog" class="section-container" style="max-width: 1200px;">
-    
-    <div class="updates-header">
-      <div class="updates-header-left">
-        <h1 class="updates-title">Easy Ways Updates</h1>
-        <div class="updates-divider"></div>
-        <p class="updates-subtitle">Don't miss a beat - be in the know with our regular updates.</p>
+    <!-- Easy Ways Updates Section -->
+    <section id="blog" class="section-container" style="max-width: 1200px;">
+      <div class="updates-header">
+        <div class="updates-header-left">
+          <h1 class="updates-title">Easy Ways Updates</h1>
+          <div class="updates-divider"></div>
+          <p class="updates-subtitle">Don't miss a beat - be in the know with our regular updates.</p>
+        </div>
+        <a href="blog.html" class="updates-btn">📰 NEWS FROM EWC</a>
       </div>
-      <!-- Links directly to your new pill-grid blog page! -->
-      <a href="blog.html" class="updates-btn">📰 NEWS FROM EWC</a>
-    </div>
 
-    <div class="updates-container">
-      <!-- Left Menu -->
-      <aside class="updates-sidebar">
-        <ul>
-          <li><a href="blog.html">⭐ Featured</a></li>
-          <li><a href="blog.html">🕒 Most Recent</a></li>
-          <li><a href="blog.html">🏢 EWC Corp.</a></li>
-          <li><a href="blog.html">📅 Corporate Calendar</a></li>
-        </ul>
-      </aside>
+      <div class="updates-container">
+        <aside class="updates-sidebar">
+          <ul>
+            <li><a href="blog.html">⭐ Featured</a></li>
+            <li><a href="blog.html">🕒 Most Recent</a></li>
+            <li><a href="blog.html">🏢 EWC Corp.</a></li>
+            <li><a href="blog.html">📅 Corporate Calendar</a></li>
+          </ul>
+        </aside>
 
-      <!-- Articles Injected via JS -->
-      <div class="updates-articles" id="publicBlogList">
-        <div class="empty-note" style="padding: 40px; text-align: center; background: #fff;">Loading updates...</div>
+        <div class="updates-articles" id="publicBlogList">
+          <div class="empty-note" style="padding: 40px; text-align: center; background: #fff;">Loading updates...</div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Footer -->
+    <!-- Footer -->
     <footer class="public-footer">
       &copy; 2026 Easy Ways Connection Corporation. All rights reserved.
     </footer>
 
-</main>
+  </main>
 
-<script src="supabase-config.js"></script>
-<script>
-  // Toggle Right-Side Drawer
+  <script src="supabase-config.js"></script>
+  <script>
+    // Toggle Right-Side Drawer
     const topNavToggle = document.getElementById('topNavToggle');
     const appSidebar = document.getElementById('appSidebar');
     
@@ -390,165 +314,140 @@ aside.sidebar.open { transform: translateX(0); }
         appSidebar.classList.toggle('open');
       });
     }
-(async function(){
-  // --- Load Public Career Previews ---
-  // Anonymous users can strictly SELECT from career_positions where is_open = true
-  async function loadCareersPreview() {
-    const listEl = document.getElementById('publicCareersList');
-    
-    const { data, error } = await supabaseClient
-      .from('career_positions')
-      .select('id, title, department')
-      .eq('is_open', true)
-      .order('created_at', { ascending: false })
-      .limit(3);
 
-    if (error) {
-      console.error("Error fetching careers:", error);
-      listEl.innerHTML = '<div class="empty-note">Check back later for open positions.</div>';
-      return;
-    }
+    (async function(){
+      // --- Load Public Career Previews ---
+      async function loadCareersPreview() {
+        const listEl = document.getElementById('publicCareersList');
+        const { data, error } = await supabaseClient
+          .from('career_positions')
+          .select('id, title, department')
+          .eq('is_open', true)
+          .order('created_at', { ascending: false })
+          .limit(3);
 
-    if (!data || data.length === 0) {
-      listEl.innerHTML = '<div class="empty-note">We currently have no open positions. Please check back soon!</div>';
-      return;
-    }
+        if (error || !data || data.length === 0) {
+          listEl.innerHTML = '<div class="empty-note">We currently have no open positions. Please check back soon!</div>';
+          return;
+        }
 
-    listEl.innerHTML = data.map(job => `
-      <a href="position.html?id=${job.id}" class="job-card">
-        <div>
-          <h3 class="job-title">${escapeHtml(job.title)}</h3>
-          <div class="job-dept">${escapeHtml(job.department)}</div>
-        </div>
-        <div class="job-arrow">→</div>
-      </a>
-    `).join('');
-  }
+        listEl.innerHTML = data.map(job => `
+          <a href="position.html?id=${job.id}" class="job-card">
+            <div>
+              <h3 class="job-title">${escapeHtml(job.title)}</h3>
+              <div class="job-dept">${escapeHtml(job.department)}</div>
+            </div>
+            <div class="job-arrow">→</div>
+          </a>
+        `).join('');
+      }
 
-// --- Load Public Blog Previews ---
-  async function loadBlogPreview() {
-    const listEl = document.getElementById('publicBlogList');
-    
-    const { data, error } = await supabaseClient
-      .from('blog_posts')
-      .select('id, title, image_url, created_at')
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .limit(4); // We pull 4 articles to fill the layout perfectly
+      // --- Load Public Blog Previews ---
+      async function loadBlogPreview() {
+        const listEl = document.getElementById('publicBlogList');
+        const { data, error } = await supabaseClient
+          .from('blog_posts')
+          .select('id, title, image_url, created_at')
+          .eq('is_published', true)
+          .order('created_at', { ascending: false })
+          .limit(4);
 
-    if (error || !data || data.length === 0) {
-      listEl.innerHTML = '<div class="empty-note" style="padding:40px;text-align:center;background:#fff;">No public news posts available at this time.</div>';
-      return;
-    }
+        if (error || !data || data.length === 0) {
+          listEl.innerHTML = '<div class="empty-note" style="padding:40px;text-align:center;background:#fff;">No public news posts available at this time.</div>';
+          return;
+        }
 
-    let html = '';
-    
-    // Featured Post (Index 0)
-    const featured = data[0];
-    const featImg = featured.image_url || 'https://via.placeholder.com/800x400?text=No+Image';
-    html += `
-      <a href="article.html?id=${featured.id}" class="featured-post">
-        <img src="${escapeHtml(featImg)}" alt="Featured News">
-        <div class="featured-overlay">
-          <div class="post-tags">NEWS, FEATURED</div>
-          <h2 class="featured-title">${escapeHtml(featured.title)}</h2>
-        </div>
-      </a>
-    `;
-
-    // Recent Posts Grid (Indexes 1, 2, 3)
-    if (data.length > 1) {
-      html += '<div class="recent-grid">';
-      const recents = data.slice(1);
-      recents.forEach(post => {
-        const img = post.image_url || 'https://via.placeholder.com/400x300?text=No+Image';
+        let html = '';
+        const featured = data[0];
+        const featImg = featured.image_url || 'https://via.placeholder.com/800x400?text=No+Image';
         html += `
-          <a href="article.html?id=${post.id}" class="recent-post">
-            <img src="${escapeHtml(img)}" alt="News Image" class="recent-img">
-            <div class="recent-content">
-              <div class="post-tags">NEWS, UPDATE</div>
-              <h3 class="recent-title">${escapeHtml(post.title)}</h3>
+          <a href="article.html?id=${featured.id}" class="featured-post">
+            <img src="${escapeHtml(featImg)}" alt="Featured News">
+            <div class="featured-overlay">
+              <div class="post-tags">NEWS, FEATURED</div>
+              <h2 class="featured-title">${escapeHtml(featured.title)}</h2>
             </div>
           </a>
         `;
-      });
-      html += '</div>';
-    }
 
-    listEl.innerHTML = html;
-  }
+        if (data.length > 1) {
+          html += '<div class="recent-grid">';
+          data.slice(1).forEach(post => {
+            const img = post.image_url || 'https://via.placeholder.com/400x300?text=No+Image';
+            html += `
+              <a href="article.html?id=${post.id}" class="recent-post">
+                <img src="${escapeHtml(img)}" alt="News Image" class="recent-img">
+                <div class="recent-content">
+                  <div class="post-tags">NEWS, UPDATE</div>
+                  <h3 class="recent-title">${escapeHtml(post.title)}</h3>
+                </div>
+              </a>
+            `;
+          });
+          html += '</div>';
+        }
 
-  function escapeHtml(v) {
-    return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-  
-  // --- Load Dynamic Site Photos (Carousel & Culture) ---
-  let currentSlide = 0;
-  let totalSlides = 0;
+        listEl.innerHTML = html;
+      }
 
-  async function loadSitePhotos() {
-    const { data: photos, error } = await supabaseClient
-      .from('site_photos')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true });
-
-    if (error) {
-      console.error('Error loading site photos:', error);
-      return; 
-    }
-
-    // 1. Build Carousel
-    const carouselPhotos = photos.filter(p => p.category === 'Carousel');
-    const track = document.getElementById('carouselTrack');
-    const btnPrev = document.getElementById('prevSlide');
-    const btnNext = document.getElementById('nextSlide');
-
-    if (carouselPhotos.length > 0) {
-      totalSlides = carouselPhotos.length;
-      if (totalSlides > 1) {
-        if(btnPrev) btnPrev.style.display = 'flex';
-        if(btnNext) btnNext.style.display = 'flex';
+      function escapeHtml(v) {
+        return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       }
       
-      track.innerHTML = carouselPhotos.map(photo => `
-        <div class="carousel-slide" style="background-image: url('${photo.image_url}');">
-          ${photo.caption ? `<div style="background: rgba(10, 15, 30, 0.6); padding: 15px 30px; border-radius: 6px;"><h1 style="font-family: var(--font-display); font-size: 28px; color: #ffffff; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">${escapeHtml(photo.caption)}</h1></div>` : ''}
-        </div>
-      `).join('');
+      // --- Load Dynamic Site Photos (Carousel) ---
+      let currentSlide = 0;
+      let totalSlides = 0;
 
-    // 2. Build Culture Grid
-    const culturePhotos = photos.filter(p => p.category === 'Culture');
-    const cultureGrid = document.getElementById('cultureGrid');
-    
-    if (cultureGrid && culturePhotos.length > 0) {
-      cultureGrid.innerHTML = culturePhotos.map(photo => `
-        <div class="culture-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-          <img src="${photo.image_url}" alt="Culture" style="width: 100%; height: 220px; object-fit: cover;">
-          ${photo.caption ? `<div style="padding: 20px; text-align: center;"><h3 style="font-family: var(--font-display); font-size: 18px; color: var(--navy-900); margin: 0;">${escapeHtml(photo.caption)}</h3></div>` : ''}
-        </div>
-      `).join('');
-    }
-  }
+      async function loadSitePhotos() {
+        const { data: photos, error } = await supabaseClient
+          .from('site_photos')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
 
-  // Carousel Button Logic
-  document.getElementById('prevSlide')?.addEventListener('click', () => {
-    if (totalSlides <= 1) return;
-    currentSlide = (currentSlide === 0) ? totalSlides - 1 : currentSlide - 1;
-    document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
-  });
-  
-  document.getElementById('nextSlide')?.addEventListener('click', () => {
-    if (totalSlides <= 1) return;
-    currentSlide = (currentSlide === totalSlides - 1) ? 0 : currentSlide + 1;
-    document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
-  });
+        if (error) {
+          console.error('Error loading site photos:', error);
+          return; 
+        }
 
-  // Call the functions on load
-  loadSitePhotos();
-  loadBlogPreview();
-})();
-</script>
+        const carouselPhotos = photos.filter(p => p.category === 'Carousel');
+        const track = document.getElementById('carouselTrack');
+        const btnPrev = document.getElementById('prevSlide');
+        const btnNext = document.getElementById('nextSlide');
 
+        if (carouselPhotos.length > 0) {
+          totalSlides = carouselPhotos.length;
+          if (totalSlides > 1) {
+            if(btnPrev) btnPrev.style.display = 'flex';
+            if(btnNext) btnNext.style.display = 'flex';
+          }
+          
+          track.innerHTML = carouselPhotos.map(photo => `
+            <div class="carousel-slide" style="background-image: url('${photo.image_url}');">
+              ${photo.caption ? `<div style="background: rgba(10, 15, 30, 0.6); padding: 15px 30px; border-radius: 6px;"><h1 style="font-family: var(--font-display); font-size: 28px; color: #ffffff; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">${escapeHtml(photo.caption)}</h1></div>` : ''}
+            </div>
+          `).join('');
+        }
+      }
+
+      // Carousel Button Logic
+      document.getElementById('prevSlide')?.addEventListener('click', () => {
+        if (totalSlides <= 1) return;
+        currentSlide = (currentSlide === 0) ? totalSlides - 1 : currentSlide - 1;
+        document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
+      });
+      
+      document.getElementById('nextSlide')?.addEventListener('click', () => {
+        if (totalSlides <= 1) return;
+        currentSlide = (currentSlide === totalSlides - 1) ? 0 : currentSlide + 1;
+        document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
+      });
+
+      // Initialize on load
+      loadSitePhotos();
+      loadCareersPreview();
+      loadBlogPreview();
+    })();
+  </script>
 </body>
 </html>
