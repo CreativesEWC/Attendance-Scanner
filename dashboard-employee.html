@@ -607,6 +607,10 @@ aside.sidebar.collapsed ~ main.main-content {
 
     <!-- 1. HOME TAB PANEL (Wrap your existing profile card, stats, and recent attendance here) -->
     <div id="tab-home" class="tab-panel">
+      <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 24px; color: var(--amber-400);">Home</h1>
+        <div style="margin-top: 4px; font-size: 14px; color: #7488b6;" id="homeWelcomeText">Welcome, Employee!</div>
+      </div>
       <div class="profile-card">
         <div class="avatar-wrap">
           <div class="avatar" id="avatarInitials">?</div>
@@ -621,9 +625,7 @@ aside.sidebar.collapsed ~ main.main-content {
           <div class="badge-id" id="empBadgeId">—</div>
         </div>
         
-        <button class="profile-card-digital-btn" id="digitalIdBtn" title="View Digital ID">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 11h2"/><path d="M16 15h2"/><circle cx="9" cy="12" r="3"/></svg>
-        </button>
+        <button class="btn" id="digitalIdBtn" title="View Digital ID">Digital ID</button>
       </div>
 
       <div class="sch-card" id="schCard" style="display:none;">
@@ -637,6 +639,9 @@ aside.sidebar.collapsed ~ main.main-content {
 
     <!-- 2. ANNOUNCEMENTS TAB PANEL -->
     <div id="tab-announcements" class="tab-panel" style="display:none;">
+      <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 24px; color: var(--amber-400);">Announcements</h1>
+      </div>
       <section class="panel">
         <h2>Announcements</h2>
         <div id="announcementsList"><div class="empty-note">Loading announcements…</div></div>
@@ -645,7 +650,9 @@ aside.sidebar.collapsed ~ main.main-content {
 
     <!-- 3. ATTENDANCE TAB PANEL -->
     <div id="tab-attendance" class="tab-panel" style="display:none;">
-      
+      <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 24px; color: var(--amber-400);">My Attendance</h1>
+      </div>      
       <div class="stats-row">
         <div class="stat-box">
           <div class="num" id="statThisMonth">0</div>
@@ -673,6 +680,9 @@ aside.sidebar.collapsed ~ main.main-content {
 
     <!-- 4. NOTIFICATIONS TAB PANEL -->
     <div id="tab-notifications" class="tab-panel" style="display:none;">
+      <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 24px; color: var(--amber-400);">Notifications</h1>
+      </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h2 style="margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--amber-400);">All Notifications</h2>
       </div>
@@ -683,7 +693,9 @@ aside.sidebar.collapsed ~ main.main-content {
 
     <!-- 5. SUBMISSION FORMS TAB PANEL -->
     <div id="tab-submissions" class="tab-panel" style="display:none;">
-      
+      <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 24px; color: var(--amber-400);">Submission Form</h1>
+      </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h2 style="margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--amber-400);">My Requests</h2>
         <!-- We reuse your existing ticketBtn ID so the modal opens automatically! -->
@@ -712,7 +724,9 @@ aside.sidebar.collapsed ~ main.main-content {
 
     <!-- 6. ACCOUNT TAB PANEL -->
     <div id="tab-account" class="tab-panel" style="display:none;">
-
+      <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 24px; color: var(--amber-400);">Account Settings</h1>
+      </div>
       <div class="account-section">
       <h3>App Preferences</h3>
       <div class="info-grid">
@@ -1461,6 +1475,7 @@ aside.sidebar.collapsed ~ main.main-content {
 
   // ---- Fill in Account Settings Tab ----
   document.getElementById('accName').textContent = display || emp.name;
+  document.getElementById('homeWelcomeText').textContent = 'Welcome, ' + emp.name.split(' ')[0] + '!';
   document.getElementById('accBadge').textContent = emp.badge_id || 'No badge ID on file';
   document.getElementById('accPosition').textContent = emp.positions ? emp.positions.name : 'No position set';
   document.getElementById('accPhone').textContent = emp.phone || 'Not on file';
