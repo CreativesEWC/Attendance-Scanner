@@ -2511,7 +2511,7 @@ async function reviewTicket(ticketId, status, approverName) {
       }
       
       const { error: dbErr } = await supabaseClient.from('blog_posts').insert({
-        title, excerpt, content, image_url, is_published: true
+        title, excerpt, content, image_url, is_published: true, author_id: emp.id
       });
       if (dbErr) throw dbErr;
       
