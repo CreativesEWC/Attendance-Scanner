@@ -475,11 +475,28 @@
             if(btnNext) btnNext.style.display = 'none';
           }
           
-          track.innerHTML = carouselPhotos.map(photo => `
+         track.innerHTML = carouselPhotos.map(photo => `
             <div class="carousel-slide" style="background-image: url('${photo.image_url}');">
               ${photo.caption ? `<div style="background: rgba(10, 15, 30, 0.6); padding: 15px 30px; border-radius: 6px;"><h1 style="font-family: var(--font-display); font-size: 28px; color: #ffffff; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">${escapeHtml(photo.caption)}</h1></div>` : ''}
             </div>
           `).join('');
+
+          // Dynamically set slide width based on photo count
+          const slideEls = document.querySelectorAll('.carousel-slide');
+          slideEls.forEach(slide => {
+            if (totalSlides === 1) {
+              slide.style.minWidth = '100%';
+              slide.style.width = '100%';
+            } else if (totalSlides === 2) {
+              slide.style.minWidth = 'calc(50% - 10px)';
+              slide.style.width = 'calc(50% - 10px)';
+            } else {
+              slide.style.minWidth = 'calc(33.333% - 14px)';
+              slide.style.width = 'calc(33.333% - 14px)';
+            }
+          });
+          
+          
           document.getElementById('carouselTrack').style.transform = 'translateX(0px)';
         } else {
           if(btnPrev) btnPrev.style.display = 'none';
