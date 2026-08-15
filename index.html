@@ -322,13 +322,13 @@
 
 <script src="supabase-config.js"></script>
 <script>
-  // Toggle PC Sidebar
-    const pcToggleBtn = document.getElementById('pcToggleBtn');
-    const pcSidebar = document.querySelector('.sidebar');
+  // Toggle Right-Side Drawer
+    const topNavToggle = document.getElementById('topNavToggle');
+    const appSidebar = document.getElementById('appSidebar');
     
-    if (pcToggleBtn && pcSidebar) {
-      pcToggleBtn.addEventListener('click', () => {
-        pcSidebar.classList.toggle('collapsed');
+    if (topNavToggle && appSidebar) {
+      topNavToggle.addEventListener('click', () => {
+        appSidebar.classList.toggle('open');
       });
     }
 (async function(){
@@ -425,12 +425,8 @@
       }
       
       track.innerHTML = carouselPhotos.map(photo => `
-        <div style="min-width: 100%; height: 100%; position: relative;">
-          <img src="${photo.image_url}" alt="Carousel image" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
-          <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
-            <h2 style="font-family: var(--font-display); font-size: 38px; color: var(--paper); text-shadow: 2px 2px 10px rgba(0,0,0,0.9); margin-bottom: 20px;">${photo.caption ? escapeHtml(photo.caption) : ''}</h2>
-            <a href="careers.html" class="btn-hero">View Open Roles</a>
-          </div>
+        <div class="carousel-slide" style="background-image: url('${photo.image_url}');">
+            <h1>${photo.caption ? escapeHtml(photo.caption) : 'EWC'}</h1>
         </div>
       `).join('');
     }
