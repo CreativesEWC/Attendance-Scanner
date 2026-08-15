@@ -99,23 +99,15 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); }
 
-  /* ---- SIDEBAR NAVIGATION ---- */
-  body { display: flex; min-height: 100vh; margin: 0; }
-  aside.sidebar { width: 260px; background: var(--navy-950); border-right: 1px solid var(--line); display: flex; flex-direction: column; justify-content: space-between; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; transition: width 0.3s ease; }
-  
-  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
-  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
-  .sidebar-sub { font-size: 11px; color: #7488b6; font-family: var(--font-mono); margin-top: 4px; }
-  
-  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
-  .sidebar-nav a { text-decoration: none; background: transparent; border: none; color: #7488b6; text-align: left; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); cursor: pointer; width: 100%; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
-  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--paper); background: var(--navy-900); border-left: 4px solid var(--amber-500); }
-  
-  /* Sidebar Collapse Mobile */
-  @media (max-width: 768px) {
-    aside.sidebar { width: 72px; }
-    aside.sidebar .sidebar-brand, aside.sidebar .sidebar-sub, aside.sidebar nav.sidebar-nav a span { display: none; }
-    aside.sidebar nav.sidebar-nav a { justify-content: center; padding: 12px; }
+  /* ---- SIDEBAR NAVIGATION (Light Theme Drawer) ---- */
+aside.sidebar { position: fixed; right: 0; top: 0; width: 260px; height: 100vh; background: #ffffff; border-left: 1px solid #e0dcd3; transform: translateX(100%); transition: transform 0.3s ease; z-index: 5000; box-shadow: -5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+aside.sidebar.open { transform: translateX(0); }
+.sidebar-header { padding: 20px; border-bottom: 1px solid #e0dcd3; display: flex; align-items: center; justify-content: space-between; }
+.sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--navy-900); text-transform: uppercase; margin: 0; }
+.sidebar-sub { font-size: 11px; color: #555; font-family: var(--font-mono); margin-top: 4px; }
+.sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
+.sidebar-nav a { text-decoration: none; color: #555; background: transparent; border: none; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; transition: all 0.2s; text-align: left; width: 100%; cursor: pointer; }
+.sidebar-nav a:hover, .sidebar-nav a.active { color: var(--navy-900); background: var(--paper); border-left: 4px solid var(--amber-500); }
     main.main-content { margin-left: 72px !important; }
   }
 
@@ -251,10 +243,10 @@
 <!-- MAIN CONTENT -->
 <main class="main-content">
   <!-- TIMELINE COVER (STATIC HERO) -->
-    <section style="background: linear-gradient(rgba(10, 15, 30, 0.8), rgba(10, 15, 30, 0.8)), url('your-cover-image.jpg') center/cover; height: 350px; display: flex; align-items: center; justify-content: center; text-align: center; border-bottom: 4px solid var(--amber-500);">
+    <section style="background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)), url('your-cover-image.jpg') center/cover; height: 350px; display: flex; align-items: center; justify-content: center; text-align: center; border-bottom: 1px solid #e0dcd3;">
       <div style="padding: 20px;">
-        <h1 style="margin: 0; font-family: var(--font-display); font-size: 48px; color: var(--amber-400);">EWC CORPORATION</h1>
-        <p style="color: #fdfaf2; font-size: 18px; margin-top: 10px; max-width: 600px;">Streamlining digital logistics and connecting brands with ideal audiences.</p>
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 48px; color: var(--navy-900);">EWC CORPORATION</h1>
+        <p style="color: #555; font-size: 18px; margin-top: 10px; max-width: 600px;">Streamlining digital logistics and connecting brands with ideal audiences.</p>
       </div>
     </section>
   
@@ -291,12 +283,12 @@
   </section>
   
  <!-- Manual Hero Carousel -->
-  <section class="hero-carousel" style="position: relative; overflow: hidden; background: var(--navy-900); color: var(--paper); border-bottom: 4px solid var(--amber-500);">
+  <section class="hero-carousel" style="position: relative; overflow: hidden; background: #ffffff; border-top: 1px solid #e0dcd3; border-bottom: 1px solid #e0dcd3;">
     <div id="carouselTrack" style="display: flex; transition: transform 0.4s ease-in-out; height: 450px;">
       <!-- Slides load here -->
       <div style="min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
-        <h1 style="font-family: var(--font-display); font-size: 42px; color: var(--amber-400); margin: 0 0 16px;">Welcome to Easy Ways Connection Corp.</h1>
-        <p style="font-size: 18px; max-width: 600px; color: #9fb0d6; margin: 0 0 30px;">Loading images...</p>
+        <h1 style="font-family: var(--font-display); font-size: 42px; color: var(--navy-900); margin: 0 0 16px;">Welcome to Easy Ways Connection Corp.</h1>
+        <p style="font-size: 18px; max-width: 600px; color: #555; margin: 0 0 30px;">Loading images...</p>
       </div>
     </div>
     <!-- Manual Controls -->
