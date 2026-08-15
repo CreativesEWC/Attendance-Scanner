@@ -502,8 +502,8 @@ aside.sidebar.open { transform: translateX(0); }
       }
       
       track.innerHTML = carouselPhotos.map(photo => `
-        <div class="carousel-slide" style="min-width: 100%; height: 100%; background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url('${photo.image_url}') center/cover; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
-          ${photo.caption ? `<h1 style="font-family: var(--font-display); font-size: 38px; color: var(--navy-900); margin: 0;">${escapeHtml(photo.caption)}</h1>` : ''}
+        <div class="carousel-slide" style="min-width: 100%; width: 100%; height: 100%; background: url('${photo.image_url}') center/cover no-repeat; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          ${photo.caption ? `<div style="background: rgba(10, 15, 30, 0.6); padding: 15px 30px; border-radius: 6px;"><h1 style="font-family: var(--font-display); font-size: 32px; color: #ffffff; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">${escapeHtml(photo.caption)}</h1></div>` : ''}
         </div>
       `).join('');
     }
