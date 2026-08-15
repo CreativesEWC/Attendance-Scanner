@@ -15,6 +15,7 @@
     --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
   }
+  
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--bg-gray); color: var(--navy-950); font-family: var(--font-body); display: flex; flex-direction: column; }
@@ -30,15 +31,15 @@
   .nav-brand-name { font-family: var(--font-display); font-size: 24px; color: var(--navy-900); font-weight: bold; }
   .nav-hamburger { background: none; border: none; color: var(--amber-500); font-size: 40px; cursor: pointer; padding: 0; }
   
-  /* Sidebar Drawer Styles */
-  aside.sidebar { position: fixed; right: 0; top: 0; width: 260px; height: 100vh; background: var(--navy-950); border-left: 1px solid var(--line); transform: translateX(100%); transition: transform 0.3s ease; z-index: 5000; box-shadow: -5px 0 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+  /* Sidebar Drawer Styles (Light Theme) */
+  aside.sidebar { position: fixed; right: 0; top: 0; width: 260px; height: 100vh; background: #ffffff; border-left: 1px solid #e0dcd3; transform: translateX(100%); transition: transform 0.3s ease; z-index: 5000; box-shadow: -5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
   aside.sidebar.open { transform: translateX(0); }
-  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
-  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; margin: 0; }
-  .sidebar-sub { font-size: 11px; color: #7488b6; font-family: var(--font-mono); margin-top: 4px; }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid #e0dcd3; display: flex; align-items: center; justify-content: space-between; }
+  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--navy-900); text-transform: uppercase; margin: 0; }
+  .sidebar-sub { font-size: 11px; color: #555; font-family: var(--font-mono); margin-top: 4px; }
   .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
-  .sidebar-nav a { text-decoration: none; color: #7488b6; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; transition: all 0.2s; }
-  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--paper); background: var(--navy-900); border-left: 4px solid var(--amber-500); }
+  .sidebar-nav a { text-decoration: none; color: #555; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; transition: all 0.2s; }
+  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--navy-900); background: var(--paper); border-left: 4px solid var(--amber-500); }
 
   /* Feed Layout */
   main { flex: 1; padding: 120px 40px 60px; max-width: 1200px; margin: 0 auto; width: 100%; }
@@ -82,8 +83,8 @@
 
   .empty-note { padding: 40px; text-align: center; color: #777; font-style: italic; background: #fff; }
 
-  /* Footer */
-  .public-footer { background: var(--navy-950); color: #7488b6; padding: 40px; text-align: center; font-family: var(--font-mono); font-size: 11px; margin-top: auto; }
+  /* Footer (Light Theme) */
+  .public-footer { background: #ffffff; color: #555; padding: 40px; text-align: center; font-family: var(--font-mono); font-size: 11px; margin-top: auto; border-top: 1px solid #e0dcd3; }
 
   /* Mobile Responsiveness */
   @media (max-width: 900px) {
@@ -123,7 +124,7 @@
         <h1 class="sidebar-brand">EWC Corp.</h1>
         <div class="sidebar-sub">Public Portal</div>
       </div>
-      <button id="closeSidebarBtn" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;">✕</button>
+     <button id="closeSidebarBtn" style="background: none; border: none; color: var(--navy-900); font-size: 20px; cursor: pointer;">✕</button>
     </div>
     <nav class="sidebar-nav">
       <a href="index.html">
