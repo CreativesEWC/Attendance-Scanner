@@ -1181,7 +1181,7 @@ aside.sidebar.collapsed ~ main.main-content {
     });
   });
 
-  // ---- Auth guard: safe variable check ----
+ // ---- Auth guard: safe variable check ----
   const emp = await getMyEmployeeRecord();
   if (!emp) { window.location.href = 'login.html'; return; }
 
@@ -1190,6 +1190,21 @@ aside.sidebar.collapsed ~ main.main-content {
     routeToRoleHome(emp); 
     return; 
   }
+
+  // ==== DEVELOPER ACCESS CONTROL ====
+  // Hide website management tabs from standard HR/Admins (Catherine, Eden, etc.)
+  const isDeveloper = emp.badge_id === 'CREATIVES-01'; 
+  
+  if (!isDeveloper) {
+    // List the data-tabs you want to hide from normal admins
+    const devTabs = ['photos', 'blog', 'timeline']; 
+    
+    devTabs.forEach(tab => {
+      const btn = document.querySelector(`.sidebar-nav button[data-tab="${tab}"]`);
+      if (btn) btn.style.display = 'none';
+    });
+  }
+  // ==================================
 
   // Handle Switch View functionality for Admin/President
   const switchBtn = document.getElementById('switchViewBtn');
