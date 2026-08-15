@@ -227,14 +227,21 @@
     .recent-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
-  /* Mobile Phone Responsiveness */
+ /* Mobile Phone Responsiveness - MUST BE AT THE BOTTOM */
   @media (max-width: 768px) {
     .sticky-navbar { padding: 15px 20px; }
     .nav-brand-name { font-size: 16px; }
     main.main-content { padding-top: 80px !important; }
     .section-container { padding: 40px 20px !important; }
+    
+    /* Forces the carousel to be 100% width on phones, beating all inline JS */
+    .hero-carousel { padding: 0 15px !important; }
+    .carousel-slide { 
+      min-width: 100% !important; 
+      width: 100% !important; 
+    }
+    
     #carouselTrack { height: 250px !important; }
-    .hero-carousel { padding: 0 !important; }
     .carousel-slide h1 { font-size: 18px !important; }
     .updates-divider { display: none; }
     .updates-header { flex-direction: column; align-items: flex-start; gap: 15px; margin-bottom: 25px; }
