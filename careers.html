@@ -9,112 +9,212 @@
 <style>
   :root {
     --navy-950:#0a0f1e; --navy-900:#0f1830; --navy-800:#16213f; --navy-700:#22315a;
-    --amber-500:#e8a13a; --amber-400:#f2b854; --paper:#f3efe6;
+    --amber-500:#e8a13a; --amber-400:#f2b854; --paper:#f3efe6; --bg-gray: #f4f5f7;
     --line:#2a3a63;
     --font-display:'Rockwell',Georgia,serif; 
     --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
   }
+
   * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); }
+  html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--bg-gray); color: var(--navy-950); font-family: var(--font-body); display: flex; flex-direction: column; }
 
-  /* SIDEBAR (Matches index.html) */
-  body { display: flex; min-height: 100vh; }
-  aside.sidebar { width: 260px; background: var(--navy-950); border-right: 1px solid var(--line); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; }
-  .sidebar-header { padding: 20px; border-bottom: 1px solid var(--line); }
-  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--amber-500); text-transform: uppercase; margin: 0; }
-  .sidebar-sub { font-size: 11px; color: #7488b6; font-family: var(--font-mono); margin-top: 4px; }
-  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; }
-  .sidebar-nav a { text-decoration: none; color: #7488b6; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
-  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--paper); background: var(--navy-900); border-left: 4px solid var(--amber-500); }
-
-  @media (max-width: 768px) {
-    aside.sidebar { width: 72px; }
-    aside.sidebar .sidebar-brand, aside.sidebar .sidebar-sub, aside.sidebar nav.sidebar-nav a span { display: none; }
-    aside.sidebar nav.sidebar-nav a { justify-content: center; padding: 12px; }
-    main.main-content { margin-left: 72px !important; }
+  /* Sticky Navbar */
+  .sticky-navbar {
+    position: fixed; top: 0; left: 0; width: 100%; background-color: #ffffff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 4000;
   }
+  .nav-brand-container { display: flex; align-items: center; gap: 15px; text-decoration: none; }
+  .nav-logo { height: 50px; width: 50px; }
+  .nav-brand-name { font-family: var(--font-display); font-size: 24px; color: var(--navy-900); font-weight: bold; }
+  .nav-hamburger { background: none; border: none; color: var(--amber-500); font-size: 40px; cursor: pointer; padding: 0; }
+  
+  /* Sidebar Drawer Styles (Light Theme) */
+  aside.sidebar { position: fixed; right: 0; top: 0; width: 260px; height: 100vh; background: #ffffff; border-left: 1px solid #e0dcd3; transform: translateX(100%); transition: transform 0.3s ease; z-index: 5000; box-shadow: -5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+  aside.sidebar.open { transform: translateX(0); }
+  .sidebar-header { padding: 20px; border-bottom: 1px solid #e0dcd3; display: flex; align-items: center; justify-content: space-between; }
+  .sidebar-brand { font-family: var(--font-display); font-size: 16px; color: var(--navy-900); text-transform: uppercase; margin: 0; }
+  .sidebar-sub { font-size: 11px; color: #555; font-family: var(--font-mono); margin-top: 4px; }
+  .sidebar-nav { padding: 20px 0; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; }
+  .sidebar-nav a { text-decoration: none; color: #555; padding: 12px 20px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; text-transform: uppercase; transition: all 0.2s; }
+  .sidebar-nav a:hover, .sidebar-nav a.active { color: var(--navy-900); background: var(--paper); border-left: 4px solid var(--amber-500); }
 
-  /* MAIN CONTENT */
-  main.main-content { margin-left: 260px; flex: 1; padding: 60px 40px; max-width: 900px; }
-  .page-title { font-family: var(--font-display); font-size: 36px; margin: 0 0 10px; color: var(--navy-950); }
-  .page-subtitle { font-size: 16px; color: #555; margin-bottom: 40px; line-height: 1.6; }
+  /* Page Layout */
+  main { flex: 1; padding: 120px 40px 60px; max-width: 1200px; margin: 0 auto; width: 100%; }
+  
+  /* Header Block (Matches Blog) */
+  .page-header { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; flex-wrap: wrap; }
+  .page-title { font-family: var(--font-display); font-size: 32px; color: var(--navy-900); margin: 0; }
+  .page-divider { width: 3px; height: 50px; background-color: var(--navy-900); }
+  .page-subtitle { font-size: 18px; color: var(--navy-700); font-style: italic; max-width: 400px; margin: 0; line-height: 1.4; }
 
-  /* JOB LISTINGS */
-  #jobsContainer { display: flex; flex-direction: column; gap: 16px; }
-  .job-card { background: #fff; padding: 24px; border-radius: 12px; border: 1px solid #e0dcd3; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; text-decoration: none; color: inherit; }
-  .job-card:hover { border-color: var(--amber-500); box-shadow: 0 8px 25px rgba(0,0,0,0.05); transform: translateY(-2px); }
-  .job-title { font-family: var(--font-display); font-size: 20px; color: var(--navy-900); margin: 0 0 8px; }
-  .job-meta { font-family: var(--font-mono); font-size: 12px; color: #7488b6; text-transform: uppercase; }
-  .btn-apply { background: var(--navy-900); color: var(--paper); padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 13px; text-decoration: none; transition: background 0.2s; }
-  .btn-apply:hover { background: var(--amber-500); color: var(--navy-950); }
-  .empty-state { text-align: center; padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed #ccc; color: #777; }
+  /* Content Grid */
+  .content-container { display: flex; gap: 30px; align-items: flex-start; }
+  
+  /* Left Sidebar Filter */
+  .filter-sidebar { width: 250px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+  .filter-sidebar ul { list-style: none; padding: 0; margin: 0; }
+  .filter-sidebar li { border-bottom: 1px solid #eee; }
+  .filter-sidebar li:last-child { border-bottom: none; }
+  .filter-sidebar li a { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; text-decoration: none; color: var(--navy-900); font-weight: bold; font-size: 14px; transition: background 0.2s; }
+  .filter-sidebar li a:hover { background: var(--paper); }
+  .filter-sidebar li:first-child a { border-left: 4px solid var(--amber-500); background: #fdfaf2; }
+
+  /* Job Cards Area */
+  .job-list { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+  
+  .job-card { display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 8px; padding: 25px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #e0dcd3; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+  .job-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: var(--amber-500); }
+  .job-info h2 { margin: 0 0 5px; font-family: var(--font-display); font-size: 22px; color: var(--navy-900); }
+  .job-info p { margin: 0; font-family: var(--font-mono); font-size: 11px; color: #7488b6; text-transform: uppercase; letter-spacing: 0.05em; font-weight: bold; }
+  .view-btn { background: var(--navy-900); color: #fff; padding: 12px 24px; border-radius: 6px; font-family: var(--font-body); font-weight: bold; font-size: 14px; transition: background 0.2s; white-space: nowrap; }
+  .view-btn:hover { background: var(--navy-800); }
+  
+  .empty-note { text-align: center; color: #777; font-style: italic; padding: 40px; background: #fff; border-radius: 8px; border: 1px solid #e0dcd3; }
+
+  /* Footer */
+  .public-footer { background: #ffffff; color: #555; padding: 40px; text-align: center; font-family: var(--font-mono); font-size: 11px; margin-top: auto; border-top: 1px solid #e0dcd3; }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 900px) {
+    .content-container { flex-direction: column; }
+    .filter-sidebar { width: 100%; display: flex; overflow-x: auto; border-radius: 0; }
+    .filter-sidebar ul { display: flex; width: 100%; }
+    .filter-sidebar li { border-bottom: none; border-right: 1px solid #eee; white-space: nowrap; flex: 1; }
+    .filter-sidebar li a { justify-content: center; }
+  }
+  @media (max-width: 768px) {
+    .sticky-navbar { padding: 15px 20px; }
+    .nav-brand-name { font-size: 16px; }
+    main { padding: 100px 20px 40px; }
+    .page-divider { display: none; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    
+    .job-card { flex-direction: column; align-items: flex-start; gap: 20px; padding: 20px; }
+    .view-btn { width: 100%; text-align: center; }
+  }
 </style>
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <h1 class="sidebar-brand">EWC Corp.</h1>
-    <div class="sidebar-sub">Careers Portal</div>
-  </div>
-  <nav class="sidebar-nav">
-    <a href="index.html">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-      <span>Home</span>
+  <!-- Fixed Sticky Navbar -->
+  <header class="sticky-navbar">
+    <a href="index.html" class="nav-brand-container">
+      <img src="ewc icon.svg" alt="EWC Logo" class="nav-logo">
+      <span class="nav-brand-name">Easy Ways Connection Corporation</span>
     </a>
-    <a href="careers.html" class="active">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>Careers</span>
-    </a>
-  </nav>
-</aside>
+    <button id="topNavToggle" class="nav-hamburger">☰</button>
+  </header>
 
-<main class="main-content">
-  <h1 class="page-title">Join Our Team</h1>
-  <p class="page-subtitle">We are always looking for driven, creative individuals to help us build the future of digital commerce. Browse our open positions below.</p>
-  
-  <div id="jobsContainer">
-    <div class="empty-state">Loading open positions...</div>
-  </div>
-</main>
-
-<script src="supabase-config.js"></script>
-<script>
-(async function(){
-  const container = document.getElementById('jobsContainer');
-
-  const { data: jobs, error } = await supabaseClient
-    .from('career_positions')
-    .select('id, title, department, description')
-    .eq('is_open', true)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching jobs:', error);
-    container.innerHTML = '<div class="empty-state">Unable to load positions at this time. Please try again later.</div>';
-    return;
-  }
-
-  if (!jobs || jobs.length === 0) {
-    container.innerHTML = '<div class="empty-state">We currently have no open positions. Please check back soon!</div>';
-    return;
-  }
-
-  container.innerHTML = jobs.map(job => `
-    <div class="job-card">
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside class="sidebar" id="appSidebar">
+    <div class="sidebar-header">
       <div>
-        <h2 class="job-title">${escapeHtml(job.title)}</h2>
-        <div class="job-meta">${escapeHtml(job.department)}</div>
+        <h1 class="sidebar-brand">EWC Corp.</h1>
+        <div class="sidebar-sub">Public Portal</div>
       </div>
-      <a href="position.html?id=${job.id}" class="btn-apply">View Details</a>
+      <button id="closeSidebarBtn" style="background: none; border: none; color: var(--navy-900); font-size: 20px; cursor: pointer;">✕</button>
     </div>
-  `).join('');
+    <nav class="sidebar-nav">
+      <a href="index.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="index.html#culture">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Our Culture</span>
+      </a>
+      <a href="blog.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>Blog & News</span>
+      </a>
+      <a href="careers.html" class="active">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Careers</span>
+      </a>
+    </nav>
+  </aside>
 
-  function escapeHtml(v) {
-    return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-})();
-</script>
+  <!-- Main Content -->
+  <main>
+    <!-- Header Block -->
+    <div class="page-header">
+      <h1 class="page-title">Join Our Team</h1>
+      <div class="page-divider"></div>
+      <p class="page-subtitle">We are looking for driven individuals to help us build the future of digital commerce.</p>
+    </div>
+    
+    <div class="content-container">
+      <!-- Left Static Filter Menu -->
+      <aside class="filter-sidebar">
+        <ul>
+          <li><a href="#">All Departments <span>→</span></a></li>
+          <li><a href="#">E-Commerce & Ops</a></li>
+          <li><a href="#">Creative & Design</a></li>
+          <li><a href="#">Sales & Marketing</a></li>
+          <li><a href="#">Admin & HR</a></li>
+        </ul>
+      </aside>
+
+      <!-- Careers List -->
+      <div class="job-list" id="careersList">
+        <div class="empty-note">Loading open positions...</div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="public-footer">
+    &copy; 2026 Easy Ways Connection Corporation. All rights reserved.
+  </footer>
+
+  <script src="supabase-config.js"></script>
+  <script>
+    // Toggle Right-Side Drawer
+    const topNavToggle = document.getElementById('topNavToggle');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    const appSidebar = document.getElementById('appSidebar');
+    
+    if (topNavToggle && appSidebar) {
+      topNavToggle.addEventListener('click', () => {
+        appSidebar.classList.add('open');
+      });
+    }
+    if (closeSidebarBtn && appSidebar) {
+      closeSidebarBtn.addEventListener('click', () => {
+        appSidebar.classList.remove('open');
+      });
+    }
+
+    // Load Careers from Supabase
+    (async function() {
+      const listEl = document.getElementById('careersList');
+      
+      const { data, error } = await supabaseClient
+        .from('career_positions')
+        .select('id, title, department')
+        .eq('is_open', true)
+        .order('created_at', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        listEl.innerHTML = '<div class="empty-note">We currently have no open positions. Please check back soon!</div>';
+        return;
+      }
+
+      function escapeHtml(v) {
+        return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      listEl.innerHTML = data.map(job => `
+        <a href="position.html?id=${job.id}" class="job-card">
+          <div class="job-info">
+            <h2>${escapeHtml(job.title)}</h2>
+            <p>${escapeHtml(job.department)}</p>
+          </div>
+          <div class="view-btn">View Details</div>
+        </a>
+      `).join('');
+    })();
+  </script>
 </body>
 </html>
