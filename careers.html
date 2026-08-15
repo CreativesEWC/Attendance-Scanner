@@ -59,7 +59,7 @@
   .filter-sidebar li:last-child { border-bottom: none; }
   .filter-sidebar li a { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; text-decoration: none; color: var(--navy-900); font-weight: bold; font-size: 14px; transition: background 0.2s; }
   .filter-sidebar li a:hover { background: var(--paper); }
-  .filter-sidebar li:first-child a { border-left: 4px solid var(--amber-500); background: #fdfaf2; }
+  .filter-sidebar li a.active-filter { border-left: 4px solid var(--amber-500); background: #fdfaf2; }
 
   /* Job Cards Area */
   .job-list { flex: 1; display: flex; flex-direction: column; gap: 15px; }
@@ -148,12 +148,14 @@
     <div class="content-container">
       <!-- Left Static Filter Menu -->
       <aside class="filter-sidebar">
-        <ul>
-          <li><a href="#">All Departments <span>→</span></a></li>
-          <li><a href="#">E-Commerce & Ops</a></li>
-          <li><a href="#">Creative & Design</a></li>
-          <li><a href="#">Sales & Marketing</a></li>
-          <li><a href="#">Admin & HR</a></li>
+        <ul id="deptFilters">
+          <li><a href="#" data-dept="all" class="active-filter">All Departments <span>→</span></a></li>
+          <li><a href="#" data-dept="E-Commerce & Operations">E-Commerce & Ops</a></li>
+          <li><a href="#" data-dept="Creative & Design">Creative & Design</a></li>
+          <li><a href="#" data-dept="Sales & Marketing">Sales & Marketing</a></li>
+          <li><a href="#" data-dept="Administration & HR">Admin & HR</a></li>
+          <li><a href="#" data-dept="Customer Experience">Customer Experience</a></li>
+          <li><a href="#" data-dept="Logistics & Operations">Logistics & Ops</a></li>
         </ul>
       </aside>
 
@@ -186,9 +188,10 @@
       });
     }
 
-    // Load Careers from Supabase
+   // Load Careers from Supabase and Handle Filtering
     (async function() {
       const listEl = document.getElementById('careersList');
+      let allJobs = []; // This will store the initial database pull
       
       const { data, error } = await supabaseClient
         .from('career_positions')
@@ -201,19 +204,65 @@
         return;
       }
 
+      allJobs = data; // Save the pulled jobs into our array
+
       function escapeHtml(v) {
         return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       }
 
-      listEl.innerHTML = data.map(job => `
-        <a href="position.html?id=${job.id}" class="job-card">
-          <div class="job-info">
-            <h2>${escapeHtml(job.title)}</h2>
-            <p>${escapeHtml(job.department)}</p>
-          </div>
-          <div class="view-btn">View Details</div>
-        </a>
-      `).join('');
+      // Function to render the HTML cards based on an array of jobs
+      function renderJobs(jobsToRender) {
+        if (jobsToRender.length === 0) {
+          listEl.innerHTML = '<div class="empty-note">No open positions in this department right now.</div>';
+          return;
+        }
+        listEl.innerHTML = jobsToRender.map(job => `
+          <a href="position.html?id=${job.id}" class="job-card">
+            <div class="job-info">
+              <h2>${escapeHtml(job.title)}</h2>
+              <p>${escapeHtml(job.department)}</p>
+            </div>
+            <div class="view-btn">View Details</div>
+          </a>
+        `).join('');
+      }
+
+      // 1. Initial page load: Render everything
+      renderJobs(allJobs);
+
+      // 2. Setup the click listeners for the sidebar menu
+      const filterLinks = document.querySelectorAll('#deptFilters a');
+      
+      filterLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault(); // Stop the page from jumping to the top
+
+          // Remove the active styling and the little arrow from all links
+          filterLinks.forEach(l => {
+            l.classList.remove('active-filter');
+            const arrow = l.querySelector('span');
+            if (arrow) arrow.remove();
+          });
+
+          // Add the active styling and arrow to the specific link that was clicked
+          link.classList.add('active-filter');
+          link.innerHTML += ' <span>→</span>';
+
+          // Check which department they clicked
+          const selectedDept = link.getAttribute('data-dept');
+          
+          if (selectedDept === 'all') {
+            renderJobs(allJobs);
+          } else {
+            // Filter the array to only match the selected department (case-insensitive)
+            const filteredJobs = allJobs.filter(job => 
+              job.department.toLowerCase() === selectedDept.toLowerCase()
+            );
+            renderJobs(filteredJobs);
+          }
+        });
+      });
+      
     })();
   </script>
 </body>
