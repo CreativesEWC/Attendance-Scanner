@@ -426,7 +426,6 @@
       
       track.innerHTML = carouselPhotos.map(photo => `
         <div class="carousel-slide" style="background-image: url('${photo.image_url}');">
-            <h1>${photo.caption ? escapeHtml(photo.caption) : 'EWC'}</h1>
         </div>
       `).join('');
     }
