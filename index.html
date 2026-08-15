@@ -118,10 +118,9 @@
     height: 325px !important;
   }
 
+  /* 1. DEFAULT DESKTOP VIEW */
   .carousel-slide {
-    min-width: 50% !important;
-    width: 310px !important;
-    height: 325px !important;
+    height: 325px !important; 
     border-radius: 8px;
     background-size: cover !important;
     background-position: center !important;
@@ -133,6 +132,7 @@
     align-items: flex-end;
     justify-content: center;
     padding: 20px;
+    transition: transform 0.3s ease;
   }
 
   .carousel-slide h1 {
@@ -227,24 +227,50 @@
     .recent-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
-/* Mobile Phone Responsiveness - MUST BE AT THE BOTTOM */
+  /* 1. DEFAULT DESKTOP VIEW */
+  .carousel-slide {
+    height: 325px !important; 
+    border-radius: 8px;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    position: relative !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 20px;
+    transition: transform 0.3s ease;
+  }
+
+  /* 2. ALL TABLETS (iPads, Galaxy Tabs) - Forces 2 Cards */
+  @media (max-width: 1024px) {
+    .carousel-slide {
+      min-width: calc(50% - 10px) !important;
+      width: calc(50% - 10px) !important;
+      max-width: calc(50% - 10px) !important;
+      flex: 0 0 calc(50% - 10px) !important;
+    }
+  }
+
+/* 3. ALL MOBILE PHONES (Xiaomi, iPhone, Android) - Forces 1 Card */
   @media (max-width: 768px) {
     .sticky-navbar { padding: 15px 20px; }
     .nav-brand-name { font-size: 16px; }
     main.main-content { padding-top: 80px !important; }
     .section-container { padding: 40px 20px !important; }
     
-    /* Perfected Mobile Carousel Code */
+    /* Perfected Mobile Carousel */
     .hero-carousel { padding: 0 15px !important; }
-    
-    #carouselTrack { height: 230px !important; }
+    #carouselTrack { height: 250px !important; }
     
     .carousel-slide { 
       min-width: 100% !important; 
       width: 100% !important; 
       max-width: 100% !important; 
       flex: 0 0 100% !important; 
-      height: 230px !important; 
+      height: 250px !important; 
     }
     
     .carousel-slide h1 { font-size: 18px !important; }
