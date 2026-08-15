@@ -1522,9 +1522,13 @@ aside.sidebar.collapsed ~ main.main-content {
   });
 
   // ---- Digital ID ----
-  const idLogoSrc = document.querySelector('.brand-mark img').src;
-  document.getElementById('idLogoFront').src = idLogoSrc;
-  document.getElementById('idLogoBack').src = idLogoSrc;
+    const idLogoSrc = 'easyway_icon.svg'; 
+    
+    const logoFront = document.getElementById('idLogoFront');
+    if (logoFront) logoFront.src = idLogoSrc;
+
+    const logoBack = document.getElementById('idLogoBack');
+    if (logoBack) logoBack.src = idLogoSrc;
 
   let idBackVisible = false;
 
