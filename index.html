@@ -326,8 +326,8 @@ aside.sidebar.open { transform: translateX(0); }
       </div>
     </div>
     <!-- Manual Controls -->
-    <button id="prevSlide" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: none;">&#10094;</button>
-    <button id="nextSlide" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: none;">&#10095;</button>
+    <button id="prevSlide" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: flex; align-items: center; justify-content: center;">&#10094;</button>
+    <button id="nextSlide" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: flex; align-items: center; justify-content: center;">&#10095;</button>
   </section>
   
   <!-- Blog Preview Section -->
@@ -415,7 +415,7 @@ aside.sidebar.open { transform: translateX(0); }
     `).join('');
   }
 
-  // --- Load Public Blog Previews ---
+// --- Load Public Blog Previews ---
   async function loadBlogPreview() {
     const listEl = document.getElementById('publicBlogList');
     
@@ -472,7 +472,7 @@ aside.sidebar.open { transform: translateX(0); }
     return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
   
-// --- Load Dynamic Site Photos (Carousel & Culture) ---
+  // --- Load Dynamic Site Photos (Carousel & Culture) ---
   let currentSlide = 0;
   let totalSlides = 0;
 
@@ -485,7 +485,7 @@ aside.sidebar.open { transform: translateX(0); }
 
     if (error) {
       console.error('Error loading site photos:', error);
-      return; // Will gracefully leave the static fallback text in place
+      return; 
     }
 
     // 1. Build Carousel
@@ -497,12 +497,13 @@ aside.sidebar.open { transform: translateX(0); }
     if (carouselPhotos.length > 0) {
       totalSlides = carouselPhotos.length;
       if (totalSlides > 1) {
-        btnPrev.style.display = 'block';
-        btnNext.style.display = 'block';
+        if(btnPrev) btnPrev.style.display = 'flex';
+        if(btnNext) btnNext.style.display = 'flex';
       }
       
       track.innerHTML = carouselPhotos.map(photo => `
-        <div class="carousel-slide" style="background-image: url('${photo.image_url}');">
+        <div class="carousel-slide" style="min-width: 100%; height: 100%; background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url('${photo.image_url}') center/cover; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+          ${photo.caption ? `<h1 style="font-family: var(--font-display); font-size: 38px; color: var(--navy-900); margin: 0;">${escapeHtml(photo.caption)}</h1>` : ''}
         </div>
       `).join('');
     }
@@ -511,7 +512,7 @@ aside.sidebar.open { transform: translateX(0); }
     const culturePhotos = photos.filter(p => p.category === 'Culture');
     const cultureGrid = document.getElementById('cultureGrid');
     
-    if (culturePhotos.length > 0) {
+    if (cultureGrid && culturePhotos.length > 0) {
       cultureGrid.innerHTML = culturePhotos.map(photo => `
         <div class="culture-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
           <img src="${photo.image_url}" alt="Culture" style="width: 100%; height: 220px; object-fit: cover;">
@@ -534,10 +535,8 @@ aside.sidebar.open { transform: translateX(0); }
     document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
   });
 
-  // Call the function on load
+  // Call the functions on load
   loadSitePhotos();
-  // Execute anonymous queries on page load
-  loadCareersPreview();
   loadBlogPreview();
 
 })();
