@@ -374,7 +374,7 @@
     const { data, error } = await supabaseClient
       .from('blog_posts')
       .select('id, title, created_at')
-      .eq('status', 'published')
+      .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(2);
 
