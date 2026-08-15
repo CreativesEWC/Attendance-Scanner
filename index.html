@@ -15,6 +15,21 @@
     --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     --font-mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
   }
+
+  /* Desktop Collapse Styles */
+    .sidebar {
+      transition: transform 0.3s ease, width 0.3s ease;
+    }
+    
+    .sidebar.collapsed {
+      transform: translateX(-100%);
+    }
+
+    /* When sidebar is collapsed, stretch the main content */
+    .sidebar.collapsed ~ .main-content {
+      margin-left: 0;
+      width: 100%;
+    }
   
   * { box-sizing: border-box; }
   html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--navy-950); font-family: var(--font-body); }
@@ -81,11 +96,14 @@
 <!-- COLLAPSIBLE SIDEBAR -->
 <aside class="sidebar" id="appSidebar">
   <div>
-    <div class="sidebar-header">
+    <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center;">
       <div>
         <h1 class="sidebar-brand">EWC Corp.</h1>
         <div class="sidebar-sub">Public Portal</div>
       </div>
+      <button id="pcToggleBtn" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;">☰</button>
+    </div>
+    
     </div>
     <nav class="sidebar-nav">
       <a href="index.html" class="active">
@@ -107,24 +125,17 @@
     </nav>
   </div>
 </aside>
-
+  
 <!-- MAIN CONTENT -->
 <main class="main-content">
-  
-  <!-- Manual Hero Carousel -->
-  <section class="hero-carousel" style="position: relative; overflow: hidden; background: var(--navy-900); color: var(--paper); border-bottom: 4px solid var(--amber-500);">
-    <div id="carouselTrack" style="display: flex; transition: transform 0.4s ease-in-out; height: 450px;">
-      <!-- Slides load here -->
-      <div style="min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
-        <h1 style="font-family: var(--font-display); font-size: 42px; color: var(--amber-400); margin: 0 0 16px;">Welcome to Easy Ways Connection Corp.</h1>
-        <p style="font-size: 18px; max-width: 600px; color: #9fb0d6; margin: 0 0 30px;">Loading images...</p>
+  <!-- TIMELINE COVER (STATIC HERO) -->
+    <section style="background: linear-gradient(rgba(10, 15, 30, 0.8), rgba(10, 15, 30, 0.8)), url('your-cover-image.jpg') center/cover; height: 350px; display: flex; align-items: center; justify-content: center; text-align: center; border-bottom: 4px solid var(--amber-500);">
+      <div style="padding: 20px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 48px; color: var(--amber-400);">EWC CORPORATION</h1>
+        <p style="color: #fdfaf2; font-size: 18px; margin-top: 10px; max-width: 600px;">Streamlining digital logistics and connecting brands with ideal audiences.</p>
       </div>
-    </div>
-    <!-- Manual Controls -->
-    <button id="prevSlide" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: none;">&#10094;</button>
-    <button id="nextSlide" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: none;">&#10095;</button>
-  </section>
-
+    </section>
+  
   <!-- Company Culture Section -->
   <section id="culture" class="section-container">
     <span class="section-subtitle">Who We Are</span>
@@ -156,7 +167,21 @@
       <a href="careers.html" class="btn-hero" style="background: transparent; color: var(--navy-900); border: 2px solid var(--navy-900);">See All Openings</a>
     </div>
   </section>
-
+  
+ <!-- Manual Hero Carousel -->
+  <section class="hero-carousel" style="position: relative; overflow: hidden; background: var(--navy-900); color: var(--paper); border-bottom: 4px solid var(--amber-500);">
+    <div id="carouselTrack" style="display: flex; transition: transform 0.4s ease-in-out; height: 450px;">
+      <!-- Slides load here -->
+      <div style="min-width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+        <h1 style="font-family: var(--font-display); font-size: 42px; color: var(--amber-400); margin: 0 0 16px;">Welcome to Easy Ways Connection Corp.</h1>
+        <p style="font-size: 18px; max-width: 600px; color: #9fb0d6; margin: 0 0 30px;">Loading images...</p>
+      </div>
+    </div>
+    <!-- Manual Controls -->
+    <button id="prevSlide" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: none;">&#10094;</button>
+    <button id="nextSlide" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 20px; z-index: 10; display: none;">&#10095;</button>
+  </section>
+  
   <!-- Blog Preview Section -->
   <section id="blog" class="section-container">
     <span class="section-subtitle">Latest Updates</span>
@@ -166,17 +191,24 @@
     </div>
   </section>
 
-  <!-- Quiet Login Footer -->
-  <footer class="public-footer">
-    &copy; 2026 Easy Ways Connection Corporation. All rights reserved.
-    <br><br>
-    <a href="login.html">Employee Login</a> | <a href="kiosk-live.html">Scanner Kiosk</a>
-  </footer>
+  <!-- Footer -->
+    <footer class="public-footer">
+      &copy; 2026 Easy Ways Connection Corporation. All rights reserved.
+    </footer>
 
 </main>
 
 <script src="supabase-config.js"></script>
 <script>
+  // Toggle PC Sidebar
+    const pcToggleBtn = document.getElementById('pcToggleBtn');
+    const pcSidebar = document.querySelector('.sidebar');
+    
+    if (pcToggleBtn && pcSidebar) {
+      pcToggleBtn.addEventListener('click', () => {
+        pcSidebar.classList.toggle('collapsed');
+      });
+    }
 (async function(){
   // --- Load Public Career Previews ---
   // Anonymous users can strictly SELECT from career_positions where is_open = true
