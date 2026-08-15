@@ -2134,9 +2134,11 @@ if (ticketBtn) {
     if (homeAvatar) homeAvatar.src = imageUrl;
         emp.profile_image = imageUrl; // Update local data
     alert('Profile picture updated successfully!');
-      }
-    });
+      } catch (err) {
+    console.error("Error uploading image:", err);
+    alert("Failed to upload image: " + err.message);
   }
+});
 
   // THIS BRACKET CLOSES THE ASYNC FUNCTION PROPERLY
 })(); 
