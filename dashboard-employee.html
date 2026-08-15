@@ -2123,17 +2123,17 @@ if (ticketBtn) {
 
         if (dbError) throw dbError;
 
-        // 4. Instantly update the pictures on the screen
-        document.getElementById('sidebarAvatarImg').src = imageUrl;
-        document.getElementById('acctAvatar').src = imageUrl;
+        // 4. Instantly update the pictures on the screen (safely!)
+    const sidebarAvatar = document.getElementById('sidebarAvatarImg');
+    if (sidebarAvatar) sidebarAvatar.src = imageUrl;
+
+    const acctAvatar = document.getElementById('acctAvatar');
+    if (acctAvatar) acctAvatar.src = imageUrl;
+
+    const homeAvatar = document.getElementById('avatarImg');
+    if (homeAvatar) homeAvatar.src = imageUrl;
         emp.profile_image = imageUrl; // Update local data
-        
-        alert('Profile picture updated successfully!');
-      } catch (err) {
-        console.error("Error uploading avatar:", err);
-        alert("Failed to upload image: " + err.message);
-      } finally {
-        btnLabel.innerHTML = originalHtml; // Restore the pencil icon
+    alert('Profile picture updated successfully!');
       }
     });
   }
