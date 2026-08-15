@@ -122,48 +122,58 @@ aside.sidebar.open { transform: translateX(0); }
   .btn-hero { background: var(--amber-500); color: var(--navy-950); padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 14px; transition: transform 0.2s; display: inline-block; }
   .btn-hero:hover { transform: scale(1.05); }
 
-  /* Multi-Card Carousel Overrides */
-    .hero-carousel {
-      background: transparent !important;
-      border-bottom: none !important;
-      max-width: 1200px;
-      margin: 40px auto;
-      padding: 0 40px;
-    }
-    
-    #carouselTrack {
-      gap: 20px;
-      height: 350px !important; 
-    }
+  /* Full-Width Single Banner Carousel Overrides */
+  .hero-carousel {
+    background: transparent !important;
+    border-bottom: none !important;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 40px;
+  }
 
-    .carousel-slide {
-      min-width: calc(33.333% - 14px) !important;
-      height: 100%;
-      border-radius: 8px;
-      background-size: cover !important;
-      background-position: center !important;
-      position: relative;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
+  #carouselTrack {
+    display: flex;
+    transition: transform 0.4s ease-in-out;
+    height: 325px !important; /* Sets your exact requested height */
+    width: 100%;
+  }
 
-    .carousel-slide h1 {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      margin: 0 !important;
-      font-size: 24px !important;
-      color: #fff !important;
-      text-transform: uppercase;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
-    }
-    
-    .carousel-slide p {
-      display: none;
-    }
+  .carousel-slide {
+    min-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 8px;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    @media (max-width: 768px) {
-      .carousel-slide { min-width: 100% !important; }
-    }
+  .carousel-slide h1 {
+    margin: 0 !important;
+    font-size: 32px !important;
+    color: #fff !important;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+    background: rgba(10, 15, 30, 0.6);
+    padding: 15px 30px;
+    border-radius: 6px;
+  }
+
+  .carousel-slide p {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .carousel-slide { min-width: 100% !important; }
+    .hero-carousel { padding: 0 20px; }
+    #carouselTrack { height: 250px !important; }
+  }
 
   /* Content Sections */
   .section-container { max-width: 1000px; margin: 0 auto; padding: 60px 40px; }
@@ -502,11 +512,10 @@ aside.sidebar.open { transform: translateX(0); }
       }
       
       track.innerHTML = carouselPhotos.map(photo => `
-        <div class="carousel-slide" style="min-width: 100%; width: 100%; height: 100%; background: url('${photo.image_url}') center/cover no-repeat; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
-          ${photo.caption ? `<div style="background: rgba(10, 15, 30, 0.6); padding: 15px 30px; border-radius: 6px;"><h1 style="font-family: var(--font-display); font-size: 32px; color: #ffffff; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">${escapeHtml(photo.caption)}</h1></div>` : ''}
+        <div class="carousel-slide" style="background-image: url('${photo.image_url}');">
+          ${photo.caption ? `<div style="background: rgba(10, 15, 30, 0.6); padding: 15px 30px; border-radius: 6px;"><h1 style="font-family: var(--font-display); font-size: 28px; color: #ffffff; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">${escapeHtml(photo.caption)}</h1></div>` : ''}
         </div>
       `).join('');
-    }
 
     // 2. Build Culture Grid
     const culturePhotos = photos.filter(p => p.category === 'Culture');
