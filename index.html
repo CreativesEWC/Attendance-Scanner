@@ -75,27 +75,28 @@
   /* MAIN CONTENT */
   main.main-content { margin: 0; flex: 1; padding: 80px 0 0 0; width: 100%; display: flex; flex-direction: column; overflow-x: hidden; background: var(--paper); }
   
-  /* Hero Carousel Single Banner Overrides */
+  /* Multi-Card Carousel Layout (Matching JRU Reference) */
   .hero-carousel {
     position: relative !important;
     background: transparent !important;
     border-bottom: none !important;
     max-width: 1200px;
     margin: 40px auto;
-    padding: 0 40px;
+    padding: 0 60px;
     overflow: hidden !important;
   }
 
   #carouselTrack {
     display: flex;
     transition: transform 0.4s ease-in-out;
-    height: 325px !important;
+    gap: 20px; /* Space between the 3 cards */
     width: 100%;
+    height: 325px !important;
   }
 
   .carousel-slide {
-    min-width: 100% !important;
-    width: 100% !important;
+    min-width: calc(33.333% - 14px) !important; /* Shows exactly 3 cards side-by-side */
+    width: calc(33.333% - 14px) !important;
     height: 325px !important;
     border-radius: 8px;
     background-size: cover !important;
@@ -105,37 +106,39 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     flex-shrink: 0;
     display: flex;
-    align-items: center;
+    align-items: flex-end; /* Puts caption at the bottom of the card */
     justify-content: center;
+    padding: 20px;
   }
 
   .carousel-slide h1 {
     margin: 0 !important;
-    font-size: 32px !important;
+    font-size: 18px !important;
     color: #fff !important;
     text-transform: uppercase;
     text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
-    background: rgba(10, 15, 30, 0.6);
-    padding: 15px 30px;
+    background: rgba(10, 15, 30, 0.7);
+    padding: 10px 20px;
     border-radius: 6px;
+    text-align: center;
   }
 
   .carousel-slide p { display: none; }
 
-  /* Arrow Button Positioning */
+  /* Arrow Button Positioning Outside the Row */
   #prevSlide {
     position: absolute !important;
     top: 50% !important;
-    left: 60px !important;
+    left: 10px !important;
     transform: translateY(-50%) !important;
     background: rgba(0,0,0,0.6) !important;
     color: #fff !important;
     border: none !important;
     border-radius: 50% !important;
-    width: 44px !important;
-    height: 44px !important;
+    width: 40px !important;
+    height: 40px !important;
     cursor: pointer !important;
-    font-size: 20px !important;
+    font-size: 18px !important;
     z-index: 20 !important;
     display: flex !important;
     align-items: center !important;
@@ -145,23 +148,27 @@
   #nextSlide {
     position: absolute !important;
     top: 50% !important;
-    right: 60px !important;
+    right: 10px !important;
     transform: translateY(-50%) !important;
     background: rgba(0,0,0,0.6) !important;
     color: #fff !important;
     border: none !important;
     border-radius: 50% !important;
-    width: 44px !important;
-    height: 44px !important;
+    width: 40pxonan !important;
+    width: 40px !important;
+    height: 40px !important;
     cursor: pointer !important;
-    font-size: 20px !important;
+    font-size: 18px !important;
     z-index: 20 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
   }
 
-  .carousel-slide p { display: none; }
+  @media (max-width: 768px) {
+    .carousel-slide { min-width: 100% !important; width: 100% !important; }
+    .hero-carousel { padding: 0 20px; }
+  }
 
   /* Content Sections */
   .section-container { max-width: 1000px; margin: 0 auto; padding: 60px 40px; }
@@ -473,18 +480,20 @@
         }
       }
 
-      // Carousel Button Logic
-      document.getElementById('prevSlide')?.addEventListener('click', () => {
-        if (totalSlides <= 1) return;
-        currentSlide = (currentSlide === 0) ? totalSlides - 1 : currentSlide - 1;
-        document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
-      });
-      
-      document.getElementById('nextSlide')?.addEventListener('click', () => {
-        if (totalSlides <= 1) return;
-        currentSlide = (currentSlide === totalSlides - 1) ? 0 : currentSlide + 1;
-        document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * 100}%)`;
-      });
+      // Multi-Card Carousel Button Logic
+  document.getElementById('prevSlide')?.addEventListener('click', () => {
+    if (totalSlides <= 1) return;
+    currentSlide = (currentSlide === 0) ? totalSlides - 1 : currentSlide - 1;
+    const slideWidth = document.querySelector('.carousel-slide').offsetWidth + 20; // card width + gap
+    document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+  });
+  
+  document.getElementById('nextSlide')?.addEventListener('click', () => {
+    if (totalSlides <= 1) return;
+    currentSlide = (currentSlide === totalSlides - 1) ? 0 : currentSlide + 1;
+    const slideWidth = document.querySelector('.carousel-slide').offsetWidth + 20; // card width + gap
+    document.getElementById('carouselTrack').style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+  });
 
       // Initialize on load
       loadSitePhotos();
