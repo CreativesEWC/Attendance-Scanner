@@ -1191,20 +1191,31 @@ aside.sidebar.collapsed ~ main.main-content {
     return; 
   }
 
-  // ==== DEVELOPER ACCESS CONTROL ====
-  // Hide website management tabs from standard HR/Admins (Catherine, Eden, etc.)
+  // ==== STRICT ROLE-BASED ACCESS CONTROL ====
   const isDeveloper = emp.badge_id === 'CREATIVES-01'; 
   
+  // Grant HR/Financial access only to Eden and Catherine
+  const isHR = emp.badge_id === 'EW-0076-2024' || emp.badge_id === 'EW-0001-2023';
+  
+  // 1. Hide Website Management tabs from everyone except the Developer
   if (!isDeveloper) {
-    // List the data-tabs you want to hide from normal admins
     const devTabs = ['photos', 'blog', 'timeline']; 
-    
     devTabs.forEach(tab => {
       const btn = document.querySelector(`.sidebar-nav button[data-tab="${tab}"]`);
       if (btn) btn.style.display = 'none';
     });
   }
-  // ==================================
+
+  // 2. Hide Sensitive Financial/HR tabs from everyone except Eden and Catherine
+  if (!isHR) {
+    // Add your future HR data-tab names here when you build them!
+    const hrTabs = ['payroll', 'commissions', 'payslips']; 
+    hrTabs.forEach(tab => {
+      const btn = document.querySelector(`.sidebar-nav button[data-tab="${tab}"]`);
+      if (btn) btn.style.display = 'none';
+    });
+  }
+  // ==========================================
 
   // Handle Switch View functionality for Admin/President
   const switchBtn = document.getElementById('switchViewBtn');
