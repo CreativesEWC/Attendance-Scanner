@@ -361,24 +361,16 @@
   // ---- Core scan handler (Verification, Cooldown & Event Logging) ----
   const recentScans = {};
   const SCAN_COOLDOWN_MS = 15000; 
-  let pendingVerify = { id: null, timer: null, interval: null, timeLeft: 10 };
+  let pendingVerify = { id: null, timer: null, timestamp: 0, employee: null };
   let busy = false;
   let lastScanWasAccepted = true; 
   let consecutiveRejects = 0;     
-
-  function showScanHint(){
-    document.getElementById('scanHint').style.display = 'block';
-    const panel = document.getElementById('manualPanel');
-    if(!panel.classList.contains('open')) panel.classList.add('open');
-  }
-  function hideScanHint(){
-    document.getElementById('scanHint').style.display = 'none';
-  }
 
   function clearVerifyOverlay() {
       document.getElementById('verifyOverlay').classList.remove('show');
       clearTimeout(pendingVerify.timer);
       pendingVerify.id = null;
+      pendingVerify.employee = null; // Clear memory
   }
 
   function normalizeBadgeId(raw){
@@ -397,62 +389,69 @@
 
     const now = Date.now();
     
-    // 1. 15-SECOND COOLDOWN (Locks ID after a successful database log)
+    // 1. 15-SECOND COOLDOWN
     if(recentScans[id] && (now - recentScans[id]) < 15000) {
         return; 
     }
 
-    // 2. 2-SCAN VERIFICATION CHECK
+    // 2. FIRST SCAN - CHECK DATABASE
     if (pendingVerify.id !== id) {
-        // --- FIRST SCAN ---
-        clearVerifyOverlay(); 
-        pendingVerify.id = id;
-        pendingVerify.timestamp = now; // Log exact millisecond of first scan
-        
-        document.getElementById('verifyOverlay').classList.add('show');
-        speak('Confirmed. Please scan again to verify.');
+        busy = true;
+        try {
+          // Look up the ID immediately
+          const { data: employee, error: empErr } = await supabaseClient
+            .from('employees')
+            .select('*, brands(name), positions(name)')
+            .eq('badge_id', id)
+            .maybeSingle();
 
-        // Auto-close the screen if they walk away without scanning a second time
-        pendingVerify.timer = setTimeout(() => {
-            clearVerifyOverlay();
-        }, 10000);
-        
-        return; // Stop here and wait for the second scan
+          // If unregistered, reject instantly without verification
+          if(empErr || !employee){
+            lastScanWasAccepted = false;
+            consecutiveRejects++;
+            if(consecutiveRejects >= 3) showScanHint();
+            showCard(renderRejectCard(id), true, 3000);
+            speak('This ID is not registered.');
+            return;
+          }
+
+          // If registered, set up the verification screen
+          clearVerifyOverlay(); 
+          pendingVerify.id = id;
+          pendingVerify.timestamp = now;
+          pendingVerify.employee = employee; // Save profile for the 2nd scan
+          
+          document.getElementById('verifyOverlay').classList.add('show');
+          speak('Confirmed. Please scan again to verify.');
+
+          pendingVerify.timer = setTimeout(() => {
+              clearVerifyOverlay();
+          }, 10000);
+        } finally {
+          busy = false;
+        }
+        return; 
+
     } else {
         // --- ANTI-GLITCH DELAY ---
-        // If the second scan happens instantly (less than 1 second), it is a barcode scanner hardware glitch.
-        // Ignore it, forcing them to do a deliberate second scan after hearing "Confirmed".
         if (now - pendingVerify.timestamp < 1000) {
             return;
         }
     }
 
-    // --- SECOND SCAN VERIFIED - PROCEED TO DB ---
+    // 3. SECOND SCAN VERIFIED - LOG ATTENDANCE
     clearVerifyOverlay();
-    recentScans[id] = now; // Trigger 15-second lockout
+    recentScans[id] = now; 
     busy = true;
 
-    try{
-      const { data: employee, error: empErr } = await supabaseClient
-        .from('employees')
-        .select('*, brands(name), positions(name)')
-        .eq('badge_id', id)
-        .maybeSingle();
-
-      if(empErr || !employee){
-        lastScanWasAccepted = false;
-        consecutiveRejects++;
-        if(consecutiveRejects >= 3) showScanHint();
-        showCard(renderRejectCard(id), true, 3000);
-        speak('This ID is not registered.');
-        return;
-      }
+    try {
+      // Pull the profile we saved during the first scan!
+      const employee = pendingVerify.employee; 
       
       lastScanWasAccepted = true;
       consecutiveRejects = 0;
       hideScanHint();
 
-      // EVENT LOG: Get their most recent shift for today
       const today = todayStr();
       const { data: existingRows } = await supabaseClient
         .from('attendance_logs')
@@ -465,7 +464,6 @@
       const latestRow = existingRows?.[0];
       let row, kind;
 
-      // If no shift today, OR latest shift is completely closed out -> START NEW TIME IN
       if(!latestRow || (latestRow.time_in && latestRow.time_out)){
         const { data: inserted, error: insErr } = await supabaseClient
           .from('attendance_logs')
@@ -475,7 +473,6 @@
         if(insErr){ console.error(insErr); busy = false; return; }
         row = inserted; kind = 'in';
       } 
-      // If latest shift has a Time In but NO Time Out -> CLOSE THE SHIFT
       else if (latestRow.time_in && !latestRow.time_out) {
         const { data: updated, error: updErr } = await supabaseClient
           .from('attendance_logs')
@@ -488,7 +485,7 @@
       }
 
       const birthday = isBirthdayToday(employee.birthday);
-      showCard(renderAcceptedCard(employee, row, kind, birthday), false, birthday ? 6000 : 4000, birthday ? 'birthday' : '');
+      showCard(renderAcceptedCard(employee, row, kind, birthday), false, birthday ? 6000 : 1000, birthday ? 'birthday' : '');
 
       const who = firstNameOnly(employee.name);
       const greeting = daypartGreeting();
@@ -506,7 +503,6 @@
       busy = false;
     }
   }
-
   // ---- Camera ----
   let html5QrCode = null;
   async function startCamera(){
