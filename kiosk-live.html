@@ -107,6 +107,16 @@
     .camera-frame{ width:400px; max-width:400px; }
     .manual-panel{ justify-content:flex-start; }
   }
+
+  /* Avatar Image & Verification Overlay Styles */
+  .avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+  
+  #verifyOverlay { position:fixed; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(10,15,30,0.95); backdrop-filter:blur(5px); z-index:60; text-align:center; padding:20px;}
+  #verifyOverlay.show { display:flex; }
+  #verifyOverlay h1 { font-family:var(--font-display); font-size:36px; color:var(--amber-400); margin:0 0 10px; }
+  #verifyOverlay p { font-family:var(--font-body); font-size:20px; color:var(--paper); margin:0; }
+  #verifyCountdown { font-family:var(--font-mono); font-size:64px; font-weight:bold; color:var(--mint-500); margin-top:30px; }
+  
 </style>
 </head>
 <body>
@@ -180,11 +190,17 @@
   <div class="badge-card" id="badgeCard"></div>
 </div>
 
+ <div id="verifyOverlay">
+  <h1>Verification Required</h1>
+  <p>May I ask to scan again for verification?</p>
+  <div id="verifyCountdown">10</div>
+</div> 
+
 <script src="supabase-config.js"></script>
 <script>
 (async function(){
 
-  // ---- Auth guard: must be logged in as the kiosk role ----
+  // ---- Auth guard ----
   const emp = await getMyEmployeeRecord();
   if (!emp) { window.location.href = 'login.html'; return; }
   if (emp.role !== 'kiosk') { routeToRoleHome(emp); return; }
@@ -197,23 +213,23 @@
     const d = new Date();
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
-  function timeStr(){ return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
   function nowIso(){ return new Date().toISOString(); }
 
-  function firstAndLast(fullName){
-    if(!fullName) return { display:'', initials:'?' };
-    let last = fullName, first = '';
-    if(fullName.includes(',')){
-      const parts = fullName.split(',');
-      last = parts[0].trim();
-      first = (parts[1] || '').trim().split(/\s+/)[0] || '';
-    }
-    const cap = s => s ? s.charAt(0).toUpperCase()+s.slice(1).toLowerCase() : '';
-    const display = (cap(first) + ' ' + cap(last)).trim();
-    const initials = ((first[0]||'') + (last[0]||'')).toUpperCase() || '?';
-    return { display, initials };
+  // ---- NAME FORMATTING (ALL CAPS) ----
+  function formatFullName(fullName){
+    return (fullName || '').toUpperCase().trim();
   }
-  function firstNameOnly(fullName){ return firstAndLast(fullName).display.split(' ')[0] || ''; }
+  function firstNameOnly(fullName){ 
+    const first = (fullName || '').split(',')[1] || (fullName || '').split(' ')[0] || '';
+    return first.trim().toUpperCase(); 
+  }
+  function getInitials(fullName){
+    if(!fullName) return '?';
+    const parts = fullName.split(',').map(p => p.trim());
+    const last = parts[0]?.[0] || '';
+    const first = parts[1]?.[0] || fullName[0] || '';
+    return (first + last).toUpperCase();
+  }
 
   // ---- Clock ----
   function tickClock(){
@@ -223,7 +239,7 @@
   }
   tickClock(); setInterval(tickClock, 1000);
 
-  // ---- Speech ----
+  // ---- Speech & Birthday Music ----
   function daypartGreeting(){
     const h = new Date().getHours();
     if(h < 12) return 'Good morning';
@@ -283,17 +299,26 @@
   }
 
   function renderAcceptedCard(employee, row, kind, birthday){
-    const { display, initials } = firstAndLast(employee.name);
+    const displayName = formatFullName(employee.name);
+    
+    // PROFILE PICTURE LOGIC
+    let avatarContent = getInitials(employee.name);
+    if (employee.avatar_url && employee.avatar_url.trim() !== '') {
+        avatarContent = `<img src="${employee.avatar_url}" alt="Profile Picture">`;
+    }
+
     const timeInDisplay = row.time_in ? new Date(row.time_in).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : null;
     const timeOutDisplay = row.time_out ? new Date(row.time_out).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : null;
     const inVal = timeInDisplay ? `<div class="stamp-mark in">IN · ${timeInDisplay}</div>` : `<div class="value">— not yet —</div>`;
     const outVal = timeOutDisplay ? `<div class="stamp-mark out">OUT · ${timeOutDisplay}</div>` : `<div class="value">— not yet —</div>`;
+    
     let message = '';
-    if(kind === 'in') message = 'Time In recorded. See you later today!';
-    else if(kind === 'out') message = 'Time Out recorded. Have a good rest!';
-    else message = 'Attendance already completed for today.';
+    if(kind === 'in') message = 'Time In recorded. Have a great shift!';
+    else if(kind === 'out') message = 'Time Out recorded. See you next time!';
+    
     const positionLabel = employee.positions ? employee.positions.name : '';
-    const bdayBanner = birthday ? `<div class="birthday-banner">🎉 Happy Birthday, ${firstNameOnly(employee.name)}! 🎂</div>` : '';
+    const bdayBanner = birthday ? `<div class="birthday-banner">🎉 HAPPY BIRTHDAY, ${firstNameOnly(employee.name)}! 🎂</div>` : '';
+    
     return `
       <div class="badge-top">
         <span class="co-name">Easy Ways Connection Corp.</span>
@@ -301,9 +326,9 @@
       </div>
       ${bdayBanner}
       <div class="badge-body">
-        <div class="avatar">${initials}</div>
+        <div class="avatar">${avatarContent}</div>
         <div>
-          <div class="badge-name">${display}</div>
+          <div class="badge-name">${displayName}</div>
           <div class="badge-position">${positionLabel}</div>
         </div>
       </div>
@@ -324,7 +349,7 @@
       <div class="badge-body">
         <div class="avatar">✕</div>
         <div>
-          <div class="badge-name">ID Not Registered</div>
+          <div class="badge-name">ID NOT REGISTERED</div>
           <div class="reject-id">${id}</div>
         </div>
       </div>
@@ -332,12 +357,13 @@
     `;
   }
 
-  // ---- Core scan handler (talks to Supabase) ----
+  // ---- Core scan handler (Verification, Cooldown & Event Logging) ----
   const recentScans = {};
-  const SCAN_COOLDOWN_MS = 8000;
+  const SCAN_COOLDOWN_MS = 15000; 
+  let pendingVerify = { id: null, timer: null, interval: null, timeLeft: 10 };
   let busy = false;
-  let lastScanWasAccepted = true; // controls how long the camera pauses after a read
-  let consecutiveRejects = 0;     // repeated bad reads → surface manual-entry hint
+  let lastScanWasAccepted = true; 
+  let consecutiveRejects = 0;     
 
   function showScanHint(){
     document.getElementById('scanHint').style.display = 'block';
@@ -348,17 +374,19 @@
     document.getElementById('scanHint').style.display = 'none';
   }
 
-  // Code39 decoders occasionally mis-read a character under poor lighting or
-  // a soft-focus frame (commonly 0↔O, 1↔I, or stray whitespace around the
-  // start/stop asterisks some printers include). Badge IDs are a fixed
-  // "EW-####-####" shape, so we can safely normalize before the DB lookup
-  // instead of forcing a re-scan for what's really just noisy decoding.
+  function clearVerifyOverlay() {
+      document.getElementById('verifyOverlay').classList.remove('show');
+      clearTimeout(pendingVerify.timer);
+      clearInterval(pendingVerify.interval);
+      pendingVerify.id = null;
+  }
+
   function normalizeBadgeId(raw){
     let s = (raw || '').trim().toUpperCase();
-    s = s.replace(/^\*+|\*+$/g, '');      // strip Code39 start/stop asterisks if the decoder includes them
-    s = s.replace(/\s+/g, '');            // stray whitespace from scan noise
+    s = s.replace(/^\*+|\*+$/g, '');      
+    s = s.replace(/\s+/g, '');            
     if (/^EW-[O0-9]{4}-[O0-9]{4}$/.test(s)) {
-      s = s.replace(/O/g, '0');           // letter O misread in the numeric segments only
+      s = s.replace(/O/g, '0');           
     }
     return s;
   }
@@ -368,10 +396,40 @@
     if(!id || busy) return;
 
     const now = Date.now();
-    if(recentScans[id] && (now - recentScans[id]) < SCAN_COOLDOWN_MS) return;
-    recentScans[id] = now;
+    
+    // 1. COOLDOWN CHECK
+    if(recentScans[id] && (now - recentScans[id]) < SCAN_COOLDOWN_MS) {
+        return; 
+    }
 
+    // 2. VERIFICATION CHECK
+    if (pendingVerify.id !== id) {
+        clearVerifyOverlay(); 
+        pendingVerify.id = id;
+        pendingVerify.timeLeft = 10;
+        
+        document.getElementById('verifyCountdown').textContent = pendingVerify.timeLeft;
+        document.getElementById('verifyOverlay').classList.add('show');
+        speak('Please scan again for verification.');
+
+        pendingVerify.interval = setInterval(() => {
+            pendingVerify.timeLeft--;
+            document.getElementById('verifyCountdown').textContent = pendingVerify.timeLeft;
+        }, 1000);
+
+        pendingVerify.timer = setTimeout(() => {
+            clearVerifyOverlay();
+            speak('Verification timed out. Please try again.');
+        }, 10000);
+        
+        return; 
+    }
+
+    // 3. SECOND SCAN VERIFIED - PROCEED TO DB
+    clearVerifyOverlay();
+    recentScans[id] = now; 
     busy = true;
+
     try{
       const { data: employee, error: empErr } = await supabaseClient
         .from('employees')
@@ -387,20 +445,25 @@
         speak('This ID is not registered.');
         return;
       }
+      
       lastScanWasAccepted = true;
       consecutiveRejects = 0;
       hideScanHint();
 
+      // EVENT LOG LOGIC: Fetch the *most recent* log for this employee today
       const today = todayStr();
-      const { data: existingRow } = await supabaseClient
+      const { data: existingRows } = await supabaseClient
         .from('attendance_logs')
         .select('*')
         .eq('employee_id', employee.id)
         .eq('log_date', today)
-        .maybeSingle();
+        .order('time_in', { ascending: false }) 
+        .limit(1);
 
+      const latestRow = existingRows?.[0];
       let row, kind;
-      if(!existingRow){
+
+      if(!latestRow || (latestRow.time_in && latestRow.time_out)){
         const { data: inserted, error: insErr } = await supabaseClient
           .from('attendance_logs')
           .insert({ employee_id: employee.id, log_date: today, time_in: nowIso() })
@@ -408,17 +471,16 @@
           .single();
         if(insErr){ console.error(insErr); busy = false; return; }
         row = inserted; kind = 'in';
-      } else if(existingRow.time_in && !existingRow.time_out){
+      } 
+      else if (latestRow.time_in && !latestRow.time_out) {
         const { data: updated, error: updErr } = await supabaseClient
           .from('attendance_logs')
           .update({ time_out: nowIso() })
-          .eq('id', existingRow.id)
+          .eq('id', latestRow.id)
           .select()
           .single();
         if(updErr){ console.error(updErr); busy = false; return; }
         row = updated; kind = 'out';
-      } else {
-        row = existingRow; kind = 'complete';
       }
 
       const birthday = isBirthdayToday(employee.birthday);
@@ -426,12 +488,16 @@
 
       const who = firstNameOnly(employee.name);
       const greeting = daypartGreeting();
+      
+      // TRIGGER THE SONG AND THE ANNOUNCEMENT
       if(birthday){
         playBirthdayJingle();
-        speak(`Happy birthday, ${who}! Wishing you a wonderful day from everyone at Easy Ways Connection Corp!`);
-      } else if(kind === 'in') speak(`${greeting}, ${who}. Time in recorded.`);
-      else if(kind === 'out') speak(`${greeting}, ${who}. Time out recorded.`);
-      else speak(`${who}, you already completed your attendance for today.`);
+        speak(`Attention everyone! Today is ${who}'s birthday! Wishing you a wonderful day from Easy Ways Connection Corp. Time ${kind} recorded.`);
+      } else if(kind === 'in') {
+        speak(`${greeting}, ${who}. Time in recorded.`);
+      } else if(kind === 'out') {
+        speak(`${greeting}, ${who}. Time out recorded.`);
+      }
 
     } finally {
       busy = false;
@@ -440,12 +506,6 @@
 
   // ---- Camera ----
   let html5QrCode = null;
-  // Code39 badge IDs (e.g. EW-0069-2024) are 1D barcodes: wide, short, and
-  // print-quality sensitive. A square qrbox and low fps starve the decoder of
-  // the frames/width it needs, so this config widens the scan window,
-  // raises the frame rate, and (where supported) hands off to the phone's
-  // native BarcodeDetector, which reads Code39 far more reliably than the
-  // pure-JS zxing fallback used otherwise.
   async function startCamera(){
     html5QrCode = new Html5Qrcode("reader", {
       formatsToSupport: [
@@ -457,8 +517,6 @@
       verbose: false
     });
 
-    // Wide/short box matches a 1D barcode's aspect ratio far better than a
-    // square one — the decoder gets more horizontal bar data per frame.
     const qrboxFn = (viewfinderWidth, viewfinderHeight) => {
       const w = Math.floor(Math.min(viewfinderWidth * 0.85, 480));
       const h = Math.floor(Math.min(viewfinderHeight * 0.4, 180));
@@ -477,13 +535,10 @@
         async (decodedText) => {
           await handleScan(decodedText);
           html5QrCode.pause(true);
-          // Accepted scans get the full pause (badge card is worth reading);
-          // rejects/unregistered IDs resume fast since a misread is the
-          // likely cause and the person needs to try again right away.
-          const resumeDelay = lastScanWasAccepted ? 3200 : 1200;
+          const resumeDelay = lastScanWasAccepted ? 1000 : 1200;
           setTimeout(()=>{ html5QrCode.resume(); }, resumeDelay);
         },
-        ()=>{ /* per-frame decode miss, expected constantly while aiming */ }
+        ()=>{}
       );
       await applyFocusAndZoom();
     }catch(err){
@@ -491,13 +546,8 @@
     }
   }
 
-  // iPhone 11 camera autofocus tends to hunt/stay soft up close, which is
-  // exactly where a badge gets held. Where the browser exposes MediaTrack
-  // capabilities for it, force continuous autofocus and a touch of zoom so
-  // the barcode's bars are sharp and fill more of the frame.
   async function applyFocusAndZoom(){
     try{
-      const track = html5QrCode.getRunningTrackCameraCapabilities ? null : null;
       const videoEl = document.querySelector('#reader video');
       if(!videoEl || !videoEl.srcObject) return;
       const streamTrack = videoEl.srcObject.getVideoTracks()[0];
@@ -509,17 +559,16 @@
       if(Object.keys(constraints).length){
         await streamTrack.applyConstraints({ advanced: [constraints] });
       }
-    }catch(e){ /* not all browsers/cameras expose this — safe to ignore */ }
+    }catch(e){ }
   }
 
   // ---- USB HID barcode scanner support ----
-  // A USB scanner "types" the barcode then presses Enter, just like a keyboard.
-  // Keeping this field silently focused means a plugged-in scanner works instantly.
   const hid = document.getElementById('hidCapture');
   function refocusHid(){
     const overlayOpen = document.getElementById('confirmOverlay').classList.contains('show');
+    const verifyOpen = document.getElementById('verifyOverlay').classList.contains('show');
     const manualOpen = document.getElementById('manualPanel').classList.contains('open');
-    if(!overlayOpen && !manualOpen && document.activeElement !== hid){
+    if(!overlayOpen && !verifyOpen && !manualOpen && document.activeElement !== hid){
       hid.focus();
     }
   }
