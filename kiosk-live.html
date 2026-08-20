@@ -383,7 +383,8 @@
         lastScanWasAccepted = false;
         consecutiveRejects++;
         if(consecutiveRejects >= 3) showScanHint();
-        showCard(renderRejectCard(id), true, 3000);
+        // Changed from 3000 to 2000 so the UI matches the 2-second camera pause
+        showCard(renderRejectCard(id), true, 2000);
         speak('This ID is not registered.');
         return;
       }
@@ -469,8 +470,8 @@
         async (decodedText) => {
           await handleScan(decodedText);
           html5QrCode.pause(true);
-          const resumeDelay = lastScanWasAccepted ? 200 : 1200;
-          setTimeout(()=>{ html5QrCode.resume(); }, resumeDelay);
+          // A strict 2-second (2000ms) pause before the camera is allowed to read again
+          setTimeout(()=>{ html5QrCode.resume(); }, 2000);
         },
         ()=>{}
       );
