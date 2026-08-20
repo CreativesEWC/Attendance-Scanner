@@ -2773,6 +2773,42 @@ async function reviewTicket(ticketId, status, approverName) {
     });
   }
 
+// ---- REAL-TIME DASHBOARD ALERTS ----
+  const dashboardChannel = supabaseClient.channel('dashboard-alerts');
+
+  // 1. Listen for new Attendance Scans
+  dashboardChannel.on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'attendance_logs' },
+    (payload) => {
+      console.log('New scan received:', payload);
+      alert("🚨 New Attendance Scan Logged!\n\nDetails: " + JSON.stringify(payload.new));
+    }
+  );
+
+  // 2. Listen for urgent Announcements
+  dashboardChannel.on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'announcements' },
+    (payload) => {
+      console.log('New announcement:', payload);
+      alert("📢 New Company Announcement!\n\nPlease check the dashboard for details.");
+    }
+  );
+
+  // 3. Listen for general Notifications
+  dashboardChannel.on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'notifications' },
+    (payload) => {
+      console.log('New notification:', payload);
+      alert("🔔 You have a new notification!");
+    }
+  );
+
+  // Turn on the receiver to start listening
+  dashboardChannel.subscribe();
+  
 })();
 </script>
 
