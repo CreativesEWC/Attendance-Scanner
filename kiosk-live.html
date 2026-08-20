@@ -440,12 +440,6 @@
 
   // ---- Camera ----
   let html5QrCode = null;
-  // Code39 badge IDs (e.g. EW-0069-2024) are 1D barcodes: wide, short, and
-  // print-quality sensitive. A square qrbox and low fps starve the decoder of
-  // the frames/width it needs, so this config widens the scan window,
-  // raises the frame rate, and (where supported) hands off to the phone's
-  // native BarcodeDetector, which reads Code39 far more reliably than the
-  // pure-JS zxing fallback used otherwise.
   async function startCamera(){
     html5QrCode = new Html5Qrcode("reader", {
       formatsToSupport: [
@@ -453,15 +447,13 @@
         Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
         Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.QR_CODE
       ],
-      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
       verbose: false
     });
 
-    // Wide/short box matches a 1D barcode's aspect ratio far better than a
-    // square one — the decoder gets more horizontal bar data per frame.
     const qrboxFn = (viewfinderWidth, viewfinderHeight) => {
-      const w = Math.floor(Math.min(viewfinderWidth * 0.85, 480));
-      const h = Math.floor(Math.min(viewfinderHeight * 0.4, 180));
+      // UPDATED: Made the box wider to easily fit long 1D barcodes
+      const w = Math.floor(Math.min(viewfinderWidth * 0.95, 600));
+      const h = Math.floor(Math.min(viewfinderHeight * 0.5, 250));
       return { width: w, height: h };
     };
 
@@ -471,45 +463,20 @@
         {
           fps: 15,
           qrbox: qrboxFn,
-          aspectRatio: 1.777,
           disableFlip: false
         },
         async (decodedText) => {
           await handleScan(decodedText);
           html5QrCode.pause(true);
-          // Accepted scans get the full pause (badge card is worth reading);
-          // rejects/unregistered IDs resume fast since a misread is the
-          // likely cause and the person needs to try again right away.
-          const resumeDelay = lastScanWasAccepted ? 3200 : 1200;
+          const resumeDelay = lastScanWasAccepted ? 200 : 1200;
           setTimeout(()=>{ html5QrCode.resume(); }, resumeDelay);
         },
-        ()=>{ /* per-frame decode miss, expected constantly while aiming */ }
+        ()=>{}
       );
-      await applyFocusAndZoom();
+      // REMOVED applyFocusAndZoom() so iOS can use its natural autofocus!
     }catch(err){
       console.warn('Camera unavailable, USB scanner and manual entry still work:', err);
     }
-  }
-
-  // iPhone 11 camera autofocus tends to hunt/stay soft up close, which is
-  // exactly where a badge gets held. Where the browser exposes MediaTrack
-  // capabilities for it, force continuous autofocus and a touch of zoom so
-  // the barcode's bars are sharp and fill more of the frame.
-  async function applyFocusAndZoom(){
-    try{
-      const track = html5QrCode.getRunningTrackCameraCapabilities ? null : null;
-      const videoEl = document.querySelector('#reader video');
-      if(!videoEl || !videoEl.srcObject) return;
-      const streamTrack = videoEl.srcObject.getVideoTracks()[0];
-      if(!streamTrack) return;
-      const caps = streamTrack.getCapabilities ? streamTrack.getCapabilities() : {};
-      const constraints = {};
-      if(caps.focusMode && caps.focusMode.includes('continuous')) constraints.focusMode = 'continuous';
-      if(caps.zoom && caps.zoom.max) constraints.zoom = Math.min(caps.zoom.max, (caps.zoom.min || 1) + (caps.zoom.max - (caps.zoom.min||1)) * 0.15);
-      if(Object.keys(constraints).length){
-        await streamTrack.applyConstraints({ advanced: [constraints] });
-      }
-    }catch(e){ /* not all browsers/cameras expose this — safe to ignore */ }
   }
 
   // ---- USB HID barcode scanner support ----
