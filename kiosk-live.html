@@ -368,7 +368,34 @@
     if(!id || busy) return;
 
     const now = Date.now();
-    if(recentScans[id] && (now - recentScans[id]) < SCAN_COOLDOWN_MS) return;
+    if (recentScans[id]) {
+        const timeSinceLastScan = now - recentScans[id];
+        
+        if (timeSinceLastScan < SCAN_COOLDOWN_MS) {
+            // A. The 2-Second Anti-Glitch Block
+            if (timeSinceLastScan < 2000) {
+                return;
+            }
+            
+            // B. The Grace Period Verification (2 to 15 seconds)
+            showCard(`
+              <div class="badge-top">
+                <span class="co-name">Easy Ways Connection Corp.</span>
+                <span class="badge-id">${id}</span>
+              </div>
+              <div class="badge-body">
+                <div>
+                  <div class="badge-name">ALREADY VERIFIED</div>
+                  <div class="badge-position">Attendance Confirmed</div>
+                </div>
+              </div>
+              <div class="badge-message">Your scan was already successfully logged. Have a great day!</div>
+            `, false, 2000);
+            
+            speak('Already verified.');
+            return; 
+        }
+    }
     recentScans[id] = now;
 
     busy = true;
