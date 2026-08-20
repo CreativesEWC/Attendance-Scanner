@@ -450,17 +450,17 @@
       verbose: false
     });
 
-    // FIX 1: Force a wide, horizontal rectangular scanning box
+    // We keep the wide rectangular box so it fits the whole barcode!
     const qrboxFn = (viewfinderWidth, viewfinderHeight) => {
       const w = Math.floor(viewfinderWidth * 0.90); 
-      const h = Math.floor(w * 0.4); // Forces height to be short and wide
+      const h = Math.floor(w * 0.4); 
       return { width: w, height: h };
     };
 
     try{
       await html5QrCode.start(
-        // FIX 2: Force iOS to provide an HD (720p) video feed for the JS decoder
-        { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+        // REVERTED: Back to the simple camera request that successfully turned on!
+        { facingMode: "environment" }, 
         {
           fps: 15,
           qrbox: qrboxFn,
@@ -475,7 +475,7 @@
         ()=>{}
       );
     }catch(err){
-      console.warn('Camera unavailable, USB scanner and manual entry still work:', err);
+      console.warn('Camera unavailable:', err);
     }
   }
   // ---- USB HID barcode scanner support ----
