@@ -2161,6 +2161,33 @@ if (ticketBtn) {
 });
 }
 
+// ---- REAL-TIME EMPLOYEE ALERTS ----
+  // Note: Check if your employee file uses 'supabase' or 'supabaseClient' and adjust this first line if needed!
+  const dashboardChannel = supabase.channel('employee-alerts'); 
+
+  // 1. Listen for urgent Announcements
+  dashboardChannel.on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'announcements' },
+    (payload) => {
+      console.log('New announcement:', payload);
+      alert("📢 New Company Announcement!\n\nPlease check your dashboard for details.");
+    }
+  );
+
+  // 2. Listen for general Notifications
+  dashboardChannel.on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'notifications' },
+    (payload) => {
+      console.log('New notification:', payload);
+      alert("🔔 You have a new notification!");
+    }
+  );
+
+  // Turn on the receiver to start listening
+  dashboardChannel.subscribe();
+
   // THIS BRACKET CLOSES THE ASYNC FUNCTION PROPERLY
 })(); 
 </script>
