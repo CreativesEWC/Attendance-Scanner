@@ -334,7 +334,7 @@
 
   // ---- Core scan handler (talks to Supabase) ----
   const recentScans = {};
-  const SCAN_COOLDOWN_MS = 8000;
+  const SCAN_COOLDOWN_MS = 15000;
   let busy = false;
   let lastScanWasAccepted = true; // controls how long the camera pauses after a read
   let consecutiveRejects = 0;     // repeated bad reads → surface manual-entry hint
@@ -373,7 +373,7 @@
         
         if (timeSinceLastScan < SCAN_COOLDOWN_MS) {
             // A. The 2-Second Anti-Glitch Block
-            if (timeSinceLastScan < 2000) {
+            if (timeSinceLastScan < 1500) {
                 return;
             }
             
