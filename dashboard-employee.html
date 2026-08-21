@@ -1078,6 +1078,52 @@ aside.sidebar.collapsed ~ main.main-content {
         });
     }
 
+  // Unlocks the Cancel Button for all roles
+    const rcCancelBtn = document.getElementById('rcCancelBtn');
+    if (rcCancelBtn) {
+        rcCancelBtn.addEventListener('click', () => {
+            document.getElementById('requestChangeModal').classList.remove('open');
+        });
+    }
+
+    // Unlocks the Submit Button for all roles
+    const rcSubmitBtn = document.getElementById('rcSubmitBtn');
+    if (rcSubmitBtn) {
+        // We use standard click listener instead of overwriting to prevent conflicts
+        rcSubmitBtn.addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevents accidental double-clicks
+            
+            const date_from = document.getElementById('rcDate').value;
+            const reason = document.getElementById('rcReason').value.trim();
+            
+            if (!reason) { 
+                alert('Please describe what change you are requesting.'); 
+                return; 
+            }
+
+            rcSubmitBtn.disabled = true; 
+            rcSubmitBtn.textContent = 'Submitting...';
+
+            const { error } = await supabaseClient.from('tickets').insert({
+                employee_id: emp.id,
+                ticket_type: 'schedule_change',
+                date_from: date_from,
+                reason: reason
+            });
+
+            rcSubmitBtn.disabled = false; 
+            rcSubmitBtn.textContent = 'Submit Request';
+
+            if (error) { 
+                alert('Could not submit request: ' + error.message); 
+                return; 
+            }
+            
+            document.getElementById('requestChangeModal').classList.remove('open');
+            alert('Your schedule change request has been sent for Admin review.');
+        });
+    }
+
 // ==========================================================
   // NOTIFICATION SYSTEM
   // ==========================================================
@@ -2557,7 +2603,7 @@ if (ticketBtn) {
 
   // Add the trigger right here!
     loadHomeShiftStatus();
-    loadMySchedule();
+    loadTwoWeekCalendar();
 
   // THIS BRACKET CLOSES THE ASYNC FUNCTION PROPERLY
 })(); 
