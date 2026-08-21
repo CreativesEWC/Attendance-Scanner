@@ -1099,6 +1099,47 @@ aside.sidebar.collapsed ~ main.main-content {
     }
 }
 
+  async function loadHomeShiftStatus() {
+    // 1. Pointing directly to Line 641 in your HTML!
+    const container = document.getElementById('teamLoading');
+    if (!container) return;
+
+    if (!emp || !emp.id) return;
+
+    try {
+        // 2. Fetch Theo's latest schedule from the database
+        const { data: scheduleData, error } = await supabaseClient
+            .from('employees')
+            .select('mon_sat_shift, sunday_duty')
+            .eq('id', emp.id)
+            .single();
+
+        if (error) throw error;
+
+        // 3. Format the text for the home card
+        let shiftDisplay = '<span style="color: #7488b6;">Unassigned</span>';
+        
+        if (scheduleData.mon_sat_shift === 'morning') {
+            shiftDisplay = '<span style="color: var(--paper); font-weight: bold;">Day: Shift 1 (6:00 AM - 3:00 PM)</span>';
+        } else if (scheduleData.mon_sat_shift === 'night') {
+            shiftDisplay = '<span style="color: var(--paper); font-weight: bold;">Night: Shift 2 (3:00 PM - 12:00 AM)</span>';
+        }
+
+        let sundayDisplay = scheduleData.sunday_duty 
+            ? ' | <span style="color: var(--amber-400); font-weight: bold;">Sunday Duty: ACTIVE (9:00 AM - 6:00 PM)</span>' 
+            : '';
+
+        // 4. Clean up the container class and inject the final text
+        container.className = ''; // Removes the loading animation class
+        container.style.padding = '15px'; // Adds a nice readable gap
+        container.innerHTML = `${shiftDisplay}${sundayDisplay}`;
+
+    } catch (err) {
+        console.error("Failed to load home shift status:", err);
+        container.innerHTML = '<span style="color: #d9614f;">Error loading status.</span>';
+    }
+}
+
   // Fetch Notifications
   async function loadNotifications() {
     if (!emp || !emp.id) return; 
@@ -2314,6 +2355,9 @@ if (ticketBtn) {
       }
     });
   }, 300);
+
+  // Add the trigger right here!
+    loadHomeShiftStatus();
 
   // THIS BRACKET CLOSES THE ASYNC FUNCTION PROPERLY
 })(); 
