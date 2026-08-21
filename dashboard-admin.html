@@ -893,9 +893,8 @@ aside.sidebar.collapsed ~ main.main-content {
     <div class="card">
       <h3>Sunday Rotation Roster</h3>
       <p style="color: #7488b6; font-size: 13px; margin-bottom: 15px;">Assign which Customer Service Representative is on duty for upcoming Sundays.</p>
-      <div id="csrScheduleList">
-         <div class="loading-note">Loading CSR roster...</div>
-      </div>
+      <div id="csrLoading" class="loading-note">Loading CSR roster...</div>
+    <div id="csrRosterContainer"></div>
     </div>
   </div>
 </div>
@@ -2808,10 +2807,14 @@ async function reviewTicket(ticketId, status, approverName) {
           viewLiveSeller.style.display = 'block';
           viewCsr.style.display = 'none';
         } else {
-          viewLiveSeller.style.display = 'none';
-          viewCsr.style.display = 'block';
-          // We will call loadCsrRoster() here when you're ready to build it!
-        }
+      viewLiveSeller.style.display = 'none';
+      viewCsr.style.display = 'block';
+      
+      // Call the function we just added at the bottom of your file!
+      loadCSRRoster(); 
+
+          
+    }
       });
     });
   }
@@ -3012,7 +3015,77 @@ async function reviewTicket(ticketId, status, approverName) {
       document.body.removeChild(link);
     });
   }
-  
+  // ---- CSR SUNDAY ROTATION LOADER ----
+  async function loadCSRRoster() {
+    // Check your HTML to make sure these IDs match your code!
+    const loadingText = document.getElementById('csrLoading'); 
+    const rosterContainer = document.getElementById('csrRosterContainer');
+    
+    if (!loadingText || !rosterContainer) return;
+
+    try {
+      // 1. Ask Supabase for all employees who have the CSR position, sorted A-Z
+      const { data: csrs, error } = await supabaseClient
+        .from('employees')
+        .select('id, name, avatar_url, position')
+        .ilike('position', '%CSR%')
+        .order('name'); 
+
+      if (error) throw error;
+
+      // 2. Hide the loading text
+      loadingText.style.display = 'none';
+
+      // 3. Build the Master Schedule UI
+      if (!csrs || csrs.length === 0) {
+        rosterContainer.innerHTML = '<p style="color: var(--amber-400);">No active CSRs found in the database.</p>';
+        return;
+      }
+
+      rosterContainer.innerHTML = csrs.map(csr => `
+        <div style="background: var(--navy-800); border: 1px solid var(--navy-600); padding: 12px; margin-bottom: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          
+          <!-- Employee Info -->
+          <div style="display: flex; align-items: center; gap: 12px; min-width: 200px;">
+            <img src="${csr.avatar_url || 'https://placehold.co/40x40'}" alt="${csr.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" onerror="this.onerror=null; this.src='https://placehold.co/40x40';">
+            <div>
+              <strong style="color: var(--paper);">${escapeHtml(csr.name)}</strong><br>
+              <span style="color: #7488b6; font-size: 12px;">${escapeHtml(csr.position)}</span>
+            </div>
+          </div>
+
+          <!-- Scheduling Controls -->
+          <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            
+            <!-- Mon-Sat Team Assignment -->
+            <div>
+              <label style="font-size: 11px; color: #7488b6; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Mon-Sat Team</label>
+              <select class="shift-select" data-employee-id="${csr.id}" style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--navy-600); background: var(--navy-900); color: var(--amber-400); font-weight: bold; cursor: pointer;">
+                <option value="unassigned">Select Team...</option>
+                <option value="morning">Day: Shift 1 (6:00 AM - 3:00 PM)</option>
+                <option value="night">Night: Shift 2 (3:00 PM - 12:00 AM)</option>
+              </select>
+            </div>
+            
+            <!-- Sunday Rotation Checkbox -->
+            <div>
+              <label style="font-size: 11px; color: #7488b6; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Weekend Shift</label>
+              <div style="background: var(--navy-900); border: 1px solid var(--navy-600); padding: 6px 12px; border-radius: 4px; display: flex; align-items: center; gap: 8px; height: 33px;">
+                <input type="checkbox" id="sun_${csr.id}" class="sunday-toggle" style="cursor: pointer; width: 16px; height: 16px;">
+                <label for="sun_${csr.id}" style="color: var(--amber-400); font-size: 13px; cursor: pointer; font-weight: bold; margin: 0;">Sunday (9:00 AM - 6:00 PM)</label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `).join('');
+
+    } catch (err) {
+      console.error("Failed to load CSRs:", err);
+      loadingText.textContent = "Error loading roster. Check console for details.";
+      loadingText.style.color = "#d9614f"; 
+    }
+  }
 })();
 </script>
 
