@@ -634,8 +634,20 @@ aside.sidebar.collapsed ~ main.main-content {
         <div class="today-line" id="schTodayLine">—</div>
         <div class="hint">Tap to see your full week</div>
       </div>
+    <!-- ========================================== -->
+    <!-- PASTE THE NEW TEAM GRID HERE -->
+    <section class="panel" style="margin-top: 24px;">
+      <h2>My Shift Group <span class="count" id="teamCount">—</span></h2>
+      <div id="teamLoading" class="loading-note">Loading team status...</div>
+      
+      <!-- The Grid Container -->
+      <div class="monitoring-grid" id="teamMonitoringGrid">
+        <!-- Team cards will be injected here by JS -->
+      </div>
+    </section>
+    <!-- ========================================== -->
 
-      <!-- Your existing metrics, attendance table, and announcements cards go here -->
+    <!-- Your existing metrics, attendance table, and announcements cards go here -->
     </div>
 
     <!-- 2. ANNOUNCEMENTS TAB PANEL -->
@@ -2165,23 +2177,74 @@ if (ticketBtn) {
   // Note: Check if your employee file uses 'supabase' or 'supabaseClient' and adjust this first line if needed!
   const dashboardChannel = supabase.channel('employee-alerts'); 
 
-  // 1. Listen for urgent Announcements
+  // 1. Listen for ANY Attendance Scans
   dashboardChannel.on(
     'postgres_changes',
-    { event: 'INSERT', schema: 'public', table: 'announcements' },
-    (payload) => {
-      console.log('New announcement:', payload);
-      alert("📢 New Company Announcement!\n\nPlease check your dashboard for details.");
-    }
-  );
+    { event: 'INSERT', schema: 'public', table: 'attendance_logs' },
+    async (payload) => {
+      const scannedId = payload.new.employee_id;
 
-  // 2. Listen for general Notifications
-  dashboardChannel.on(
-    'postgres_changes',
-    { event: 'INSERT', schema: 'public', table: 'notifications' },
-    (payload) => {
-      console.log('New notification:', payload);
-      alert("🔔 You have a new notification!");
+      // Do a lightning-fast lookup to see who just scanned
+      const { data: scannedUser } = await supabaseClient
+        .from('employees')
+        .select('name, brand_id')
+        .eq('id', scannedId)
+        .single();
+
+      if (!scannedUser) return;
+
+      const timeString = new Date(payload.new.time_in).toLocaleTimeString([], {
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      // SCENARIO A: It is the logged-in employee's own time-in
+      if (scannedId === emp.id) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-banner';
+        toast.innerHTML = `
+          <strong style="color: var(--mint-500); display: block; margin-bottom: 4px; font-size: 14px;">
+            ✅ Time In Saved!
+          </strong>
+          ${timeString}<br>
+          <span style="color: #7488b6; font-size: 11px; margin-top: 8px; display: inline-block;">
+            Click to check attendance details &rarr;
+          </span>
+        `;
+        
+        toast.onclick = () => {
+          const attTab = document.querySelector('.sidebar-nav button[data-tab="attendance"]');
+          if (attTab) attTab.click();
+          toast.remove();
+        };
+
+        document.getElementById('toastBox').appendChild(toast);
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 10000);
+      }
+      
+      // SCENARIO B: It is a teammate in the exact same brand group!
+      else if (scannedUser.brand_id === emp.brand_id) {
+        const toast = document.createElement('div');
+        
+        // We style this one slightly differently (Red & White theme) so they know it's a team alert
+        toast.className = 'toast-banner';
+        toast.style.borderLeft = '4px solid #d9614f'; 
+        
+        toast.innerHTML = `
+          <strong style="color: #d9614f; display: block; margin-bottom: 4px; font-size: 14px;">
+            👋 Team Update
+          </strong>
+          <span style="color: #ffffff; font-size: 13px;">
+            <b>${scannedUser.name.split(' ')[0]}</b> just timed in for their shift!
+          </span>
+          <br>
+          <span style="color: #cbd5e1; font-size: 11px; margin-top: 8px; display: inline-block;">
+            ${timeString}
+          </span>
+        `;
+        
+        document.getElementById('toastBox').appendChild(toast);
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 10000);
+      }
     }
   );
 
