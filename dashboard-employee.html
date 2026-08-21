@@ -1039,19 +1039,44 @@ aside.sidebar.collapsed ~ main.main-content {
     const openChangeReqBtn = document.getElementById('openChangeReqBtn');
     if (openChangeReqBtn) {
         openChangeReqBtn.addEventListener('click', () => {
+            const dateSelect = document.getElementById('rcDate');
+            
+            if (dateSelect) {
+                // 1. Find this week's Monday
+                const today = new Date();
+                const day = today.getDay();
+                const diffToMonday = day === 0 ? -6 : 1 - day;
+                const monday = new Date(today);
+                monday.setDate(today.getDate() + diffToMonday);
+
+                let optionsHTML = '';
+                
+                // 2. Generate the exact same 14 days for the dropdown
+                for (let i = 0; i < 14; i++) {
+                    const currentDay = new Date(monday);
+                    currentDay.setDate(monday.getDate() + i);
+                    
+                    // Creates a nice label like "Mon, Aug 24"
+                    const label = currentDay.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    
+                    // Creates the database value like "2026-08-24"
+                    const valueStr = currentDay.getFullYear() + '-' + String(currentDay.getMonth() + 1).padStart(2, '0') + '-' + String(currentDay.getDate()).padStart(2, '0');
+                    
+                    optionsHTML += `<option value="${valueStr}">${label}</option>`;
+                }
+                
+                // 3. Inject the dates into the dropdown
+                dateSelect.innerHTML = optionsHTML;
+            }
+
+            // 4. Clear the text box just in case they typed something previously
+            const reasonBox = document.getElementById('rcReason');
+            if (reasonBox) reasonBox.value = '';
+
+            // 5. Open the modal!
             document.getElementById('requestChangeModal').classList.add('open');
         });
     }
-
-    // Automatically fetch the 14-day calendar whenever the Schedule tab is clicked
-    const navButtonsSchedule = document.querySelectorAll('.sidebar-nav button[data-tab]');
-    navButtonsSchedule.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (btn.getAttribute('data-tab') === 'schedule') {
-                loadTwoWeekCalendar();
-            }
-        });
-    });
 
 // ==========================================================
   // NOTIFICATION SYSTEM
@@ -1188,6 +1213,9 @@ aside.sidebar.collapsed ~ main.main-content {
 
         let html = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        // NEW: A tracker to make sure we don't double-book their Sundays
+        let firstSundayProcessed = false;
 
         // Loop for exactly 14 days (2 weeks)
         for (let i = 0; i < 14; i++) {
@@ -1201,20 +1229,23 @@ aside.sidebar.collapsed ~ main.main-content {
             let rowStyle = "background: var(--navy-900); border: 1px solid var(--line);";
 
             if (isSunday) {
-                if (scheduleData.sunday_duty) {
+                // Check if they have duty AND we haven't already booked a Sunday for them
+                if (scheduleData.sunday_duty && !firstSundayProcessed) {
                     dayContent = '<strong style="color: var(--navy-950);">Sunday Duty (9:00 AM - 6:00 PM)</strong>';
                     rowStyle = "background: var(--amber-400); border: 1px solid var(--amber-500); color: var(--navy-950);";
                 } else {
                     dayContent = '<span style="color: #7488b6;">Day Off</span>';
                     rowStyle = "background: rgba(255,255,255,0.02); border: 1px dashed var(--line);";
                 }
+                // Mark that we have passed the first Sunday so the second one is forced to a Day Off
+                firstSundayProcessed = true; 
             }
 
             html += `
                 <div style="${rowStyle} border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                     <div style="display: flex; gap: 15px; align-items: center; min-width: 150px;">
-                        <div style="font-family: var(--font-mono); font-size: 14px; font-weight: bold; width: 55px; ${isSunday && scheduleData.sunday_duty ? 'color: var(--navy-950);' : 'color: var(--amber-400);'}">${dateStr}</div>
-                        <div style="font-size: 13px; font-weight: 600; width: 80px; ${isSunday && scheduleData.sunday_duty ? 'color: var(--navy-950);' : 'color: #7488b6;'}">${dayOfWeek}</div>
+                        <div style="font-family: var(--font-mono); font-size: 14px; font-weight: bold; width: 55px; ${isSunday && scheduleData.sunday_duty && (dayContent !== '<span style="color: #7488b6;">Day Off</span>') ? 'color: var(--navy-950);' : 'color: var(--amber-400);'}">${dateStr}</div>
+                        <div style="font-size: 13px; font-weight: 600; width: 80px; ${isSunday && scheduleData.sunday_duty && (dayContent !== '<span style="color: #7488b6;">Day Off</span>') ? 'color: var(--navy-950);' : 'color: #7488b6;'}">${dayOfWeek}</div>
                     </div>
                     <div style="font-size: 13px; text-align: right;">${dayContent}</div>
                 </div>
