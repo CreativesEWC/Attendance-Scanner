@@ -1020,6 +1020,18 @@ aside.sidebar.collapsed ~ main.main-content {
       }
     }
 
+  // Open Schedule Modal when Sidebar Button is clicked
+const scheduleSidebarBtn = document.getElementById('scheduleNavBtn');
+if (scheduleSidebarBtn) {
+    scheduleSidebarBtn.addEventListener('click', () => {
+        // 1. Fetch the latest data
+        loadMySchedule(); 
+        
+        // 2. Open the modal window
+        document.getElementById('scheduleModal').classList.add('open');
+    });
+}
+
 // ==========================================================
   // NOTIFICATION SYSTEM
   // ==========================================================
