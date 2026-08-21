@@ -1274,7 +1274,7 @@ aside.sidebar.collapsed ~ main.main-content {
 
       const { error: dbError } = await supabaseClient
         .from('employees')
-        .update({ profile_image: imageUrl })
+        .update({ avatar_url: imageUrl })
         .eq('id', employeeId);
 
       if (dbError) throw dbError;
@@ -1438,7 +1438,7 @@ aside.sidebar.collapsed ~ main.main-content {
     }
     tbody.innerHTML = rows.map(e => {
       // Fallback avatar style if no image exists yet
-      const avatarSrc = e.profile_image ? escapeHtml(e.profile_image) : 'https://via.placeholder.com/40?text=No+Img';
+      const avatarSrc = e.avatar_url ? escapeHtml(e.avatar_url) : 'https://via.placeholder.com/40?text=No+Img';
       
       return `
         <tr>
@@ -2645,7 +2645,7 @@ async function reviewTicket(ticketId, status, approverName) {
 
   // Populate Sidebar & Account Tab with current Admin data
   function populateAccountDetails() {
-    const avatar = emp.profile_image || 'https://via.placeholder.com/80';
+    const avatar = emp.avatar_url || 'https://via.placeholder.com/80';
     document.getElementById('sidebarAvatarImg').src = avatar;
     document.getElementById('sidebarNameTxt').textContent = emp.name.split(' ')[0];
     
@@ -2713,7 +2713,7 @@ async function reviewTicket(ticketId, status, approverName) {
     
     grid.innerHTML = filtered.map(e => `
       <div class="emp-card">
-        <img src="${e.profile_image || 'https://via.placeholder.com/50'}" alt="Avatar">
+        <img src="${e.avatar_url || 'https://via.placeholder.com/50'}" alt="Avatar">
         <div class="info">
           <h4 class="name">${escapeHtml(e.name)}</h4>
           <div class="id-num">ID NUMBER: ${escapeHtml(e.badge_id)}</div>
