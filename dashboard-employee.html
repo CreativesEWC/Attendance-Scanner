@@ -2265,7 +2265,7 @@ if (ticketBtn) {
 
 // ---- REAL-TIME EMPLOYEE ALERTS ----
   // Note: Check if your employee file uses 'supabase' or 'supabaseClient' and adjust this first line if needed!
-  const dashboardChannel = supabase.channel('employee-alerts'); 
+  const dashboardChannel = supabaseClient.channel('employee-alerts'); 
 
   // 1. Listen for ANY Attendance Scans
   dashboardChannel.on(
