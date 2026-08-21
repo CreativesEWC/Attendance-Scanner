@@ -3101,6 +3101,48 @@ async function reviewTicket(ticketId, status, approverName) {
         </div>
       `).join('');
 
+      // --- AUTO-SAVE SCHEDULE ENGINE ---
+      
+      // 1. Listen for changes on any Mon-Sat dropdown
+      document.querySelectorAll('.shift-select').forEach(select => {
+          select.addEventListener('change', async (e) => {
+              const employeeId = e.target.getAttribute('data-employee-id');
+              const newShift = e.target.value;
+              
+              // Give Ming a tiny visual cue that it is saving
+              e.target.style.opacity = '0.5';
+              
+              const { error } = await supabaseClient
+                  .from('employees')
+                  .update({ mon_sat_shift: newShift })
+                  .eq('id', employeeId);
+                  
+              if (error) {
+                  alert("Error saving shift: " + error.message);
+              }
+              
+              // Restore visual state
+              e.target.style.opacity = '1';
+          });
+      });
+
+      // 2. Listen for changes on any Sunday checkbox
+      document.querySelectorAll('.sunday-toggle').forEach(checkbox => {
+          checkbox.addEventListener('change', async (e) => {
+              const employeeId = e.target.getAttribute('data-employee-id');
+              const isAssigned = e.target.checked;
+              
+              const { error } = await supabaseClient
+                  .from('employees')
+                  .update({ sunday_duty: isAssigned })
+                  .eq('id', employeeId);
+                  
+              if (error) {
+                  alert("Error saving Sunday duty: " + error.message);
+              }
+          });
+      });
+
     } catch (err) {
       console.error("Failed to load CSRs:", err);
       loadingText.textContent = "Error loading roster. Check console for details.";
