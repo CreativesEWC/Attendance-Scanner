@@ -3101,48 +3101,65 @@ async function reviewTicket(ticketId, status, approverName) {
         </div>
       `).join('');
 
-      // --- AUTO-SAVE SCHEDULE ENGINE ---
-      
-      // 1. Listen for changes on any Mon-Sat dropdown
-      document.querySelectorAll('.shift-select').forEach(select => {
-          select.addEventListener('change', async (e) => {
-              const employeeId = e.target.getAttribute('data-employee-id');
-              const newShift = e.target.value;
-              
-              // Give Ming a tiny visual cue that it is saving
-              e.target.style.opacity = '0.5';
-              
-              const { error } = await supabaseClient
-                  .from('employees')
-                  .update({ mon_sat_shift: newShift })
-                  .eq('id', employeeId);
-                  
-              if (error) {
-                  alert("Error saving shift: " + error.message);
-              }
-              
-              // Restore visual state
-              e.target.style.opacity = '1';
-          });
-      });
+      // --- AUTO-SAVE SCHEDULE ENGINE (UPGRADED) ---
 
-      // 2. Listen for changes on any Sunday checkbox
-      document.querySelectorAll('.sunday-toggle').forEach(checkbox => {
-          checkbox.addEventListener('change', async (e) => {
-              const employeeId = e.target.getAttribute('data-employee-id');
-              const isAssigned = e.target.checked;
-              
-              const { error } = await supabaseClient
-                  .from('employees')
-                  .update({ sunday_duty: isAssigned })
-                  .eq('id', employeeId);
-                  
-              if (error) {
-                  alert("Error saving Sunday duty: " + error.message);
-              }
-          });
-      });
+    // 1. Listen for changes on any Mon-Sat dropdown
+    document.querySelectorAll('.shift-select').forEach(select => {
+        select.addEventListener('change', async (e) => {
+            const employeeId = e.target.getAttribute('data-employee-id');
+            const newShift = e.target.value;
+            
+            e.target.style.opacity = '0.5';
+            const { error } = await supabaseClient
+                .from('employees')
+                .update({ mon_sat_shift: newShift })
+                .eq('id', employeeId);
+                
+            if (error) alert("Error saving shift: " + error.message);
+            e.target.style.opacity = '1';
+        });
+    });
 
+    // 2. Calculate the exact date for the Upcoming Sunday
+    const today = new Date();
+    const diffToSunday = today.getDay() === 0 ? 0 : 7 - today.getDay();
+    const nextSun = new Date(today);
+    nextSun.setDate(today.getDate() + diffToSunday);
+    const sunLabel = nextSun.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    // 3. Listen for Sunday changes with Auto-Switching Logic
+    document.querySelectorAll('.sunday-toggle').forEach(checkbox => {
+        
+        // Dynamically update Ming's label to show the exact date
+        const labelEl = document.querySelector(`label[for="${checkbox.id}"]`);
+        if (labelEl) labelEl.textContent = `Active Duty (${sunLabel})`;
+
+        checkbox.addEventListener('change', async (e) => {
+            const employeeId = e.target.getAttribute('data-employee-id');
+            const isAssigned = e.target.checked;
+            
+            // SMART LOGIC: If Ming turns this person ON, instantly turn everyone else OFF
+            if (isAssigned) {
+                document.querySelectorAll('.sunday-toggle').forEach(async (otherBox) => {
+                    if (otherBox !== e.target && otherBox.checked) {
+                        otherBox.checked = false; // Turn off visually on Ming's screen
+                        const otherId = otherBox.getAttribute('data-employee-id');
+                        
+                        // Wipe their Sunday duty from the database instantly
+                        await supabaseClient.from('employees').update({ sunday_duty: false }).eq('id', otherId);
+                    }
+                });
+            }
+            
+            // Save Ming's actual click to the database
+            const { error } = await supabaseClient
+                .from('employees')
+                .update({ sunday_duty: isAssigned })
+                .eq('id', employeeId);
+                
+            if (error) alert("Error saving Sunday duty: " + error.message);
+        });
+    });
     } catch (err) {
       console.error("Failed to load CSRs:", err);
       loadingText.textContent = "Error loading roster. Check console for details.";
