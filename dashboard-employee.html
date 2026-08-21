@@ -1050,6 +1050,55 @@ aside.sidebar.collapsed ~ main.main-content {
     return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
+  async function loadMySchedule(employeeUuid) {
+    // Pointing directly to Line 783 in your HTML!
+    const container = document.getElementById('scheduleDaysList');
+    if (!container) return;
+
+    container.innerHTML = '<p style="color: #7488b6;">Loading your shifts...</p>';
+
+    try {
+        // Fetch this employee's schedule from Supabase
+        const { data: scheduleData, error } = await supabaseClient
+            .from('employees')
+            .select('mon_sat_shift, sunday_duty')
+            .eq('id', emp.id) 
+            .single();
+
+        if (error) throw error;
+
+        // 1. Format the Mon-Sat Shift
+        let shiftText = '<span style="color: #7488b6;">Unassigned</span>';
+        if (scheduleData.mon_sat_shift === 'morning') {
+            shiftText = '<strong style="color: var(--amber-400);">Day: Shift 1 (6:00 AM - 3:00 PM)</strong>';
+        } else if (scheduleData.mon_sat_shift === 'night') {
+            shiftText = '<strong style="color: var(--amber-400);">Night: Shift 2 (3:00 PM - 12:00 AM)</strong>';
+        }
+
+        // 2. Format the Sunday Duty
+        let sundayText = '<span style="color: #7488b6;">Off Duty</span>';
+        if (scheduleData.sunday_duty) {
+            sundayText = '<strong style="color: var(--amber-400);">Assigned (9:00 AM - 6:00 PM)</strong>';
+        }
+
+        // 3. Inject it into your modal's container
+        container.innerHTML = `
+            <div style="background: var(--navy-900); padding: 15px; border-radius: 6px; margin-bottom: 10px; border: 1px solid var(--navy-600);">
+                <p style="font-size: 11px; color: #7488b6; text-transform: uppercase; margin-bottom: 4px;">Monday - Saturday Team</p>
+                ${shiftText}
+            </div>
+            <div style="background: var(--navy-900); padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--navy-600);">
+                <p style="font-size: 11px; color: #7488b6; text-transform: uppercase; margin-bottom: 4px;">Upcoming Sunday Duty</p>
+                ${sundayText}
+            </div>
+        `;
+
+    } catch (err) {
+        console.error("Failed to load schedule:", err);
+        container.innerHTML = '<p style="color: #d9614f;">Error loading schedule. Please contact Ming.</p>';
+    }
+}
+
   // Fetch Notifications
   async function loadNotifications() {
     if (!emp || !emp.id) return; 
