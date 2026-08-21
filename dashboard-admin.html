@@ -2910,6 +2910,82 @@ async function reviewTicket(ticketId, status, approverName) {
         csvContent += rowData.join(",") + "\r\n";
       }
 
+      // ---- PAYROLL: ADD DYNAMIC COLUMN ----
+  const addColBtn = document.getElementById('addColBtn');
+  if (addColBtn) {
+    addColBtn.addEventListener('click', () => {
+      // 1. Ask the manager for the column name
+      const colName = prompt("Enter the new column name (e.g., Bonus, Tax, Deduction):");
+      if (!colName) return; // Cancel if they leave it blank
+
+      const table = document.getElementById('payrollTable');
+      const theadRow = table.querySelector('thead tr');
+      const tbodyRows = table.querySelectorAll('#payrollBody tr');
+
+      // 2. Add the Header right before "Net Total"
+      const th = document.createElement('th');
+      th.style.padding = '12px';
+      th.style.color = 'var(--amber-400)';
+      th.textContent = colName;
+      theadRow.insertBefore(th, theadRow.lastElementChild);
+
+      // 3. Add an input box for every employee right before their "Net Total"
+      tbodyRows.forEach(row => {
+        const td = document.createElement('td');
+        td.style.padding = '12px';
+        td.innerHTML = `<input type="number" class="dynamic-col" data-name="${colName}" placeholder="0.00" style="padding: 6px; border-radius: 4px; border: 1px solid var(--navy-600); background: var(--navy-800); color: white; width: 100px;">`;
+        row.insertBefore(td, row.lastElementChild);
+      });
+    });
+  }
+
+  // ---- PAYROLL: CALCULATE FORMULA ----
+  const calculateBtn = document.getElementById('calculateBtn');
+  if (calculateBtn) {
+    calculateBtn.addEventListener('click', () => {
+      const formulaInput = document.getElementById('formulaInput').value;
+      
+      if (!formulaInput) {
+        alert("Please enter a formula first (e.g., Base + Bonus - Tax)");
+        return;
+      }
+
+      const tbodyRows = document.querySelectorAll('#payrollBody tr');
+
+      tbodyRows.forEach(row => {
+        let mathString = formulaInput;
+
+        // 1. Swap the word "Base" for the actual Base Pay number
+        const baseInput = row.querySelector('.base-pay');
+        const baseVal = parseFloat(baseInput?.value) || 0;
+        mathString = mathString.replace(/Base/g, baseVal);
+
+        // 2. Swap any dynamic column names (like "Bonus") for their numbers
+        const dynamicInputs = row.querySelectorAll('.dynamic-col');
+        dynamicInputs.forEach(input => {
+          const colName = input.getAttribute('data-name');
+          const val = parseFloat(input.value) || 0;
+          
+          // Find the exact word in the formula and replace it with the number
+          const regex = new RegExp(colName, 'g');
+          mathString = mathString.replace(regex, val);
+        });
+
+        // 3. Do the math and put the result in the Net Total box
+        try {
+          // This safely calculates the math string (e.g., turns "100 + 50" into 150)
+          const result = new Function('return ' + mathString)();
+          const netTotalInput = row.querySelector('.net-total');
+          if (netTotalInput) netTotalInput.value = parseFloat(result).toFixed(2);
+        } catch (error) {
+          console.error("Formula error:", error);
+          const netTotalInput = row.querySelector('.net-total');
+          if (netTotalInput) netTotalInput.value = "Error";
+        }
+      });
+    });
+  }
+
       // Trigger the browser to download the file
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
