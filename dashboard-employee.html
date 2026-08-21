@@ -704,6 +704,21 @@ aside.sidebar.collapsed ~ main.main-content {
       </section>
     </div>
 
+    <!-- SCHEDULE TAB PANEL (NEW 14-DAY VIEW) -->
+    <div id="tab-schedule" class="tab-panel" style="display:none;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
+        <div>
+          <h1 style="margin: 0; font-family: var(--font-display); font-size: 24px; color: var(--amber-400);">My Schedule</h1>
+          <p style="color: #7488b6; margin-top: 4px; font-size: 14px;">Your 14-day shift rotation.</p>
+        </div>
+        <button class="btn2 primary" id="openChangeReqBtn">Request Change</button>
+      </div>
+
+      <div id="twoWeekCalendarGrid">
+        <!-- The 14-day timeline will generate here -->
+      </div>
+    </div>
+
     <!-- 5. SUBMISSION FORMS TAB PANEL -->
     <div id="tab-submissions" class="tab-panel" style="display:none;">
       <div style="margin-bottom: 24px;">
@@ -1020,17 +1035,23 @@ aside.sidebar.collapsed ~ main.main-content {
       }
     }
 
-  // Open Schedule Modal when Sidebar Button is clicked
-const scheduleSidebarBtn = document.getElementById('scheduleNavBtn');
-if (scheduleSidebarBtn) {
-    scheduleSidebarBtn.addEventListener('click', () => {
-        // 1. Fetch the latest data
-        loadMySchedule(); 
-        
-        // 2. Open the modal window
-        document.getElementById('scheduleModal').classList.add('open');
+  // Hook up the Request Change button on the new page
+    const openChangeReqBtn = document.getElementById('openChangeReqBtn');
+    if (openChangeReqBtn) {
+        openChangeReqBtn.addEventListener('click', () => {
+            document.getElementById('requestChangeModal').classList.add('open');
+        });
+    }
+
+    // Automatically fetch the 14-day calendar whenever the Schedule tab is clicked
+    const navButtonsSchedule = document.querySelectorAll('.sidebar-nav button[data-tab]');
+    navButtonsSchedule.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.getAttribute('data-tab') === 'schedule') {
+                loadTwoWeekCalendar();
+            }
+        });
     });
-}
 
 // ==========================================================
   // NOTIFICATION SYSTEM
@@ -1132,6 +1153,80 @@ if (scheduleSidebarBtn) {
     } catch (err) {
         console.error("Failed to load full schedule:", err);
         container.innerHTML = '<p style="color: #d9614f;">Error loading schedule. Please contact Admin.</p>';
+    }
+}
+
+ async function loadTwoWeekCalendar() {
+    const container = document.getElementById('twoWeekCalendarGrid');
+    if (!container) return;
+    if (!emp || !emp.id) return;
+
+    container.innerHTML = '<p style="color: #7488b6;">Loading your 14-day calendar...</p>';
+
+    try {
+        const { data: scheduleData, error } = await supabaseClient
+            .from('employees')
+            .select('mon_sat_shift, sunday_duty')
+            .eq('id', emp.id)
+            .single();
+
+        if (error) throw error;
+
+        // Find this week's Monday
+        const today = new Date();
+        const day = today.getDay();
+        const diffToMonday = day === 0 ? -6 : 1 - day; 
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + diffToMonday);
+
+        let shiftTime = '<span style="color: #7488b6;">Unassigned</span>';
+        if (scheduleData.mon_sat_shift === 'morning') {
+            shiftTime = '<strong style="color: var(--paper);">Shift 1 (6:00 AM - 3:00 PM)</strong>';
+        } else if (scheduleData.mon_sat_shift === 'night') {
+            shiftTime = '<strong style="color: var(--paper);">Shift 2 (3:00 PM - 12:00 AM)</strong>';
+        }
+
+        let html = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // Loop for exactly 14 days (2 weeks)
+        for (let i = 0; i < 14; i++) {
+            const currentDay = new Date(monday);
+            currentDay.setDate(monday.getDate() + i);
+            const dateStr = currentDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const dayOfWeek = days[i % 7];
+            const isSunday = (i % 7) === 6;
+
+            let dayContent = shiftTime;
+            let rowStyle = "background: var(--navy-900); border: 1px solid var(--line);";
+
+            if (isSunday) {
+                if (scheduleData.sunday_duty) {
+                    dayContent = '<strong style="color: var(--navy-950);">Sunday Duty (9:00 AM - 6:00 PM)</strong>';
+                    rowStyle = "background: var(--amber-400); border: 1px solid var(--amber-500); color: var(--navy-950);";
+                } else {
+                    dayContent = '<span style="color: #7488b6;">Day Off</span>';
+                    rowStyle = "background: rgba(255,255,255,0.02); border: 1px dashed var(--line);";
+                }
+            }
+
+            html += `
+                <div style="${rowStyle} border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; gap: 15px; align-items: center; min-width: 150px;">
+                        <div style="font-family: var(--font-mono); font-size: 14px; font-weight: bold; width: 55px; ${isSunday && scheduleData.sunday_duty ? 'color: var(--navy-950);' : 'color: var(--amber-400);'}">${dateStr}</div>
+                        <div style="font-size: 13px; font-weight: 600; width: 80px; ${isSunday && scheduleData.sunday_duty ? 'color: var(--navy-950);' : 'color: #7488b6;'}">${dayOfWeek}</div>
+                    </div>
+                    <div style="font-size: 13px; text-align: right;">${dayContent}</div>
+                </div>
+            `;
+        }
+        
+        html += `</div>`;
+        container.innerHTML = html;
+
+    } catch (err) {
+        console.error("Failed to load 14-day calendar:", err);
+        container.innerHTML = '<p style="color: #d9614f;">Error loading schedule.</p>';
     }
 }
 
