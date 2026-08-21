@@ -2251,6 +2251,21 @@ if (ticketBtn) {
   // Turn on the receiver to start listening
   dashboardChannel.subscribe();
 
+  // ---- BROKEN AVATAR SWEEPER ----
+  // This checks the images a split-second after the dashboard loads.
+  // If it finds a broken or blank link, it forces the placeholder.
+  setTimeout(() => {
+    const avatarIds = ['avatarImg', 'sidebarAvatarImg', 'acctAvatar'];
+    
+    avatarIds.forEach(id => {
+      const img = document.getElementById(id);
+      // If the image exists, but the link is empty, broken, or literally says "null"
+      if (img && (!img.getAttribute('src') || img.src.includes('null') || img.src.includes('undefined'))) {
+        img.src = 'https://via.placeholder.com/50';
+      }
+    });
+  }, 300);
+
   // THIS BRACKET CLOSES THE ASYNC FUNCTION PROPERLY
 })(); 
 </script>
