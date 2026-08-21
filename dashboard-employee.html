@@ -780,7 +780,9 @@ aside.sidebar.collapsed ~ main.main-content {
 <div class="modal-overlay" id="scheduleModal">
   <div class="modal-box">
     <h2>Your Schedule for the Week</h2>
-    <div id="scheduleDaysList"></div>
+    <div id="scheduleDaysList">
+      <!-- The vertical schedule will inject here -->
+    </div>
     <div class="modal-actions">
       <button class="btn2 primary" id="requestChangeBtn">Request Change Schedule</button>
       <button class="btn2" id="closeScheduleModalBtn">Close</button>
@@ -1124,15 +1126,15 @@ aside.sidebar.collapsed ~ main.main-content {
     }
 }
 
-  async function loadHomeShiftStatus() {
-    // 1. Pointing directly to Line 641 in your HTML!
+ async function loadHomeShiftStatus() {
+    // Targets the Home Screen card exactly
     const container = document.getElementById('teamLoading');
     if (!container) return;
-
     if (!emp || !emp.id) return;
 
+    container.innerHTML = '<p style="color: #7488b6; margin-top: 15px;">Loading your shifts...</p>';
+
     try {
-        // 2. Fetch Theo's latest schedule from the database
         const { data: scheduleData, error } = await supabaseClient
             .from('employees')
             .select('mon_sat_shift, sunday_duty')
@@ -1141,27 +1143,64 @@ aside.sidebar.collapsed ~ main.main-content {
 
         if (error) throw error;
 
-        // 3. Format the text for the home card
-        let shiftDisplay = '<span style="color: #7488b6;">Unassigned</span>';
-        
+        // 1. Calculate this week's dates
+        const today = new Date();
+        const day = today.getDay();
+        const diffToMonday = day === 0 ? -6 : 1 - day; 
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + diffToMonday);
+
+        // 2. Define shift times
+        let shiftTime = '<span style="color: #7488b6;">Unassigned</span>';
         if (scheduleData.mon_sat_shift === 'morning') {
-            shiftDisplay = '<span style="color: var(--paper); font-weight: bold;">Day: Shift 1 (6:00 AM - 3:00 PM)</span>';
+            shiftTime = '<strong style="color: var(--paper);">Shift 1 (6:00 AM - 3:00 PM)</strong>';
         } else if (scheduleData.mon_sat_shift === 'night') {
-            shiftDisplay = '<span style="color: var(--paper); font-weight: bold;">Night: Shift 2 (3:00 PM - 12:00 AM)</span>';
+            shiftTime = '<strong style="color: var(--paper);">Shift 2 (3:00 PM - 12:00 AM)</strong>';
         }
 
-        let sundayDisplay = scheduleData.sunday_duty 
-            ? ' | <span style="color: var(--amber-400); font-weight: bold;">Sunday Duty: ACTIVE (9:00 AM - 6:00 PM)</span>' 
-            : '';
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        
+        // Removed the extra box background here so it looks seamless on the Home card
+        let scheduleHTML = `<div style="margin-top: 15px;">`;
 
-        // 4. Clean up the container class and inject the final text
-        container.className = ''; // Removes the loading animation class
-        container.style.padding = '15px'; // Adds a nice readable gap
-        container.innerHTML = `${shiftDisplay}${sundayDisplay}`;
+        // 3. Loop through Monday - Saturday
+        for (let i = 0; i < 6; i++) {
+            const currentDay = new Date(monday);
+            currentDay.setDate(monday.getDate() + i);
+            const dateStr = currentDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            scheduleHTML += `
+                <div style="padding: 8px 0; border-bottom: 1px solid var(--navy-600); display: flex; font-size: 13px;">
+                    <span style="color: var(--amber-400); width: 65px;">${dateStr}</span> 
+                    <span style="color: #7488b6; width: 90px;">| ${days[i]}</span> 
+                    <span>- ${shiftTime}</span>
+                </div>`;
+        }
+
+        // 4. Calculate and append Sunday
+        const upcomingSunday = new Date(monday);
+        upcomingSunday.setDate(monday.getDate() + 6);
+        const sunStr = upcomingSunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        let sunDuty = '<span style="color: #7488b6;">Day Off</span>';
+        if (scheduleData.sunday_duty) {
+            sunDuty = '<strong style="color: var(--amber-400);">Sunday Duty (9:00 AM - 6:00 PM)</strong>';
+        }
+
+        scheduleHTML += `
+                <div style="padding: 8px 0; display: flex; font-size: 13px;">
+                    <span style="color: var(--amber-400); width: 65px;">${sunStr}</span> 
+                    <span style="color: #7488b6; width: 90px;">| Sunday</span> 
+                    <span>- ${sunDuty}</span>
+                </div>
+            </div>`; 
+
+        container.className = '';
+        container.innerHTML = scheduleHTML;
 
     } catch (err) {
-        console.error("Failed to load home shift status:", err);
-        container.innerHTML = '<span style="color: #d9614f;">Error loading status.</span>';
+        console.error("Failed to load full schedule:", err);
+        container.innerHTML = '<p style="color: #d9614f; margin-top: 15px;">Error loading schedule.</p>';
     }
 }
 
@@ -2383,6 +2422,7 @@ if (ticketBtn) {
 
   // Add the trigger right here!
     loadHomeShiftStatus();
+    loadMySchedule();
 
   // THIS BRACKET CLOSES THE ASYNC FUNCTION PROPERLY
 })(); 
