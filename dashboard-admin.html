@@ -2833,14 +2833,34 @@ async function reviewTicket(ticketId, status, approverName) {
   const dashboardChannel = supabaseClient.channel('dashboard-alerts');
 
   // 1. Listen for new Attendance Scans
-  dashboardChannel.on(
-    'postgres_changes',
-    { event: 'INSERT', schema: 'public', table: 'attendance_logs' },
-    (payload) => {
-      console.log('New scan received:', payload);
-      alert("🚨 New Attendance Scan Logged!\n\nDetails: " + JSON.stringify(payload.new));
-    }
-  );
+    dashboardChannel.on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'attendance_logs' },
+      (payload) => {
+        console.log('New scan received:', payload);
+        
+        // Convert that messy database timestamp into a clean, readable time
+        const timeInRaw = payload.new.time_in;
+        let formattedTime = "Unknown Time";
+        
+        if (timeInRaw) {
+            const dateObj = new Date(timeInRaw);
+            formattedTime = dateObj.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                hour12: true 
+            });
+        }
+        
+        // Show a clean, human-readable alert to Ming
+        alert(`🚨 New Attendance Scan Logged!\n\nTime In: ${formattedTime}\n\n(The monitoring board will now update automatically.)`);
+        
+        // Automatically refresh the Time In board
+        if (typeof loadMonitoringBoard === 'function') {
+            loadMonitoringBoard();
+        }
+      }
+    );
 
   // 2. Listen for urgent Announcements
   dashboardChannel.on(
