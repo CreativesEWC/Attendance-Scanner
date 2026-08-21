@@ -2095,7 +2095,7 @@ if (ticketBtn) {
 
         const { error: dbError } = await supabaseClient
           .from('employees')
-          .update({ profile_image: imageUrl })
+          .update({ avatar_url: imageUrl })
           .eq('id', emp.id); 
 
         if (dbError) throw dbError;
@@ -2150,7 +2150,7 @@ if (ticketBtn) {
         // 3. Save the URL to the logged-in user's database record
         const { error: dbError } = await supabaseClient
           .from('employees')
-          .update({ profile_image: imageUrl })
+          .update({ avatar_url: imageUrl })
           .eq('id', emp.id);
 
         if (dbError) throw dbError;
@@ -2164,7 +2164,7 @@ if (ticketBtn) {
 
     const homeAvatar = document.getElementById('avatarImg');
     if (homeAvatar) homeAvatar.src = imageUrl;
-        emp.profile_image = imageUrl; // Update local data
+        emp.avatar_url = imageUrl; // Update local data
     alert('Profile picture updated successfully!');
       } catch (err) {
     console.error("Error uploading image:", err);
