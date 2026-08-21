@@ -1192,12 +1192,15 @@ aside.sidebar.collapsed ~ main.main-content {
   }
 
   // ==== STRICT ROLE-BASED ACCESS CONTROL ====
+  
+  // 1. Developer Access (Website Management)
+  // (If Ming also needs to see the Website tabs, change this to: emp.badge_id === 'CREATIVES-01' || emp.badge_id === 'EW-0000-2023')
   const isDeveloper = emp.badge_id === 'CREATIVES-01'; 
   
-  // Grant HR/Financial access only to Eden and Catherine
-  const isHR = emp.badge_id === 'EW-0076-2024' || emp.badge_id === 'EW-0001-2023';
+  // 2. HR/Financial Access (Granted to Eden, Catherine, and Ming)
+  const isHR = emp.badge_id === 'EW-0076-2024' || emp.badge_id === 'EW-0001-2023' || emp.badge_id === 'EW-0000-2023';
   
-  // 1. Hide Website Management tabs from everyone except the Developer
+  // Hide Website Management tabs from everyone except the Developer
   if (!isDeveloper) {
     const devTabs = ['photos', 'blog', 'timeline']; 
     devTabs.forEach(tab => {
@@ -1206,7 +1209,7 @@ aside.sidebar.collapsed ~ main.main-content {
     });
   }
 
-  // 2. Hide Sensitive Financial/HR tabs from everyone except Eden and Catherine
+  // Hide Sensitive Financial/HR tabs from everyone except Eden, Catherine, and Ming
   if (!isHR) {
     // Add your future HR data-tab names here when you build them!
     const hrTabs = ['payroll', 'commissions', 'payslips']; 
