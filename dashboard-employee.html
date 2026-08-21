@@ -1050,52 +1050,77 @@ aside.sidebar.collapsed ~ main.main-content {
     return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  async function loadMySchedule(employeeUuid) {
-    // Pointing directly to Line 783 in your HTML!
+  async function loadMySchedule() {
     const container = document.getElementById('scheduleDaysList');
     if (!container) return;
+    if (!emp || !emp.id) return;
 
     container.innerHTML = '<p style="color: #7488b6;">Loading your shifts...</p>';
 
     try {
-        // Fetch this employee's schedule from Supabase
         const { data: scheduleData, error } = await supabaseClient
             .from('employees')
             .select('mon_sat_shift, sunday_duty')
-            .eq('id', emp.id) 
+            .eq('id', emp.id)
             .single();
 
         if (error) throw error;
 
-        // 1. Format the Mon-Sat Shift
-        let shiftText = '<span style="color: #7488b6;">Unassigned</span>';
+        // 1. Calculate this week's dates
+        const today = new Date();
+        const day = today.getDay();
+        const diffToMonday = day === 0 ? -6 : 1 - day; 
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + diffToMonday);
+
+        // 2. Define shift times
+        let shiftTime = '<span style="color: #7488b6;">Unassigned</span>';
         if (scheduleData.mon_sat_shift === 'morning') {
-            shiftText = '<strong style="color: var(--amber-400);">Day: Shift 1 (6:00 AM - 3:00 PM)</strong>';
+            shiftTime = '<strong style="color: var(--paper);">Shift 1 (6:00 AM - 3:00 PM)</strong>';
         } else if (scheduleData.mon_sat_shift === 'night') {
-            shiftText = '<strong style="color: var(--amber-400);">Night: Shift 2 (3:00 PM - 12:00 AM)</strong>';
+            shiftTime = '<strong style="color: var(--paper);">Shift 2 (3:00 PM - 12:00 AM)</strong>';
         }
 
-        // 2. Format the Sunday Duty
-        let sundayText = '<span style="color: #7488b6;">Off Duty</span>';
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        let scheduleHTML = `<div style="background: var(--navy-900); padding: 15px; border-radius: 6px; border: 1px solid var(--navy-600);">`;
+
+        // 3. Loop through Monday - Saturday
+        for (let i = 0; i < 6; i++) {
+            const currentDay = new Date(monday);
+            currentDay.setDate(monday.getDate() + i);
+            const dateStr = currentDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            scheduleHTML += `
+                <div style="padding: 8px 0; border-bottom: 1px solid var(--navy-600); display: flex; font-size: 13px;">
+                    <span style="color: var(--amber-400); width: 65px;">${dateStr}</span> 
+                    <span style="color: #7488b6; width: 90px;">| ${days[i]}</span> 
+                    <span>- ${shiftTime}</span>
+                </div>`;
+        }
+
+        // 4. Calculate and append Sunday
+        const upcomingSunday = new Date(monday);
+        upcomingSunday.setDate(monday.getDate() + 6);
+        const sunStr = upcomingSunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        
+        let sunDuty = '<span style="color: #7488b6;">Day Off</span>';
         if (scheduleData.sunday_duty) {
-            sundayText = '<strong style="color: var(--amber-400);">Assigned (9:00 AM - 6:00 PM)</strong>';
+            sunDuty = '<strong style="color: var(--amber-400);">Sunday Duty (9:00 AM - 6:00 PM)</strong>';
         }
 
-        // 3. Inject it into your modal's container
-        container.innerHTML = `
-            <div style="background: var(--navy-900); padding: 15px; border-radius: 6px; margin-bottom: 10px; border: 1px solid var(--navy-600);">
-                <p style="font-size: 11px; color: #7488b6; text-transform: uppercase; margin-bottom: 4px;">Monday - Saturday Team</p>
-                ${shiftText}
-            </div>
-            <div style="background: var(--navy-900); padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--navy-600);">
-                <p style="font-size: 11px; color: #7488b6; text-transform: uppercase; margin-bottom: 4px;">Upcoming Sunday Duty</p>
-                ${sundayText}
-            </div>
-        `;
+        scheduleHTML += `
+                <div style="padding: 8px 0; display: flex; font-size: 13px;">
+                    <span style="color: var(--amber-400); width: 65px;">${sunStr}</span> 
+                    <span style="color: #7488b6; width: 90px;">| Sunday</span> 
+                    <span>- ${sunDuty}</span>
+                </div>
+            </div>`; // Close the main container
+
+        container.innerHTML = scheduleHTML;
 
     } catch (err) {
-        console.error("Failed to load schedule:", err);
-        container.innerHTML = '<p style="color: #d9614f;">Error loading schedule. Please contact Ming.</p>';
+        console.error("Failed to load full schedule:", err);
+        container.innerHTML = '<p style="color: #d9614f;">Error loading schedule. Please contact Admin.</p>';
     }
 }
 
