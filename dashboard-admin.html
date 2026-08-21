@@ -3082,9 +3082,9 @@ async function reviewTicket(ticketId, status, approverName) {
             <div>
               <label style="font-size: 11px; color: #7488b6; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Mon-Sat Team</label>
               <select class="shift-select" data-employee-id="${csr.id}" style="padding: 6px 12px; border-radius: 4px; border: 1px solid var(--navy-600); background: var(--navy-900); color: var(--amber-400); font-weight: bold; cursor: pointer;">
-                <option value="unassigned">Select Team...</option>
-                <option value="morning">Day: Shift 1 (6:00 AM - 3:00 PM)</option>
-                <option value="night">Night: Shift 2 (3:00 PM - 12:00 AM)</option>
+                <option value="unassigned" ${!csr.mon_sat_shift || csr.mon_sat_shift === 'unassigned' ? 'selected' : ''}>Select Team...</option>
+                <option value="morning" ${csr.mon_sat_shift === 'morning' ? 'selected' : ''}>Day: Shift 1 (6:00 AM - 3:00 PM)</option>
+                <option value="night" ${csr.mon_sat_shift === 'night' ? 'selected' : ''}>Night: Shift 2 (3:00 PM - 12:00 AM)</option>
               </select>
             </div>
             
@@ -3092,7 +3092,7 @@ async function reviewTicket(ticketId, status, approverName) {
             <div>
               <label style="font-size: 11px; color: #7488b6; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Weekend Shift</label>
               <div style="background: var(--navy-900); border: 1px solid var(--navy-600); padding: 6px 12px; border-radius: 4px; display: flex; align-items: center; gap: 8px; height: 33px;">
-                <input type="checkbox" id="sun_${csr.id}" class="sunday-toggle" style="cursor: pointer; width: 16px; height: 16px;">
+                <input type="checkbox" id="sun_${csr.id}" class="sunday-toggle" data-employee-id="${csr.id}" style="cursor: pointer; width: 16px; height: 16px;" ${csr.sunday_duty ? 'checked' : ''}>
                 <label for="sun_${csr.id}" style="color: var(--amber-400); font-size: 13px; cursor: pointer; font-weight: bold; margin: 0;">Sunday (9:00 AM - 6:00 PM)</label>
               </div>
             </div>
