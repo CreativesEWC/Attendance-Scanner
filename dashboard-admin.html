@@ -43,7 +43,7 @@
   #authGate{ min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); color:#9fb0d6; }
 
   header{
-    padding:20px 24px 0; display:flex; align-items:flex-start; justify-content:space-between;
+    padding:20px 24px 0; display:flex; align-items:flex-start; justify-content:space-between;s
     flex-wrap:wrap; gap:12px;
   }
   header .eyebrow{ font-family:var(--font-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--amber-400); margin:0 0 4px; }
@@ -1103,6 +1103,34 @@ aside.sidebar.collapsed ~ main.main-content {
   </div>
 </div>
   
+  <!-- ATTENDANCE CORRECTION MODAL -->
+<div class="modal-overlay" id="attendanceModal">
+  <div class="modal-box" style="max-width: 420px;">
+    <h2 style="font-family: var(--font-display); font-size: 20px; color: var(--amber-400); margin-top: 0; margin-bottom: 4px;">Edit Attendance Record</h2>
+    <div style="font-size: 12px; color: #7488b6; font-family: var(--font-mono); margin-bottom: 20px;" id="editAttEmpName">Employee Name</div>
+
+    <input type="hidden" id="editAttId">
+
+    <div class="form-row" style="flex-direction: column; gap: 4px;">
+      <label style="font-family: var(--font-mono); font-size: 10px; color: #7488b6; text-transform: uppercase;">Time In</label>
+      <input type="datetime-local" id="editAttTimeIn" style="width: 100%;">
+    </div>
+    
+    <div class="form-row" style="flex-direction: column; gap: 4px;">
+      <label style="font-family: var(--font-mono); font-size: 10px; color: #7488b6; text-transform: uppercase;">Time Out</label>
+      <input type="datetime-local" id="editAttTimeOut" style="width: 100%;">
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="btn danger" id="deleteAttBtn">Delete Record</button>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn" id="closeAttBtn">Cancel</button>
+        <button class="btn primary" id="saveAttBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+  
 <script src="supabase-config.js"></script>
 <script>
 (async function(){
@@ -1598,7 +1626,7 @@ aside.sidebar.collapsed ~ main.main-content {
     }
     const fmtTime = iso => iso ? new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '—';
     tbody.innerHTML = currentAttendanceRows.map(r => `
-      <tr>
+      <tr class="editable-att-row" data-attid="${r.id}" style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--navy-800)'" onmouseout="this.style.background='transparent'">
         <td class="mono">${r.employees ? escapeHtml(r.employees.badge_id) : '—'}</td>
         <td>${r.employees ? escapeHtml(r.employees.name) : '(removed employee)'}</td>
         <td>${r.employees && r.employees.positions ? escapeHtml(r.employees.positions.name) : '<span style="color:#5c6d99;">—</span>'}</td>
@@ -1606,7 +1634,11 @@ aside.sidebar.collapsed ~ main.main-content {
         <td class="mono">${fmtTime(r.time_out)}</td>
       </tr>
     `).join('');
-  }
+
+    // Make rows clickable to open the editor
+    tbody.querySelectorAll('.editable-att-row').forEach(row => {
+      row.addEventListener('click', () => openAttendanceEditor(row.dataset.attid));
+    });
 
   document.getElementById('attendanceDate').addEventListener('change', loadAttendance);
   document.getElementById('attendanceTodayBtn').addEventListener('click', ()=>{
@@ -3171,6 +3203,86 @@ async function reviewTicket(ticketId, status, approverName) {
       loadingText.style.color = "#d9614f"; 
     }
   }
+    
+// --- ATTENDANCE CORRECTION ENGINE ---
+  
+  // 1. Helper to format Supabase dates for the <input type="datetime-local">
+  function toLocalDatetimeString(isoString) {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  // 2. Open the Modal and fill it with data
+  window.openAttendanceEditor = function(recordId) {
+    const record = currentAttendanceRows.find(r => r.id === recordId);
+    if (!record) return;
+
+    document.getElementById('editAttId').value = record.id;
+    document.getElementById('editAttEmpName').textContent = record.employees ? `${record.employees.name} (${record.employees.badge_id})` : 'Unknown Employee';
+    
+    document.getElementById('editAttTimeIn').value = toLocalDatetimeString(record.time_in);
+    document.getElementById('editAttTimeOut').value = toLocalDatetimeString(record.time_out);
+
+    document.getElementById('attendanceModal').classList.add('open');
+  };
+
+  // 3. Close Modal
+  document.getElementById('closeAttBtn')?.addEventListener('click', () => {
+    document.getElementById('attendanceModal').classList.remove('open');
+  });
+
+  // 4. Save Changes
+  document.getElementById('saveAttBtn')?.addEventListener('click', async () => {
+    const id = document.getElementById('editAttId').value;
+    const timeIn = document.getElementById('editAttTimeIn').value;
+    const timeOut = document.getElementById('editAttTimeOut').value;
+
+    const btn = document.getElementById('saveAttBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+
+    // Convert local datetime back to ISO format, or set to null if cleared out
+    const payload = {
+      time_in: timeIn ? new Date(timeIn).toISOString() : null,
+      time_out: timeOut ? new Date(timeOut).toISOString() : null
+    };
+
+    const { error } = await supabaseClient.from('attendance_logs').update(payload).eq('id', id);
+    
+    btn.disabled = false; btn.textContent = 'Save Changes';
+
+    if (error) {
+      alert('Error updating record: ' + error.message);
+      return;
+    }
+
+    document.getElementById('attendanceModal').classList.remove('open');
+    await loadAttendance(); // Refresh table
+  });
+
+  // 5. Delete Ghost Record
+  document.getElementById('deleteAttBtn')?.addEventListener('click', async () => {
+    const id = document.getElementById('editAttId').value;
+    
+    if (!confirm('Are you sure you want to completely delete this attendance record? This cannot be undone.')) return;
+
+    const btn = document.getElementById('deleteAttBtn');
+    btn.disabled = true; btn.textContent = 'Deleting...';
+
+    const { error } = await supabaseClient.from('attendance_logs').delete().eq('id', id);
+
+    btn.disabled = false; btn.textContent = 'Delete Record';
+
+    if (error) {
+      alert('Error deleting record: ' + error.message);
+      return;
+    }
+
+    document.getElementById('attendanceModal').classList.remove('open');
+    await loadAttendance(); // Refresh table
+  });
+    
 })();
 </script>
 
