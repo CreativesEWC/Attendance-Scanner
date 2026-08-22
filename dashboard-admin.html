@@ -2275,6 +2275,19 @@ async function reviewTicket(ticketId, status, approverName) {
     }
   }
 
+  function loadBrandsIntoSchForm(){
+    const sel = document.getElementById('schBrand');
+    if (sel) {
+        sel.innerHTML = '<option value="">Select brand...</option>';
+        allBrands.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.id; 
+          opt.textContent = b.name;
+          sel.appendChild(opt);
+        });
+    }
+  }
+
   async function loadLiveSellers(){
     const liveSellerPos = allPositions.find(p => p.name === 'Live Seller');
     liveSellers = liveSellerPos ? allEmployees.filter(e => e.position_id === liveSellerPos.id) : [];
