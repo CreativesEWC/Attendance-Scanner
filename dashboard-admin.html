@@ -1640,6 +1640,8 @@ aside.sidebar.collapsed ~ main.main-content {
       row.addEventListener('click', () => openAttendanceEditor(row.dataset.attid));
     });
 
+  } // <--- ADD THIS SINGLE CLOSING BRACKET HERE!
+
   document.getElementById('attendanceDate').addEventListener('change', loadAttendance);
   document.getElementById('attendanceTodayBtn').addEventListener('click', ()=>{
     setAttendanceDateToToday();
