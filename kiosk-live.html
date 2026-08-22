@@ -420,15 +420,35 @@
       hideScanHint();
 
       const today = todayStr();
-      const { data: existingRow } = await supabaseClient
+      
+      // Look for the absolute most recent shift for this employee, regardless of the date
+      const { data: latestShift } = await supabaseClient
         .from('attendance_logs')
         .select('*')
         .eq('employee_id', employee.id)
-        .eq('log_date', today)
+        .order('time_in', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       let row, kind;
-      if(!existingRow){
+      
+      // SCENARIO 1: They have an unfinished shift (Fixes the 12:00 AM & 2:00 AM bug!)
+      if (latestShift && latestShift.time_in && !latestShift.time_out) {
+        const { data: updated, error: updErr } = await supabaseClient
+          .from('attendance_logs')
+          .update({ time_out: nowIso() })
+          .eq('id', latestShift.id)
+          .select()
+          .single();
+        if(updErr){ console.error(updErr); busy = false; return; }
+        row = updated; kind = 'out';
+      } 
+      // SCENARIO 2: They already successfully completed a shift today
+      else if (latestShift && latestShift.log_date === today && latestShift.time_out) {
+        row = latestShift; kind = 'complete';
+      } 
+      // SCENARIO 3: They are starting a brand new shift
+      else {
         const { data: inserted, error: insErr } = await supabaseClient
           .from('attendance_logs')
           .insert({ employee_id: employee.id, log_date: today, time_in: nowIso() })
@@ -436,17 +456,6 @@
           .single();
         if(insErr){ console.error(insErr); busy = false; return; }
         row = inserted; kind = 'in';
-      } else if(existingRow.time_in && !existingRow.time_out){
-        const { data: updated, error: updErr } = await supabaseClient
-          .from('attendance_logs')
-          .update({ time_out: nowIso() })
-          .eq('id', existingRow.id)
-          .select()
-          .single();
-        if(updErr){ console.error(updErr); busy = false; return; }
-        row = updated; kind = 'out';
-      } else {
-        row = existingRow; kind = 'complete';
       }
 
       const birthday = isBirthdayToday(employee.birthday);
