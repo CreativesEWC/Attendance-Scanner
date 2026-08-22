@@ -2216,24 +2216,29 @@ async function reviewTicket(ticketId, status, approverName) {
   let liveSellers = [];
 
   async function loadPlatforms(){
+    // Fetch platforms directly from your Supabase table
     const { data, error } = await supabaseClient.from('platforms').select('*').order('name');
-    if(error){ console.error(error); return; }
+    
+    if(error){ 
+        console.error('Error loading platforms:', error); 
+        return; 
+    }
+    
     allPlatforms = data || [];
     const sel = document.getElementById('schPlatform');
-    allPlatforms.forEach(p=>{
-      const opt = document.createElement('option');
-      opt.value = p.id; opt.textContent = p.name;
-      sel.appendChild(opt);
-    });
-  }
-
-  function loadBrandsIntoSchForm(){
-    const sel = document.getElementById('schBrand');
-    allBrands.forEach(b=>{
-      const opt = document.createElement('option');
-      opt.value = b.id; opt.textContent = b.name;
-      sel.appendChild(opt);
-    });
+    
+    if (sel) {
+        // Reset the dropdown but keep the default placeholder
+        sel.innerHTML = '<option value="">Select platform...</option>';
+        
+        // Inject Shopee Live, TikTok Shop Live, and Lazada Live!
+        allPlatforms.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id; // Uses the UUID from your database
+            opt.textContent = p.name; // Displays the clean name
+            sel.appendChild(opt);
+        });
+    }
   }
 
   async function loadLiveSellers(){
