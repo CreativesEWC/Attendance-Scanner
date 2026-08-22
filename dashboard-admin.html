@@ -593,7 +593,7 @@ aside.sidebar.collapsed ~ main.main-content {
       <div id="content">
 
   <!-- 1. HOME TAB (EMPLOYEE MONITORING) -->
-    <div id="tab-home" class="tab-panel">
+    <div id="tab-home" class="tab-panel" style="display: block;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
         <h2 class="monitoring-title" style="margin-bottom: 0;">Employee Monitoring</h2>
         <button id="themeToggleBtn" class="btn">☀️ Switch to Light Mode</button>
@@ -2691,8 +2691,8 @@ async function reviewTicket(ticketId, status, approverName) {
   };
 
   // Initialize both sections immediately
-  loadBlogPosts();
-  loadTimeline();
+  // loadBlogPosts();
+  // loadTimeline();
 
   document.getElementById('addPhotoBtn').addEventListener('click', async () => {
     const file = document.getElementById('sitePhotoFile').files[0];
@@ -2739,9 +2739,9 @@ async function reviewTicket(ticketId, status, approverName) {
   };
 
   // Initialize these new tools alongside the others!
-  loadCareers();
-  loadApplications();
-  loadPhotos();
+  // loadCareers();
+  // loadApplications();
+  // loadPhotos();
 
   // ==========================================================
   // PART 6 — Dashboard Updates (Monitoring & Account)
